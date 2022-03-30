@@ -1,0 +1,36 @@
+[project]
+name = "MModel"
+version = "0.1.0"
+requires-python = ">=3.8"
+
+description = "Modular Modeling System"
+readme = "README.rst"
+# license = { file = "LICENSE" }
+authors = [{ name = "Peter Sun", email = "hs859@cornell.edu" }]
+maintainers = [{ name = "Peter Sun", email = "hs859@cornell.edu" }]
+dependencies = ["networkx", "h5py", "graphviz"]
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-cov", "pipenv", "tox", "tox-pipenv", "numpy"]
+
+# [project.urls]
+# repository = "github.coecis.cornell.edu/Marohn-Group/MModel"
+# changelog = "github.coecis.cornell.edu/Marohn-Group/MModel/CHANGELOG.rst"
+
+[build-system]
+# Minimum requirements for the build system to execute.
+requires = ["setuptools", "wheel"]  # PEP 508 specifications.
+build-backend = "setuptools.build_meta"
+
+
+[tool.setuptools]
+packages = ["mmodel"]
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    # note the use of single quote below to denote "raw" strings in TOML
+    # the escape sequence is necessary in graphviz dot string
+    # used to left align node text
+    'ignore:invalid escape sequence \\l:DeprecationWarning',
+]
+

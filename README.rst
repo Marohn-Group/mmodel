@@ -1,8 +1,15 @@
 :author: Peter Sun
-:date: 03/04/2022
+:date: 03/39/2022
 
 
-MModel - Modular Modeling Framework
-===================================
+MModel
+======
 
-`MModel` - is a simple and modular model building framework. 
+`MModel` is a lightweights and modular model building framework for small scale non linear models.
+
+Installation
+============
+
+For development:
+`pip install .[test]`
+
