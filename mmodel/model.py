@@ -1,13 +1,15 @@
-"""Node Class"""
-
-from mmodel.utility import graph_signature, graph_returns, graph_layers, param_counter
+from mmodel.utility import (
+    graph_signature,
+    graph_returns,
+    graph_topological_sort,
+    param_counter,
+)
 from mmodel.loop import subgraph_from_params, redirect_edges, basic_loop
 from abc import ABCMeta, abstractmethod
 import h5py
 
 
-
-class LayerModel(metaclass=ABCMeta):
+class TopologicalModel(metaclass=ABCMeta):
     """Base class for layered execution following topological generation
 
     Data instance is used for the execution instead of attributes. This makes
@@ -22,19 +24,18 @@ class LayerModel(metaclass=ABCMeta):
         self.graph = graph.copy()  # graph is a mutable object
         self.__signature__ = graph_signature(graph)
         self.return_params = graph_returns(graph)
-        self.layers = graph_layers(graph)
+        self.topological_order = graph_topological_sort(graph)
 
     def __call__(self, *args, **kwargs):
         """Execute graph model by layer"""
 
         data_instance = self._initiate(*args, **kwargs)
 
-        for layer in self.layers:
-            for node, node_attr in layer:
-                try:
-                    self._run_node(data_instance, node, node_attr)
-                except Exception as e:
-                    self._raise_node_exception(data_instance, node, node_attr, e)
+        for node, node_attr in self.topological_order:
+            try:
+                self._run_node(data_instance, node, node_attr)
+            except Exception as e:
+                self._raise_node_exception(data_instance, node, node_attr, e)
 
         return self._finish(data_instance, self.return_params)
 
@@ -54,42 +55,43 @@ class LayerModel(metaclass=ABCMeta):
     def _finish(self, data_instance, return_params):
         """Finish execution"""
 
-    def create_loop(
-        self, loop_params, name=None, loop_method=basic_loop, *args, **kwargs
+    def loop_parameter(
+        self, params, loop_method=basic_loop, name=None, *args, **kwargs
     ):
         """Construct loop
 
         TODO
             issue with shifted node
+            what happens when if loop already exist
         """
 
-        name = name or ", ".join(loop_params) + "_loop_submodel"
+        name = name or ", ".join(params) + "_loop_submodel"
 
-        subgraph = subgraph_from_params(self.graph, loop_params)
-        test = self._create_loop_subgraph(
-            subgraph, loop_params, loop_method, name
-        )
+        subgraph = subgraph_from_params(self.graph, params)
+        # if subgraph.
+        loop_node = self._create_looped_subgraph(subgraph, params, loop_method, name)
 
-        name, node_obj, return_params = test
+        name, node_obj, return_params = loop_node
 
         self.graph = redirect_edges(
-            self.graph, subgraph, name, node_obj, return_params, loop_params
+            self.graph, subgraph, name, node_obj, return_params, params
         )
 
         # reset values
         self.__signature__ = graph_signature(self.graph)
         self.return_params = graph_returns(self.graph)
-        self.layers = graph_layers(self.graph)
+        self.topological_order = graph_topological_sort(self.graph)
 
-    def _create_loop_subgraph(self, subgraph, loop_params, loop_method, name):
+    def _create_looped_subgraph(self, subgraph, params, loop_method, name):
         """Turn subgraph into a loopped variable returns the node attribute"""
 
-        node_obj = loop_method(type(self)(subgraph, name), loop_params)
+        node_obj = loop_method(type(self)(subgraph, name), params)
 
         return name, node_obj, node_obj.return_params
 
-class Model(LayerModel):
-    """Default model of mmodel
+
+class Model(TopologicalModel):
+    """Default model of mmodel module
 
     Model execute the graph by layer. For parameters, a counter is used
     to track all value usage. At the end of each layer, the parameter is
@@ -153,8 +155,8 @@ class Model(LayerModel):
         return return_val
 
 
-class SimpleModel(LayerModel):
-    """A fast and barebone model.
+class PlainModel(TopologicalModel):
+    """A fast and barebone model
 
     The method simply store all intermediate values in memory. The calculation steps
     are very similar to Model.
@@ -204,7 +206,7 @@ class SimpleModel(LayerModel):
         return return_val
 
 
-class H5Model(LayerModel):
+class H5Model(TopologicalModel):
     """Model that stores all data in h5 file
 
     Each entry of the h5 file is unique, with the instance id, instance name
@@ -312,10 +314,11 @@ class H5Model(LayerModel):
         # except KeyError:
         #     return group.attrs[key]
 
-
-    def _create_loop_subgraph(self, subgraph, loop_params, loop_method, name):
+    def _create_looped_subgraph(self, subgraph, loop_params, loop_method, name):
         """Turn subgraph into a loopped variable returns the node attribute"""
 
-        node_obj = loop_method(type(self)(subgraph, name, self.h5_filename), loop_params)
+        node_obj = loop_method(
+            type(self)(subgraph, name, self.h5_filename), loop_params
+        )
 
         return name, node_obj, node_obj.return_params

@@ -6,13 +6,15 @@ The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
 
-[0.1.0] - 2022-03-29
+[0.1.0] - 2022-04-02
 --------------------
 Added
 ^^^^^
-- class `ModelGraph` for constructing default graphs
-- class `SimpleModel` for constructing executable from graphs
-- class `Model` for constructing executable from graphs with memory management
-- class `H5Model` for constructing executable from graphs with h5 data storage
-- function wrapper `basic_loop` that creates basic loop for models
-- function `draw_graph` for drawing DAG graphs
+- class ``MGraph`` for constructing default graphs
+- class ``PlainModel`` for constructing executable from graphs
+- class ``Model`` for constructing executable from graphs with
+  memory management
+- class ``H5Model`` for constructing executable from graphs with
+  h5 data storage
+- function wrapper ``basic_loop`` that creates basic loop for models
+- function ``draw_graph`` for drawing DAG graphs

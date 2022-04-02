@@ -1,13 +1,8 @@
-"""
-Function used to draw the dot graph
-"""
-
 import graphviz
-import networkx as nx
 
 
-def draw_model(graph, title, show_detail=True, name=None, filename=None, **kwargs):
-    """Show graph model
+def draw_graph(graph, title, show_detail=True, name=None, filename=None, **kwargs):
+    """Show model graph
 
     The process create a graphviz graph and write networkx.graph
     nodes and edges to it.
@@ -64,7 +59,7 @@ def draw_model(graph, title, show_detail=True, name=None, filename=None, **kwarg
         node_obj = ndict["node_obj"]
         subgraph = node_obj.graph
         title = node_obj.__name__
-        dot_sub = draw_model(
+        dot_sub = draw_graph(
             subgraph, title, show_detail, name=f"cluster_{title}", **kwargs
         )
         dot_graph.subgraph(dot_sub)

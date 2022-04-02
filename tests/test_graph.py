@@ -141,7 +141,7 @@ def test_add_edges_fails_nodes(mmodel_graph):
 
 
 def test_copy(mmodel_graph):
-    """Test if copy works with MModelGraph"""
+    """Test if copy works with MGraph"""
 
     graphs_equal(mmodel_graph.copy(), mmodel_graph)
 

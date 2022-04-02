@@ -2,9 +2,19 @@
 Testing the loop module
 """
 
+import py
+import pytest
 from mmodel.loop import subgraph_from_params, redirect_edges, basic_loop
 from tests.conftest import graphs_equal
 import inspect
+
+@pytest.fixture
+def mock_func():
+    def func(a, b, c=2):
+        """Test docstring"""
+        return a + b + c
+
+    return func
 
 
 def test_subgraph_from_params(mmodel_graph):
@@ -44,19 +54,15 @@ def test_redirect_edges(mmodel_graph):
         "signature": inspect.signature(mock_obj),
         "loop_params": ["f"],
         "has_subgraph": True,
+        "has_loop": True
     }
 
 
-def test_basic_loop():
+def test_basic_loop(mock_func):
     """Test redirect edges based on subgraph and subgraph node"""
 
-    def mock_func(a, b, c=2):
-        """Test docstring"""
-        return a + b + c
-
     mock_func._test_attr = "test"
-
-    looped = basic_loop(mock_func, ["b"])
+    looped = basic_loop(mock_func, "b")
 
     assert looped(1, [1, 2, 3], 4) == [6, 7, 8]
     # check if default value works
@@ -65,11 +71,15 @@ def test_basic_loop():
     assert looped.__doc__ == "Test docstring"
     assert looped._test_attr == "test"
 
-    looped_multi = basic_loop(mock_func, ["a", "b"])
-    assert looped_multi([1, 2], [0.1, 0.2], 10) == [11.1, 11.2, 12.1, 12.2]
-
-    looped_default = basic_loop(mock_func, ["c"])
+    looped_default = basic_loop(mock_func, params=["c"])
 
     assert inspect.signature(looped_default).parameters['c'].default == [2]
     assert looped_default(0.1, 0.1) == [2.2]
     assert looped_default(0.1, 0.1, [3, 4]) == [3.2, 4.2]
+
+def test_basic_loop_fails(mock_func):
+    """Test redirect edges based on subgraph and subgraph node"""
+
+    with pytest.raises(Exception, match="basic_loop accept one parameter at a time"):
+        basic_loop(mock_func, ["b", "c"])
+

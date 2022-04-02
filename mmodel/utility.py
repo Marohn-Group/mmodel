@@ -1,4 +1,3 @@
-"""Graph Operations"""
 import inspect
 import networkx as nx
 
@@ -64,25 +63,25 @@ def graph_returns(graph):
     return returns
 
 
-def graph_layers(graph):
-    """Determine the toplogical generation
+def graph_topological_sort(graph):
+    """Determine the toplogical order
 
     `nx.topological_generations` outputs a generator with each generation
     of node list. However, it does not carry the node attributes. The method
     outputs a list of node lists for each generation.
 
-    return: topological layers of the graph, returns nested list
-        each list in the list represent nodes in each layer.
-        Each node is represented as a tuple (node, attrs)
-    rtype: list
+    :return: topological order of the graph, returns a list of nodes and its
+        attribute
+    :rtype: list
+
     """
 
-    layers = []
+    topological_order = []
 
-    for layer in nx.topological_generations(graph):
-        layers.append([(node, graph.nodes[node]) for node in layer])
+    for node in nx.topological_sort(graph):
+        topological_order.append((node, graph.nodes[node]))
 
-    return layers
+    return topological_order
 
 
 def param_counter(graph):

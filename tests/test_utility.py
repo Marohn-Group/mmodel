@@ -84,30 +84,26 @@ def test_graph_returns(mmodel_graph):
     assert util.graph_returns(mmodel_graph) == ["k", "m"]
 
 
-def test_graph_layers(mmodel_graph):
-    """Test graph_layers
+def test_graph_topological_sort(mmodel_graph):
+    """Test graph_topological_sort
 
-    The layers should be
-    0 - add
-    1 - subtract, multiply, log
-    2 - poly
+    The order should be
+    add, subtract, multiply, log, poly
 
     each node should be (node, attr), where node is the name
     of the node, attr is a dictionary of attributes
     """
 
-    layers = util.graph_layers(mmodel_graph)
+    order = util.graph_topological_sort(mmodel_graph)
 
-    assert len(layers) == 3
-    assert len(layers[1]) == 3
+    nodes = []
 
-    layer1_nodes = []
-    for node, attr in layers[1]:
+    for node, attr in order:
         assert isinstance(attr, dict)
         assert sorted(list(attr)) == ["node_obj", "return_params", "signature"]
-        layer1_nodes.append(node)
+        nodes.append(node)
 
-    assert layer1_nodes == ["subtract", "multiply", "log"]
+    assert nodes == ["add","subtract", "multiply", "log", "poly"]
 
 
 def test_param_counter(mmodel_graph):

@@ -1,6 +1,6 @@
 """Test Models
 
-Currently all models inherits from LayerModel, which is an abstract class.
+Currently all models inherits from TopologicalModel, which is an abstract class.
 The test stredgy works as the following:
 
 - create a mock instance of the abstract class, and test the attributes
@@ -9,7 +9,7 @@ The test stredgy works as the following:
 
 """
 
-from mmodel.model import LayerModel, Model, SimpleModel, H5Model
+from mmodel.model import TopologicalModel, Model, PlainModel, H5Model
 from inspect import signature
 
 # from tests.conftest import node_match, edge_match
@@ -22,21 +22,21 @@ from tests.conftest import graphs_equal
 import re
 
 
-class TestLayerModel:
-    """Test class LayerModel"""
+class TestTopologicalModel:
+    """Test class TopologicalModel"""
 
-    def test_LayerModel(self, monkeypatch, mmodel_graph, mmodel_signature):
-        """Test LayerModel
+    def test_TopologicalModel(self, monkeypatch, mmodel_graph, mmodel_signature):
+        """Test TopologicalModel
 
-        LayerModel contains abstract method, therefore it cannot instantiate
+        TopologicalModel contains abstract method, therefore it cannot instantiate
         itself. Here we monkeypatch to remove the abstractmethods and test
         the basic init and method behaviors.
         """
-        # monkeypatch the abstractmethod to empty to LayerModel can
+        # monkeypatch the abstractmethod to empty to TopologicalModel can
         # instantiate
-        monkeypatch.setattr(LayerModel, "__abstractmethods__", set())
+        monkeypatch.setattr(TopologicalModel, "__abstractmethods__", set())
 
-        model = LayerModel(mmodel_graph, "test")
+        model = TopologicalModel(mmodel_graph, "test")
 
         assert model.__name__ == "test"
         assert signature(model) == mmodel_signature
@@ -49,10 +49,10 @@ class TestLayerModel:
     def test_create_loop(self, monkeypatch, mmodel_graph):
         """Test create loops for graph"""
 
-        monkeypatch.setattr(LayerModel, "__abstractmethods__", set())
+        monkeypatch.setattr(TopologicalModel, "__abstractmethods__", set())
 
-        model = LayerModel(mmodel_graph, "test")
-        model.create_loop(["f"])
+        model = TopologicalModel(mmodel_graph, "test")
+        model.loop_parameter(params=["f"])
 
         assert "f_loop_submodel" in model.graph
         assert model.graph.adj == {
@@ -66,13 +66,13 @@ class TestLayerModel:
             "f_loop_submodel": {},
         }
 
-        # test the node (unwrapped) in an instance of LayerModel
+        # test the node (unwrapped) in an instance of TopologicalModel
         assert isinstance(
-            model.graph.nodes["f_loop_submodel"]["node_obj"].__wrapped__, LayerModel
+            model.graph.nodes["f_loop_submodel"]["node_obj"].__wrapped__, TopologicalModel
         )
 
         # add second loop
-        model.create_loop(["d"], "test_loop")
+        model.loop_parameter(params=["d"], name="test_loop")
         assert "test_loop" in model.graph
         assert model.graph.adj == {
             "add": {
@@ -202,30 +202,30 @@ class TestModel:
 
         Node the return parameter shifts
         """
-        model_instance.create_loop(["f"])
+        model_instance.loop_parameter(params=["f"])
 
         assert model_instance.return_params == ["m", "k"]
         assert model_instance(1, 2, [2, 3], 4) == (math.log(5, 4), [30, 45])
 
 
-class TestSimpleModel:
+class TestPlainModel:
     """Test class Model"""
 
     @pytest.fixture
-    def simplemodel_instance(self, mmodel_graph):
+    def plainmodel_instance(self, mmodel_graph):
         """Create Model object for the test"""
-        return SimpleModel(mmodel_graph, "simplemodel_test")
+        return PlainModel(mmodel_graph, "plainmodel_test")
 
-    def test_initiate(self, simplemodel_instance):
+    def test_initiate(self, plainmodel_instance):
         """Test _initiate method
 
         The signature is a, b, f, b = 2
         the value b should be automatically filled
         """
-        data_instance = simplemodel_instance._initiate(1, 2, 5)
+        data_instance = plainmodel_instance._initiate(1, 2, 5)
         assert data_instance == OrderedDict({"a": 1, "d": 2, "f": 5, "b": 2})
 
-    def test_run_node(self, simplemodel_instance, node_a_attr, node_b_attr):
+    def test_run_node(self, plainmodel_instance, node_a_attr, node_b_attr):
         """Test _run_node method
 
         Separate data instance and nodes are provided for the tests.
@@ -239,8 +239,8 @@ class TestSimpleModel:
 
         value_dict_b = {"arg1": 10, "arg2": 14, "arg3": 2}
 
-        simplemodel_instance._run_node(value_dict_a, "node_a", node_a_attr)
-        simplemodel_instance._run_node(value_dict_b, "node_b", node_b_attr)
+        plainmodel_instance._run_node(value_dict_a, "node_a", node_a_attr)
+        plainmodel_instance._run_node(value_dict_b, "node_b", node_b_attr)
 
         assert list(value_dict_a.keys()) == ["arg1", "arg2", "arg3", "arg4"]
         assert np.array_equal(value_dict_a["arg4"], np.arange(6.7, 11.7))
@@ -253,7 +253,7 @@ class TestSimpleModel:
             "arg5": 2,
         }
 
-    def test_finish(self, simplemodel_instance):
+    def test_finish(self, plainmodel_instance):
         """Test _finish method
 
         Finish method should output the value directly if there is only
@@ -261,42 +261,42 @@ class TestSimpleModel:
         """
 
         value_dict = {"arg4": 1, "arg5": 4.5}
-        assert simplemodel_instance._finish(value_dict, ["arg4"]) == 1
-        assert simplemodel_instance._finish(value_dict, ["arg4", "arg5"]) == (1, 4.5)
+        assert plainmodel_instance._finish(value_dict, ["arg4"]) == 1
+        assert plainmodel_instance._finish(value_dict, ["arg4", "arg5"]) == (1, 4.5)
 
-    def test_raise_exception(self, simplemodel_instance):
+    def test_raise_exception(self, plainmodel_instance):
         """Test _raise_exception"""
 
         with pytest.raises(
             Exception, match=r"Exception occurred for node \('node', {'key': 'value'}\)"
         ):
-            simplemodel_instance._raise_node_exception(
+            plainmodel_instance._raise_node_exception(
                 None, "node", {"key": "value"}, Exception("Test")
             )
 
-    def test_node_exception(self, simplemodel_instance):
+    def test_node_exception(self, plainmodel_instance):
         """Test exception is raise when there are issue with a node execution"""
 
         with pytest.raises(
             Exception, match=r"Exception occurred for node \('subtract', .+\)"
         ):
-            simplemodel_instance(1, "2", 3)
+            plainmodel_instance(1, "2", 3)
 
-    def test_execution(self, simplemodel_instance):
+    def test_execution(self, plainmodel_instance):
         """Test running the model as a function"""
 
-        assert simplemodel_instance(10, 15, 20) == (-720, math.log(12, 2))
-        assert simplemodel_instance(1, 2, 3, 4) == (45, math.log(5, 4))
+        assert plainmodel_instance(10, 15, 20) == (-720, math.log(12, 2))
+        assert plainmodel_instance(1, 2, 3, 4) == (45, math.log(5, 4))
 
-    def test_loop(self, simplemodel_instance):
+    def test_loop(self, plainmodel_instance):
         """Test loop
 
         Node the return parameter shifts
         """
-        simplemodel_instance.create_loop(["f"])
+        plainmodel_instance.loop_parameter(params=["f"])
 
-        assert simplemodel_instance.return_params == ["m", "k"]
-        assert simplemodel_instance(1, 2, [2, 3], 4) == (math.log(5, 4), [30, 45])
+        assert plainmodel_instance.return_params == ["m", "k"]
+        assert plainmodel_instance(1, 2, [2, 3], 4) == (math.log(5, 4), [30, 45])
 
 
 class TestH5Model:
@@ -495,7 +495,7 @@ class TestH5Model:
 
         Node the return parameter shifts
         """
-        h5model_instance.create_loop(["f"])
+        h5model_instance.loop_parameter(params=["f"])
 
         assert h5model_instance.return_params == ["m", "k"]
         assert h5model_instance(1, 2, [2, 3], 4)[0] == math.log(5, 4)

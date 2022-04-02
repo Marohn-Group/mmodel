@@ -5,13 +5,20 @@
 
 .. include:: ../README.rst
 
-
-Welcome to MModel's documentation!
-==================================
+API Documentation
+-----------------
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: MModel API
+
+   graph
+   model
+   loop
+
+
+.. include:: ../CHANGELOG.rst
+
 
 Indices and tables
 ==================

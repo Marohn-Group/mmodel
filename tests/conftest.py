@@ -13,7 +13,7 @@ and test functions
 import pytest
 from inspect import signature, Signature, Parameter
 import networkx as nx
-from mmodel.graph import MModelGraph
+from mmodel.graph import MGraph
 import math
 from networkx.utils import nodes_equal, edges_equal
 
@@ -115,7 +115,7 @@ def mmodel_graph():
     def logarithm(c, b):
         return math.log(c, b)
 
-    G = MModelGraph("test")
+    G = MGraph("test")
 
     # class MockGraph(ModelGraph):
     node_list = [

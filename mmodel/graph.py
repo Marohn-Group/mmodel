@@ -1,14 +1,12 @@
-"""Modified Graph Class"""
-
 import inspect
 from subprocess import call
 import networkx as nx
 from mmodel.utility import graph_signature
 
 
-class MModelGraph(nx.DiGraph):
+class MGraph(nx.DiGraph):
 
-    """Based class for mmodel Graph
+    """Base class for mmodel Graph
 
     ModelGraph inherits from `networkx.DiGraph()`, which has all `DiGraph` methods.
     Graphs inherits ModelGraph needs to define the nodes first, with the required

@@ -3,6 +3,7 @@ from functools import wraps
 import itertools
 from inspect import signature, Parameter, Signature
 
+
 def subgraph_from_params(graph, parameters):
     """Construct subgraph based on parameters
 
@@ -24,7 +25,9 @@ def subgraph_from_params(graph, parameters):
     return graph.subgraph(subgraph_nodes)
 
 
-def redirect_edges(graph, subgraph, subgraph_node, node_obj, return_params, loop_params):
+def redirect_edges(
+    graph, subgraph, subgraph_node, node_obj, return_params, loop_params
+):
     """Redirect graph based on subgraph
 
     Find all parent node that is not in subgraph but have child node
@@ -54,34 +57,37 @@ def redirect_edges(graph, subgraph, subgraph_node, node_obj, return_params, loop
         return_params=return_params,
         loop_params=loop_params,
         has_subgraph=True,
+        has_loop=True
     )
     graph.add_edges_from(new_edges)
 
     return graph
 
-def basic_loop(func, loop_params):
-    """Basic loop wraper, iterates the values from loop
 
-    The output list is flat if there are multiple parameters.
-    The order of the loop follows itertools.product order.
-    For example, two parameters are A and B, and the values are
-    [a1, a2] and [b1, b2]. The resulting values are
-    [(a1, b1), (a1, b2), (a2, b1), (a2, b2)].
+def basic_loop(func, params):
+    """Basic loop wrapper, iterates the values from loop
+
+    The basic loop only allows to loop one parameter
+
+    :param list params: list of the parameter to loop
+        only one parameter is allowed
 
     :return: function that loops designed parameter
     :rtype: func
-    
+
     TODO
         test speed of signature modification
         consider not allow multiple loop parameters (but maybe pairwise is allowed?)
     """
-    sig_param = dict(signature(func).parameters)
 
+    if len(params) != 1:
+        raise Exception('basic_loop accept one parameter at a time')
+    param = params[0]
     # reset the default to a list
-    for param in loop_params:
-        _param = sig_param[param]
-        if  _param.default != Parameter.empty:
-            sig_param[param] = Parameter(_param.name, _param.kind, default=[_param.default])
+    sig_param = dict(signature(func).parameters)
+    _param = sig_param[param]
+    if _param.default != Parameter.empty:
+        sig_param[param] = Parameter(_param.name, _param.kind, default=[_param.default])
     sig = Signature(sig_param.values())
 
     @wraps(func)
@@ -92,15 +98,11 @@ def basic_loop(func, loop_params):
         values.apply_defaults()
         value_dict = values.arguments
 
-        loop_value = [value_dict.pop(param) for param in loop_params]
-        result = []
-        for value in itertools.product(*loop_value):  # unzip the values
+        loop_values = value_dict.pop(param)
+        result = [func(**value_dict, **{param: value}) for value in loop_values]
 
-            loop_value_dict = dict(zip(loop_params, value))
-            rv = func(**value_dict, **loop_value_dict)
-            result.append(rv)
         return result
-    
+
     # modify the signature
     loop_wrapper.__signature__ = sig
 
