@@ -17,36 +17,36 @@ def mock_func():
     return func
 
 
-def test_subgraph_from_params(mmodel_graph):
+def test_subgraph_from_params(mmodel_G):
     """Test two different subgraphs"""
 
-    subgraph1 = subgraph_from_params(mmodel_graph, ["f"])
-    subgraph2 = mmodel_graph.subgraph(["multiply", "poly"])
+    subgraph1 = subgraph_from_params(mmodel_G, ["f"])
+    subgraph2 = mmodel_G.subgraph(["multiply", "poly"])
 
     # have the same copy
     graphs_equal(subgraph1, subgraph2)
     # retains oringinal graph
-    assert subgraph1._graph == mmodel_graph
+    assert subgraph1._graph == mmodel_G
 
-    subgraph3 = subgraph_from_params(mmodel_graph, ["f", "g"])
+    subgraph3 = subgraph_from_params(mmodel_G, ["f", "g"])
     graphs_equal(subgraph3, subgraph2)
 
-    subgraph4 = subgraph_from_params(mmodel_graph, ["a"])
-    graphs_equal(subgraph4, mmodel_graph)
+    subgraph4 = subgraph_from_params(mmodel_G, ["a"])
+    graphs_equal(subgraph4, mmodel_G)
 
 
-def test_redirect_edges(mmodel_graph):
+def test_redirect_edges(mmodel_G):
     """Test redirect edges based on subgraph and subgraph node"""
 
-    subgraph = mmodel_graph.subgraph(["multiply", "poly"])
+    subgraph = mmodel_G.subgraph(["multiply", "poly"])
 
     def mock_obj(x, y):
         return
 
-    graph = redirect_edges(mmodel_graph, subgraph, "test", mock_obj, ["z"], ["f"])
+    graph = redirect_edges(mmodel_G, subgraph, "test", mock_obj, ["z"], ["f"])
 
     # a copy is created
-    assert graph != mmodel_graph
+    assert graph != mmodel_G
     assert "test" in graph
     assert graph.nodes["test"] == {
         "node_obj": mock_obj,

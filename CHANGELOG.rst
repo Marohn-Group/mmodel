@@ -16,6 +16,8 @@ Changed
 - remove ``name`` input for ``Model`` and ``loop_parameter``
 - generate model names and looped subgraph name automatically
 - remove ``title`` input for ``draw_graph``
+- change model attribute ``graph`` to ``G``, to avoid confusion of the graph's
+  inherent attribute ``graph``
 
 
 [0.1.0] - 2022-04-02

@@ -7,6 +7,31 @@ from mmodel.utility import (
 from mmodel.loop import subgraph_from_params, redirect_edges, basic_loop
 from abc import ABCMeta, abstractmethod
 import h5py
+from pydoc import Helper
+import inspect
+
+
+# class ModelHelper(Helper):
+
+#     """Inherite helper function to modify"""
+
+#     def help(self, request):
+#         # check request ...
+
+#         G = request.graph
+#         clsname = G.__class__.__name__
+#         name = G.name
+#         doc = G.graph["doc"]
+#         signature = request.__signature__
+#         rt = request.return_params
+
+#         self.output.write(
+#             f"{name} model\n{doc}\nmodel class: {clsname}\nsignature: {signature}\nreturn: {rt}\n"
+#         )
+#         super().help(request)
+
+
+# helper = ModelHelper()
 
 
 class TopologicalModel(metaclass=ABCMeta):
@@ -18,13 +43,13 @@ class TopologicalModel(metaclass=ABCMeta):
     each execution or when exception occurs.
     """
 
-    def __init__(self, graph):
+    def __init__(self, G):
 
-        self.__name__ = f"{self.__class__.__name__}_{graph.name}"
-        self.graph = graph.copy()  # graph is a mutable object
-        self.__signature__ = graph_signature(graph)
-        self.return_params = graph_returns(graph)
-        self.topological_order = graph_topological_sort(graph)
+        self.__name__ = f"{self.__class__.__name__}_{G.name}"
+        self.G = G.copy()  # graph is a mutable object
+        self.__signature__ = graph_signature(G)
+        self.return_params = graph_returns(G)
+        self.topological_order = graph_topological_sort(G)
 
     def __call__(self, *args, **kwargs):
         """Execute graph model by layer"""
@@ -63,24 +88,27 @@ class TopologicalModel(metaclass=ABCMeta):
             what happens when if loop already exist
         """
 
-        name = f"{method.__name__}_{'_'.join(params)}"
-        while name in self.graph:
-            name += "_" + "_".join(params)
+        node_name = f"loop_{'_'.join(params)}"
+        while node_name in self.G:
+            node_name += "_" + "_".join(params)
+        # description of the subgraph
+        node_doc = f"{method.__name__} {', '.join(params)}"
 
-        subgraph = subgraph_from_params(self.graph, params)
+        subgraph = subgraph_from_params(self.G, params)
+
         # if subgraph.
         loop_node = self._create_looped_subgraph(subgraph, params, method)
 
         node_obj, return_params = loop_node
 
-        self.graph = redirect_edges(
-            self.graph, subgraph, name, node_obj, return_params, params
+        self.G = redirect_edges(
+            self.G, subgraph, node_name, node_obj, return_params, params
         )
-
+        self.G.nodes[node_name]["node_obj"].G.graph.update({"doc": node_doc})
         # reset values
-        self.__signature__ = graph_signature(self.graph)
-        self.return_params = graph_returns(self.graph)
-        self.topological_order = graph_topological_sort(self.graph)
+        self.__signature__ = graph_signature(self.G)
+        self.return_params = graph_returns(self.G)
+        self.topological_order = graph_topological_sort(self.G)
 
     def _create_looped_subgraph(self, subgraph, params, method):
         """Turn subgraph into a loopped variable returns the node attribute"""
@@ -88,6 +116,11 @@ class TopologicalModel(metaclass=ABCMeta):
         node_obj = method(type(self)(subgraph), params)
 
         return node_obj, node_obj.return_params
+
+    # @property
+    # def help(self):
+    #     """help function"""
+    #     helper(self)
 
 
 class Model(TopologicalModel):
@@ -98,10 +131,10 @@ class Model(TopologicalModel):
     deleted if the counter reaches 0.
     """
 
-    def __init__(self, graph):
+    def __init__(self, G):
         """Add counter to the object"""
-        self.counter = param_counter(graph)
-        super().__init__(graph)
+        self.counter = param_counter(G)
+        super().__init__(G)
 
     def _initiate(self, *args, **kwargs):
         """Initiate the value dictionary"""
@@ -213,14 +246,14 @@ class H5Model(TopologicalModel):
     and execution number
     """
 
-    def __init__(self, graph, h5_filename):
+    def __init__(self, G, h5_filename):
 
         # check if file exist
         # write id attribute
         self.h5_filename = h5_filename
         self.exe_count = 0
 
-        super().__init__(graph)
+        super().__init__(G)
 
         self.entry_prefix = f"{id(self)}_{self.__name__}_"
 

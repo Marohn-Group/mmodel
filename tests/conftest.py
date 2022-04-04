@@ -3,8 +3,8 @@
 The configuration file provides several default graph fixtures
 and test functions
 
-1. `standard_graph` - test graph generated using DiGraph, scope: function
-2. `mmodel_graph` - test graph generated using ModelGraph. scope: function
+1. `standard_G` - test graph generated using DiGraph, scope: function
+2. `mmodel_G` - test graph generated using ModelGraph. scope: function
 
 
 """
@@ -19,7 +19,7 @@ from networkx.utils import nodes_equal, edges_equal
 
 
 @pytest.fixture()
-def standard_graph():
+def standard_G():
     """Standard test graph generated using DiGraph"""
 
     def addition(a, b=2):
@@ -97,7 +97,7 @@ def standard_graph():
 
 
 @pytest.fixture()
-def mmodel_graph():
+def mmodel_G():
     """Mock test graph generated using ModelGraph"""
 
     def addition(a, b=2):
@@ -142,7 +142,7 @@ def mmodel_graph():
 
 @pytest.fixture(scope="module")
 def mmodel_signature():
-    """The default signature of the mmodel_graph models"""
+    """The default signature of the mmodel_G models"""
 
     param_list = [
         Parameter("a", 1),
@@ -154,15 +154,15 @@ def mmodel_signature():
     return Signature(param_list)
 
 
-def graphs_equal(graph1, graph2):
+def graphs_equal(G1, G2):
     """Test if graphs have the same nodes, edges and attributes"""
 
-    assert nodes_equal(graph1._node, graph2._node)
-    # assert edges_equal(mmodel_graph._adj, standard_graph._adj)
+    assert nodes_equal(G1._node, G2._node)
+    # assert edges_equal(mmodel_G._adj, standard_G._adj)
 
-    assert graph1._pred == graph2._pred
-    assert graph1._succ == graph2._succ
+    assert G1._pred == G2._pred
+    assert G1._succ == G2._succ
 
     # test graph attributes
-    assert graph1.graph == graph2.graph
-    assert graph1.name == graph2.name
+    assert G1.graph == G2.graph
+    assert G1.name == G2.name

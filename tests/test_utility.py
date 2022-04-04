@@ -67,24 +67,24 @@ def test_param_sorter_order():
     assert sorted(shuffled_params.values(), key=util.param_sorter) == param_list
 
 
-def test_graph_signature(mmodel_graph, mmodel_signature):
+def test_graph_signature(mmodel_G, mmodel_signature):
     """Test graph_signature
 
-    There are two functions in the mmodel_graph have parameter
+    There are two functions in the mmodel_G have parameter
     'b' - one with default and one without. The final signature
     should have default value.
     """
 
-    assert util.graph_signature(mmodel_graph) == mmodel_signature
+    assert util.graph_signature(mmodel_G) == mmodel_signature
 
 
-def test_graph_returns(mmodel_graph):
+def test_graph_returns(mmodel_G):
     """Test graph_returns"""
 
-    assert util.graph_returns(mmodel_graph) == ["k", "m"]
+    assert util.graph_returns(mmodel_G) == ["k", "m"]
 
 
-def test_graph_topological_sort(mmodel_graph):
+def test_graph_topological_sort(mmodel_G):
     """Test graph_topological_sort
 
     The order should be
@@ -94,7 +94,7 @@ def test_graph_topological_sort(mmodel_graph):
     of the node, attr is a dictionary of attributes
     """
 
-    order = util.graph_topological_sort(mmodel_graph)
+    order = util.graph_topological_sort(mmodel_G)
 
     nodes = []
 
@@ -106,9 +106,9 @@ def test_graph_topological_sort(mmodel_graph):
     assert nodes == ["add","subtract", "multiply", "log", "poly"]
 
 
-def test_param_counter(mmodel_graph):
+def test_param_counter(mmodel_G):
     """Test param_counter"""
 
-    counter = util.param_counter(mmodel_graph)
+    counter = util.param_counter(mmodel_G)
 
     assert counter == {"a": 1, "b": 2, "c": 3, "d": 1, "e": 1, "f": 1, "g": 1}

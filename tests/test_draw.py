@@ -25,40 +25,40 @@ multiply -> poly
 
 
 
-def test_draw_model_no_detail(mmodel_graph):
+def test_draw_model_no_detail(mmodel_G):
     """Test the model without the node detail"""
 
-    dot_graph = draw_graph(mmodel_graph, name="test", show_detail=False)
+    dot_graph = draw_graph(mmodel_G, name="test", show_detail=False)
     assert dot_graph.source.replace('\n', '').replace('\t', '') == dot_source.replace('\n', '')
 
 
-def test_draw_model_detail(mmodel_graph):
+def test_draw_model_detail(mmodel_G):
     """Test the model with full node and edge detail"""
 
-    dot_graph = draw_graph(mmodel_graph, name="test")
+    dot_graph = draw_graph(mmodel_G, name="test")
     assert "add\l\naddition(a, b=2)\lreturn c\l" in dot_graph.source
 
 
-def test_draw_model_settings(mmodel_graph):
+def test_draw_model_settings(mmodel_G):
     """Test change model settings"""
 
     dot_graph = draw_graph(
-        mmodel_graph,
+        mmodel_G,
         name="test",
         node_attr={"shape": "plaintext"},
         edge_attr={"label": "test"},
     )
 
     assert dot_graph.edge_attr == {"label": "test"}
-    assert dot_graph.name == mmodel_graph.name
-    assert dot_graph.filename == f"{mmodel_graph.name}.gv"
+    assert dot_graph.name == mmodel_G.name
+    assert dot_graph.filename == f"{mmodel_G.name}.gv"
     assert "label=test" in dot_graph.source
 
 
 @pytest.fixture
-def model_instance(mmodel_graph):
+def model_instance(mmodel_G):
     """Create Model object for the test"""
-    return Model(mmodel_graph)
+    return Model(mmodel_G)
 
 
 def test_draw_graph_subgraph(model_instance):
@@ -70,11 +70,11 @@ def test_draw_graph_subgraph(model_instance):
 
     model_instance.loop_parameter(params=["f"])
     dot_graph = draw_graph(
-        model_instance.graph,
+        model_instance.G,
         show_detail=False,
         filename="test.gv",
         format="svg",
     )
 
     assert dot_graph.name == "test"
-    assert "subgraph cluster_basic_loop_f" in dot_graph.source
+    assert "subgraph cluster_loop_f" in dot_graph.source

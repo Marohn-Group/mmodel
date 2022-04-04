@@ -25,7 +25,7 @@ import re
 class TestTopologicalModel:
     """Test class TopologicalModel"""
 
-    def test_TopologicalModel(self, monkeypatch, mmodel_graph, mmodel_signature):
+    def test_TopologicalModel(self, monkeypatch, mmodel_G, mmodel_signature):
         """Test TopologicalModel
 
         TopologicalModel contains abstract method, therefore it cannot instantiate
@@ -36,65 +36,65 @@ class TestTopologicalModel:
         # instantiate
         monkeypatch.setattr(TopologicalModel, "__abstractmethods__", set())
 
-        model = TopologicalModel(mmodel_graph)
+        model = TopologicalModel(mmodel_G)
 
         assert model.__name__ == "TopologicalModel_test"
         assert signature(model) == mmodel_signature
 
         # make sure the graph is a copy
-        assert model.graph != mmodel_graph
+        assert model.G != mmodel_G
 
-        graphs_equal(model.graph, mmodel_graph)
+        graphs_equal(model.G, mmodel_G)
 
-    def test_create_loop(self, monkeypatch, mmodel_graph):
+    def test_create_loop(self, monkeypatch, mmodel_G):
         """Test create loops for graph"""
 
         monkeypatch.setattr(TopologicalModel, "__abstractmethods__", set())
 
-        model = TopologicalModel(mmodel_graph)
+        model = TopologicalModel(mmodel_G)
         model.loop_parameter(params=["f"])
 
-        assert "basic_loop_f" in model.graph
-        assert model.graph.adj == {
+        assert "loop_f" in model.G
+        assert model.G.adj == {
             "add": {
                 "subtract": {"interm_params": ["c"]},
                 "log": {"interm_params": ["c"]},
-                "basic_loop_f": {"interm_params": ["c"]},
+                "loop_f": {"interm_params": ["c"]},
             },
-            "subtract": {"basic_loop_f": {"interm_params": ["e"]}},
+            "subtract": {"loop_f": {"interm_params": ["e"]}},
             "log": {},
-            "basic_loop_f": {},
+            "loop_f": {},
         }
 
         # test the node (unwrapped) in an instance of TopologicalModel
         assert isinstance(
-            model.graph.nodes["basic_loop_f"]["node_obj"].__wrapped__,
+            model.G.nodes["loop_f"]["node_obj"].__wrapped__,
             TopologicalModel,
         )
 
         # add second loop
         model.loop_parameter(params=["d"])
-        assert "basic_loop_d" in model.graph
-        assert model.graph.adj == {
+        assert "loop_d" in model.G
+        assert model.G.adj == {
             "add": {
-                "basic_loop_d": {"interm_params": ["c"]},
+                "loop_d": {"interm_params": ["c"]},
                 "log": {"interm_params": ["c"]},
             },
             "log": {},
-            "basic_loop_d": {},
+            "loop_d": {},
         }
 
-    def test_double_loop_name(self, monkeypatch, mmodel_graph):
+    def test_double_loop_name(self, monkeypatch, mmodel_G):
         """Test when two loops are created, the name does not overlap"""
 
         monkeypatch.setattr(TopologicalModel, "__abstractmethods__", set())
 
-        model = TopologicalModel(mmodel_graph)
+        model = TopologicalModel(mmodel_G)
         model.loop_parameter(params=["f"])
         model.loop_parameter(params=["f"])
 
-        assert "basic_loop_f" not in model.graph
-        assert "basic_loop_f_f" in model.graph
+        assert "loop_f" not in model.G
+        assert "loop_f_f" in model.G
 
 
 
@@ -130,9 +130,9 @@ class TestModel:
     """Test class Model"""
 
     @pytest.fixture
-    def model_instance(self, mmodel_graph):
+    def model_instance(self, mmodel_G):
         """Create Model object for the test"""
-        return Model(mmodel_graph)
+        return Model(mmodel_G)
 
     def test_initiate(self, model_instance):
         """Test _initiate method
@@ -226,9 +226,9 @@ class TestPlainModel:
     """Test class Model"""
 
     @pytest.fixture
-    def plainmodel_instance(self, mmodel_graph):
+    def plainmodel_instance(self, mmodel_G):
         """Create Model object for the test"""
-        return PlainModel(mmodel_graph)
+        return PlainModel(mmodel_G)
 
     def test_initiate(self, plainmodel_instance):
         """Test _initiate method
@@ -326,13 +326,13 @@ class TestH5Model:
         return tmp_path / "h5model_test.h5"
 
     @pytest.fixture
-    def h5model_instance(self, mmodel_graph, h5_filename):
+    def h5model_instance(self, mmodel_G, h5_filename):
         """Create Model object for the test
 
         The scope of the tmp_path is "function", the file
         object and model instance are destroyed after each test function
         """
-        return H5Model(mmodel_graph, h5_filename)
+        return H5Model(mmodel_G, h5_filename)
 
     @pytest.mark.parametrize("scalar, value", [("float", 1.14), ("str", b"test")])
     def test_read_scalar(self, scalar, value, h5model_instance, h5_filename):

@@ -1,7 +1,7 @@
 import graphviz
 
 
-def draw_graph(graph, name=None, show_detail=True, filename=None, **kwargs):
+def draw_graph(G, name=None, show_detail=True, filename=None, **kwargs):
     """Show model graph
 
     The process create a graphviz graph and write networkx.graph
@@ -19,8 +19,8 @@ def draw_graph(graph, name=None, show_detail=True, filename=None, **kwargs):
 
     """
 
-    name = name or graph.name
-    doc = graph.graph.get('doc', '')
+    name = name or G.name
+    doc = G.graph.get('doc', '')
     filename = filename or f"{name}.gv"
     default_settings = {
         "graph_attr": {
@@ -38,7 +38,7 @@ def draw_graph(graph, name=None, show_detail=True, filename=None, **kwargs):
 
     dot_subgraphs = []
 
-    for node, ndict in graph.nodes(data=True):
+    for node, ndict in G.nodes(data=True):
         if ndict.get("has_subgraph", False):
             dot_subgraphs.append([node, ndict])
 
@@ -49,7 +49,7 @@ def draw_graph(graph, name=None, show_detail=True, filename=None, **kwargs):
         else:
             dot_graph.node(node)
 
-    for u, v, edict in graph.edges(data=True):
+    for u, v, edict in G.edges(data=True):
         if show_detail:
             dot_graph.edge(u, v, xlabel=" ".join(edict["interm_params"]))
         else:
@@ -58,7 +58,7 @@ def draw_graph(graph, name=None, show_detail=True, filename=None, **kwargs):
     # draw subgraph if there is any
     for node, ndict in dot_subgraphs:
         node_obj = ndict["node_obj"]
-        subgraph = node_obj.graph
+        subgraph = node_obj.G
         title = node
         dot_sub = draw_graph(
             subgraph, name=f"cluster_{title}", show_detail=show_detail, **kwargs
