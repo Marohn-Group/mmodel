@@ -1,7 +1,7 @@
 import graphviz
 
 
-def draw_graph(graph, title, show_detail=True, name=None, filename=None, **kwargs):
+def draw_graph(graph, name=None, show_detail=True, filename=None, **kwargs):
     """Show model graph
 
     The process create a graphviz graph and write networkx.graph
@@ -20,6 +20,7 @@ def draw_graph(graph, title, show_detail=True, name=None, filename=None, **kwarg
     """
 
     name = name or graph.name
+    doc = graph.graph.get('doc', '')
     filename = filename or f"{name}.gv"
     default_settings = {
         "graph_attr": {
@@ -31,7 +32,7 @@ def draw_graph(graph, title, show_detail=True, name=None, filename=None, **kwarg
     }
 
     settings = {**default_settings, **kwargs}
-    settings["graph_attr"]["label"] = title
+    settings["graph_attr"]["label"] = f"{name}\n{doc}"
 
     dot_graph = graphviz.Digraph(name=name, filename=filename, **settings)
 
@@ -58,9 +59,9 @@ def draw_graph(graph, title, show_detail=True, name=None, filename=None, **kwarg
     for node, ndict in dot_subgraphs:
         node_obj = ndict["node_obj"]
         subgraph = node_obj.graph
-        title = node_obj.__name__
+        title = node
         dot_sub = draw_graph(
-            subgraph, title, show_detail, name=f"cluster_{title}", **kwargs
+            subgraph, name=f"cluster_{title}", show_detail=show_detail, **kwargs
         )
         dot_graph.subgraph(dot_sub)
 

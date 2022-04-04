@@ -88,7 +88,7 @@ def standard_graph():
         ("add", "log", {"interm_params": ["c"]}),
     ]
 
-    G = nx.DiGraph(name="test")
+    G = nx.DiGraph(name="test", doc="test object")
 
     G.add_nodes_from(node_list)
     G.add_edges_from(edge_list)
@@ -115,7 +115,7 @@ def mmodel_graph():
     def logarithm(c, b):
         return math.log(c, b)
 
-    G = MGraph("test")
+    G = MGraph("test", "test object")
 
     # class MockGraph(ModelGraph):
     node_list = [

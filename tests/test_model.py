@@ -36,9 +36,9 @@ class TestTopologicalModel:
         # instantiate
         monkeypatch.setattr(TopologicalModel, "__abstractmethods__", set())
 
-        model = TopologicalModel(mmodel_graph, "test")
+        model = TopologicalModel(mmodel_graph)
 
-        assert model.__name__ == "test"
+        assert model.__name__ == "TopologicalModel_test"
         assert signature(model) == mmodel_signature
 
         # make sure the graph is a copy
@@ -51,37 +51,51 @@ class TestTopologicalModel:
 
         monkeypatch.setattr(TopologicalModel, "__abstractmethods__", set())
 
-        model = TopologicalModel(mmodel_graph, "test")
+        model = TopologicalModel(mmodel_graph)
         model.loop_parameter(params=["f"])
 
-        assert "f_loop_submodel" in model.graph
+        assert "basic_loop_f" in model.graph
         assert model.graph.adj == {
             "add": {
                 "subtract": {"interm_params": ["c"]},
                 "log": {"interm_params": ["c"]},
-                "f_loop_submodel": {"interm_params": ["c"]},
+                "basic_loop_f": {"interm_params": ["c"]},
             },
-            "subtract": {"f_loop_submodel": {"interm_params": ["e"]}},
+            "subtract": {"basic_loop_f": {"interm_params": ["e"]}},
             "log": {},
-            "f_loop_submodel": {},
+            "basic_loop_f": {},
         }
 
         # test the node (unwrapped) in an instance of TopologicalModel
         assert isinstance(
-            model.graph.nodes["f_loop_submodel"]["node_obj"].__wrapped__, TopologicalModel
+            model.graph.nodes["basic_loop_f"]["node_obj"].__wrapped__,
+            TopologicalModel,
         )
 
         # add second loop
-        model.loop_parameter(params=["d"], name="test_loop")
-        assert "test_loop" in model.graph
+        model.loop_parameter(params=["d"])
+        assert "basic_loop_d" in model.graph
         assert model.graph.adj == {
             "add": {
-                "test_loop": {"interm_params": ["c"]},
+                "basic_loop_d": {"interm_params": ["c"]},
                 "log": {"interm_params": ["c"]},
             },
             "log": {},
-            "test_loop": {},
+            "basic_loop_d": {},
         }
+
+    def test_double_loop_name(self, monkeypatch, mmodel_graph):
+        """Test when two loops are created, the name does not overlap"""
+
+        monkeypatch.setattr(TopologicalModel, "__abstractmethods__", set())
+
+        model = TopologicalModel(mmodel_graph)
+        model.loop_parameter(params=["f"])
+        model.loop_parameter(params=["f"])
+
+        assert "basic_loop_f" not in model.graph
+        assert "basic_loop_f_f" in model.graph
+
 
 
 @pytest.fixture(scope="module")
@@ -118,7 +132,7 @@ class TestModel:
     @pytest.fixture
     def model_instance(self, mmodel_graph):
         """Create Model object for the test"""
-        return Model(mmodel_graph, "model_test")
+        return Model(mmodel_graph)
 
     def test_initiate(self, model_instance):
         """Test _initiate method
@@ -214,7 +228,7 @@ class TestPlainModel:
     @pytest.fixture
     def plainmodel_instance(self, mmodel_graph):
         """Create Model object for the test"""
-        return PlainModel(mmodel_graph, "plainmodel_test")
+        return PlainModel(mmodel_graph)
 
     def test_initiate(self, plainmodel_instance):
         """Test _initiate method
@@ -318,7 +332,7 @@ class TestH5Model:
         The scope of the tmp_path is "function", the file
         object and model instance are destroyed after each test function
         """
-        return H5Model(mmodel_graph, "h5model_test", h5_filename)
+        return H5Model(mmodel_graph, h5_filename)
 
     @pytest.mark.parametrize("scalar, value", [("float", 1.14), ("str", b"test")])
     def test_read_scalar(self, scalar, value, h5model_instance, h5_filename):
@@ -374,7 +388,7 @@ class TestH5Model:
         """
 
         f, exe_group = h5model_instance._initiate(1, 2, 5)
-        exe_str = f"{id(h5model_instance)}_h5model_test_1"
+        exe_str = f"{id(h5model_instance)}_H5Model_test_1"
         assert exe_str in f
         f.close()
 
@@ -480,7 +494,7 @@ class TestH5Model:
             assert bool(
                 re.match(
                     r".+ occurred for node \('subtract', .+\)",
-                    f[f"{id(h5model_instance)}_h5model_test_1"].attrs["note"],
+                    f[f"{id(h5model_instance)}_H5Model_test_1"].attrs["note"],
                 )
             )
 

@@ -18,9 +18,9 @@ class TopologicalModel(metaclass=ABCMeta):
     each execution or when exception occurs.
     """
 
-    def __init__(self, graph, name):
+    def __init__(self, graph):
 
-        self.__name__ = name
+        self.__name__ = f"{self.__class__.__name__}_{graph.name}"
         self.graph = graph.copy()  # graph is a mutable object
         self.__signature__ = graph_signature(graph)
         self.return_params = graph_returns(graph)
@@ -55,9 +55,7 @@ class TopologicalModel(metaclass=ABCMeta):
     def _finish(self, data_instance, return_params):
         """Finish execution"""
 
-    def loop_parameter(
-        self, params, loop_method=basic_loop, name=None, *args, **kwargs
-    ):
+    def loop_parameter(self, params, method=basic_loop, *args, **kwargs):
         """Construct loop
 
         TODO
@@ -65,13 +63,15 @@ class TopologicalModel(metaclass=ABCMeta):
             what happens when if loop already exist
         """
 
-        name = name or ", ".join(params) + "_loop_submodel"
+        name = f"{method.__name__}_{'_'.join(params)}"
+        while name in self.graph:
+            name += "_" + "_".join(params)
 
         subgraph = subgraph_from_params(self.graph, params)
         # if subgraph.
-        loop_node = self._create_looped_subgraph(subgraph, params, loop_method, name)
+        loop_node = self._create_looped_subgraph(subgraph, params, method)
 
-        name, node_obj, return_params = loop_node
+        node_obj, return_params = loop_node
 
         self.graph = redirect_edges(
             self.graph, subgraph, name, node_obj, return_params, params
@@ -82,12 +82,12 @@ class TopologicalModel(metaclass=ABCMeta):
         self.return_params = graph_returns(self.graph)
         self.topological_order = graph_topological_sort(self.graph)
 
-    def _create_looped_subgraph(self, subgraph, params, loop_method, name):
+    def _create_looped_subgraph(self, subgraph, params, method):
         """Turn subgraph into a loopped variable returns the node attribute"""
 
-        node_obj = loop_method(type(self)(subgraph, name), params)
+        node_obj = method(type(self)(subgraph), params)
 
-        return name, node_obj, node_obj.return_params
+        return node_obj, node_obj.return_params
 
 
 class Model(TopologicalModel):
@@ -98,10 +98,10 @@ class Model(TopologicalModel):
     deleted if the counter reaches 0.
     """
 
-    def __init__(self, graph, name):
+    def __init__(self, graph):
         """Add counter to the object"""
         self.counter = param_counter(graph)
-        super().__init__(graph, name)
+        super().__init__(graph)
 
     def _initiate(self, *args, **kwargs):
         """Initiate the value dictionary"""
@@ -213,15 +213,16 @@ class H5Model(TopologicalModel):
     and execution number
     """
 
-    def __init__(self, graph, name, h5_filename):
+    def __init__(self, graph, h5_filename):
 
         # check if file exist
         # write id attribute
         self.h5_filename = h5_filename
         self.exe_count = 0
-        self.entry_prefix = f"{id(self)}_{name}_"
 
-        super().__init__(graph, name)
+        super().__init__(graph)
+
+        self.entry_prefix = f"{id(self)}_{self.__name__}_"
 
     def _initiate(self, *args, **kwargs):
         """Initate dictionary value"""
@@ -314,11 +315,9 @@ class H5Model(TopologicalModel):
         # except KeyError:
         #     return group.attrs[key]
 
-    def _create_looped_subgraph(self, subgraph, loop_params, loop_method, name):
+    def _create_looped_subgraph(self, subgraph, params, method):
         """Turn subgraph into a loopped variable returns the node attribute"""
 
-        node_obj = loop_method(
-            type(self)(subgraph, name, self.h5_filename), loop_params
-        )
+        node_obj = method(type(self)(subgraph, self.h5_filename), params)
 
-        return name, node_obj, node_obj.return_params
+        return node_obj, node_obj.return_params

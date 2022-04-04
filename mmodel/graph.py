@@ -20,11 +20,9 @@ class MGraph(nx.DiGraph):
         the graph.
     """
 
-    def __init__(self, name=None):
+    def __init__(self, name="", doc="", **attr):
 
-        name = name or self.__class__.__name__
-
-        super().__init__(name=name)
+        super().__init__(name=name, doc=doc, **attr)
 
     def add_node(self, node_for_adding, node_obj, return_params, **attr):
         """re-define the add_node method
