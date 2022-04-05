@@ -9,7 +9,11 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 --------------------
 Added
 ^^^^^
-- ``doc`` attribute for ``MGraph``
+- ``input_params``, ``return_params`` and ``doc`` attribute for ``MGraph``
+- ``help`` property to model classed and ``MGraph``
+- ``draw_graph()`` method to ``MGraph`` and model classes
+- ``doc_short`` and ``doc_long`` to ``MGraph`` and model classes
+- ``doc`` module with modified help function ``helper``
 
 Changed
 ^^^^^^^
@@ -18,6 +22,8 @@ Changed
 - remove ``title`` input for ``draw_graph``
 - change model attribute ``graph`` to ``G``, to avoid confusion of the graph's
   inherent attribute ``graph``
+- separate ``draw_plain_graph()`` and ``draw_graph``, the former shows
+  a simplified version of graph and latter shows all graph details
 
 
 [0.1.0] - 2022-04-02

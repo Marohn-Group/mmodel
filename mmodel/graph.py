@@ -1,7 +1,8 @@
 import inspect
-from subprocess import call
 import networkx as nx
-from mmodel.utility import graph_signature
+from mmodel.utility import graph_returns, graph_signature
+from mmodel.draw import draw_graph, draw_plain_graph
+from mmodel.doc import helper
 
 
 class MGraph(nx.DiGraph):
@@ -52,7 +53,7 @@ class MGraph(nx.DiGraph):
         try:
             nodes = []
             for n, ndict in nodes_for_adding:
-                
+
                 if ("node_obj" not in ndict) or ("return_params" not in ndict):
 
                     raise Exception(
@@ -98,3 +99,51 @@ class MGraph(nx.DiGraph):
             raise Exception("Edge attribute interm_params not defined")
 
         super().add_edges_from(edges, **attr)
+
+    @property
+    def input_params(self):
+        """input_parameter property"""
+        return graph_signature(self)
+
+    @property
+    def return_params(self):
+        """return_parameter property"""
+        return graph_returns(self)
+
+    @property
+    def doc(self):
+        """doc property"""
+        return self.graph["doc"]
+
+    def draw_graph(self, show_detail=False):
+        """Draw graph"""
+        if show_detail:
+            label = self.doc_long.replace("\n", "\l")
+            return draw_graph(self, self.name, label)
+        else:
+            label = self.doc_short.replace("\n", "\l")
+            return draw_plain_graph(self, self.name, label)
+
+    @property
+    def doc_short(self):
+        """Graph short documentation"""
+        short_docstring = self.doc.partition('\n')[0]
+        return f"{self.name}: {short_docstring}\n"
+
+    @property
+    def doc_long(self):
+        """Graph long documentation"""
+        short_docstring, _, long_docstring = self.doc.partition('\n')
+        short_docstring = short_docstring.strip()
+        long_docstring = long_docstring.strip()
+        return (
+            f"{self.name}: {short_docstring}\n"
+            f"{long_docstring}\ninput parameters:"
+            f" {self.input_params}\nreturn parameters: "
+            f"{', '.join(self.return_params)}\n"
+        )
+
+    @property
+    def help(self):
+        """help function"""
+        helper(self)

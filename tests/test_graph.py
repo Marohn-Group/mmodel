@@ -37,6 +37,30 @@ def test_default_mockgraph(mmodel_G, standard_G):
     # assert graph equal
     graphs_equal(mmodel_G, standard_G)
 
+def test_graph_name(mmodel_G):
+    """Test naming and docs of the graph"""
+    mmodel_G.name == "test"
+
+def test_graph_doc_property(mmodel_G):
+    """Test the graph doc property 
+
+    The doc result should update when the value occurs
+    """
+    
+    assert mmodel_G.doc == "test object\n\nlong docstring"
+    
+    mmodel_G.graph.update({"doc": "new doc"})
+    assert mmodel_G.doc == "new doc"
+
+def test_graph_input_params_property(mmodel_G, mmodel_signature):
+    """Test the graph input parameter property"""
+
+    assert mmodel_G.input_params == mmodel_signature
+
+def test_graph_return_params_property(mmodel_G):
+    """Test the graph input parameter property"""
+
+    assert mmodel_G.return_params == ["k", "m"]
 
 def test_add_nodes(mmodel_G, standard_G):
     """Test add_node and add_nodes_from methods

@@ -21,7 +21,7 @@ To crate and execute a model:
     def func_b(c):
         return c*c
 
-    G = MGraph()
+    G = MGraph(name="example", doc="a example MGraph object")
     G.add_node("func_a", node_obj=func_a, return_params=["c"])
     G.add_node("func_b", node_obj=func_b, return_params=["d"])
     G.add_edge("func_a", "func_b", interm_params=["c"])

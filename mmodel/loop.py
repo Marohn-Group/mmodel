@@ -1,6 +1,5 @@
 import networkx as nx
 from functools import wraps
-import itertools
 from inspect import signature, Parameter, Signature
 
 
@@ -57,7 +56,7 @@ def redirect_edges(
         return_params=return_params,
         loop_params=loop_params,
         has_subgraph=True,
-        has_loop=True
+        has_loop=True,
     )
     graph.add_edges_from(new_edges)
 
@@ -81,7 +80,7 @@ def basic_loop(func, params):
     """
 
     if len(params) != 1:
-        raise Exception('basic_loop accept one parameter at a time')
+        raise Exception("basic_loop accept one parameter at a time")
     param = params[0]
     # reset the default to a list
     sig_param = dict(signature(func).parameters)

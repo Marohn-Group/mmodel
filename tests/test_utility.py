@@ -112,3 +112,4 @@ def test_param_counter(mmodel_G):
     counter = util.param_counter(mmodel_G)
 
     assert counter == {"a": 1, "b": 2, "c": 3, "d": 1, "e": 1, "f": 1, "g": 1}
+

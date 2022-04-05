@@ -1,5 +1,5 @@
 :author: Peter Sun
-:date: 04/2/2022
+:date: 04/5/2022
 
 
 MModel
@@ -54,6 +54,7 @@ To create a nonlinear model:
     >>> model(1, 2, 3)
     >>> 6
 
+
 To loop a specific parameter
 
 .. code-block:: python
@@ -63,15 +64,28 @@ To loop a specific parameter
     >>> model(1, 2, [3, 4])
     >>> [6, 7]
 
+To draw the graph or the modified model with or without detail
+
+.. code-block:: python
+
+    G.draw_graph(show_detail=False)
+    model.draw_graph(show_detail=True)
+
+
 Installation
 ------------
+
+
+Graphviz installation
+^^^^^^^^^^^^^^^^^^^^^^
 
 To view the graph, Graphviz needs to be installed:
 `Graphviz Installation <https://graphviz.org/download/>`_
 For windows installation, please choose "add Graphviz to the
 system PATH for all users/current user" during the setup.
 
-Currenly, ``mmodel`` is available for development only:
+Development installation
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 To install run::
 

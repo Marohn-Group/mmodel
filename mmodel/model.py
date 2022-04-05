@@ -1,3 +1,6 @@
+from abc import ABCMeta, abstractmethod
+import h5py
+
 from mmodel.utility import (
     graph_signature,
     graph_returns,
@@ -5,33 +8,8 @@ from mmodel.utility import (
     param_counter,
 )
 from mmodel.loop import subgraph_from_params, redirect_edges, basic_loop
-from abc import ABCMeta, abstractmethod
-import h5py
-from pydoc import Helper
-import inspect
-
-
-# class ModelHelper(Helper):
-
-#     """Inherite helper function to modify"""
-
-#     def help(self, request):
-#         # check request ...
-
-#         G = request.graph
-#         clsname = G.__class__.__name__
-#         name = G.name
-#         doc = G.graph["doc"]
-#         signature = request.__signature__
-#         rt = request.return_params
-
-#         self.output.write(
-#             f"{name} model\n{doc}\nmodel class: {clsname}\nsignature: {signature}\nreturn: {rt}\n"
-#         )
-#         super().help(request)
-
-
-# helper = ModelHelper()
+from mmodel.draw import draw_graph, draw_plain_graph
+from mmodel.doc import helper
 
 
 class TopologicalModel(metaclass=ABCMeta):
@@ -45,10 +23,10 @@ class TopologicalModel(metaclass=ABCMeta):
 
     def __init__(self, G):
 
-        self.__name__ = f"{self.__class__.__name__}_{G.name}"
+        self.__name__ = f"{G.name} model"
         self.G = G.copy()  # graph is a mutable object
-        self.__signature__ = graph_signature(G)
-        self.return_params = graph_returns(G)
+        self.__signature__ = G.input_params
+        self.return_params = G.return_params
         self.topological_order = graph_topological_sort(G)
 
     def __call__(self, *args, **kwargs):
@@ -84,15 +62,14 @@ class TopologicalModel(metaclass=ABCMeta):
         """Construct loop
 
         TODO
-            issue with shifted node
-            what happens when if loop already exist
+            restructure where the subgraph copy happens
         """
-
-        node_name = f"loop_{'_'.join(params)}"
+        param_string = ", ".join(params)
+        node_name = f"loop {param_string}"
         while node_name in self.G:
-            node_name += "_" + "_".join(params)
+            node_name = "outer " + node_name
         # description of the subgraph
-        node_doc = f"{method.__name__} {', '.join(params)}"
+        node_doc = f"{method.__name__} method"
 
         subgraph = subgraph_from_params(self.G, params)
 
@@ -104,7 +81,9 @@ class TopologicalModel(metaclass=ABCMeta):
         self.G = redirect_edges(
             self.G, subgraph, node_name, node_obj, return_params, params
         )
-        self.G.nodes[node_name]["node_obj"].G.graph.update({"doc": node_doc})
+        self.G.nodes[node_name]["node_obj"].G.graph.update(
+            {"name": node_name, "doc": node_doc}
+        )
         # reset values
         self.__signature__ = graph_signature(self.G)
         self.return_params = graph_returns(self.G)
@@ -117,10 +96,46 @@ class TopologicalModel(metaclass=ABCMeta):
 
         return node_obj, node_obj.return_params
 
-    # @property
-    # def help(self):
-    #     """help function"""
-    #     helper(self)
+    def draw_graph(self, show_detail=False):
+        """Draw graph"""
+        if show_detail:
+            label = self.doc_long.replace("\n", "\l")
+            return draw_graph(self.G, self.__name__, label)
+        else:
+            label = self.doc_short.replace("\n", "\l")
+            return draw_plain_graph(self.G, self.__name__, label)
+
+    @property
+    def doc_short(self):
+        """model short documentation"""
+
+        short_docstring = self.G.doc.partition('\n')[0]
+        doc = (
+            f"{self.__name__}: {short_docstring}\n"
+            f"class: {self.__class__.__name__}\n"
+        )
+        return doc
+
+    @property
+    def doc_long(self):
+        """model long documentation"""
+        short_docstring, _, long_docstring = self.G.doc.partition('\n')
+        short_docstring = short_docstring.strip()
+        long_docstring = long_docstring.strip()
+        doc = (
+            f"{self.__name__}: {short_docstring}\n"
+            f"{long_docstring}\n"
+            f"class: {self.__class__.__name__}\n"
+            f"signature: {self.__signature__}\n"
+            f"returns: {', '.join(self.return_params)}\n"
+        )
+
+        return doc
+
+    @property
+    def help(self):
+        """help function"""
+        helper(self)
 
 
 class Model(TopologicalModel):
@@ -255,7 +270,7 @@ class H5Model(TopologicalModel):
 
         super().__init__(G)
 
-        self.entry_prefix = f"{id(self)}_{self.__name__}_"
+        self.entry_prefix = f"{id(self)} {self.__name__} "
 
     def _initiate(self, *args, **kwargs):
         """Initate dictionary value"""

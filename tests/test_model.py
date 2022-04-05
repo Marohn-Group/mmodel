@@ -11,8 +11,6 @@ The test stredgy works as the following:
 
 from mmodel.model import TopologicalModel, Model, PlainModel, H5Model
 from inspect import signature
-
-# from tests.conftest import node_match, edge_match
 import pytest
 from collections import OrderedDict
 import h5py
@@ -38,9 +36,8 @@ class TestTopologicalModel:
 
         model = TopologicalModel(mmodel_G)
 
-        assert model.__name__ == "TopologicalModel_test"
         assert signature(model) == mmodel_signature
-
+        assert model.__name__ == "test model"
         # make sure the graph is a copy
         assert model.G != mmodel_G
 
@@ -54,34 +51,34 @@ class TestTopologicalModel:
         model = TopologicalModel(mmodel_G)
         model.loop_parameter(params=["f"])
 
-        assert "loop_f" in model.G
+        assert "loop f" in model.G
         assert model.G.adj == {
             "add": {
                 "subtract": {"interm_params": ["c"]},
                 "log": {"interm_params": ["c"]},
-                "loop_f": {"interm_params": ["c"]},
+                "loop f": {"interm_params": ["c"]},
             },
-            "subtract": {"loop_f": {"interm_params": ["e"]}},
+            "subtract": {"loop f": {"interm_params": ["e"]}},
             "log": {},
-            "loop_f": {},
+            "loop f": {},
         }
 
         # test the node (unwrapped) in an instance of TopologicalModel
         assert isinstance(
-            model.G.nodes["loop_f"]["node_obj"].__wrapped__,
+            model.G.nodes["loop f"]["node_obj"].__wrapped__,
             TopologicalModel,
         )
 
         # add second loop
         model.loop_parameter(params=["d"])
-        assert "loop_d" in model.G
+        assert "loop d" in model.G
         assert model.G.adj == {
             "add": {
-                "loop_d": {"interm_params": ["c"]},
+                "loop d": {"interm_params": ["c"]},
                 "log": {"interm_params": ["c"]},
             },
             "log": {},
-            "loop_d": {},
+            "loop d": {},
         }
 
     def test_double_loop_name(self, monkeypatch, mmodel_G):
@@ -93,8 +90,8 @@ class TestTopologicalModel:
         model.loop_parameter(params=["f"])
         model.loop_parameter(params=["f"])
 
-        assert "loop_f" not in model.G
-        assert "loop_f_f" in model.G
+        assert "loop f" not in model.G
+        assert "outer loop f" in model.G
 
 
 
@@ -250,7 +247,6 @@ class TestPlainModel:
         """
 
         value_dict_a = {"arg1": np.arange(5), "arg2": 4.5, "arg3": 2.2}
-
         value_dict_b = {"arg1": 10, "arg2": 14, "arg3": 2}
 
         plainmodel_instance._run_node(value_dict_a, "node_a", node_a_attr)
@@ -388,7 +384,7 @@ class TestH5Model:
         """
 
         f, exe_group = h5model_instance._initiate(1, 2, 5)
-        exe_str = f"{id(h5model_instance)}_H5Model_test_1"
+        exe_str = f"{id(h5model_instance)} test model 1"
         assert exe_str in f
         f.close()
 
@@ -494,7 +490,7 @@ class TestH5Model:
             assert bool(
                 re.match(
                     r".+ occurred for node \('subtract', .+\)",
-                    f[f"{id(h5model_instance)}_H5Model_test_1"].attrs["note"],
+                    f[f"{id(h5model_instance)} test model 1"].attrs["note"],
                 )
             )
 
