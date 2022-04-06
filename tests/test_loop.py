@@ -50,7 +50,7 @@ def test_redirect_edges(mmodel_G):
     assert "test" in graph
     assert graph.nodes["test"] == {
         "node_obj": mock_obj,
-        "return_params": ["z"],
+        "returns": ["z"],
         "signature": inspect.signature(mock_obj),
         "loop_params": ["f"],
         "has_subgraph": True,

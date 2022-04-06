@@ -58,12 +58,12 @@ def test_graph_draw_graph(mmodel_G):
     """
     graph = mmodel_G.draw_graph()
     assert graph.name == "test"
-    assert 'label="test: test object\l"' in graph.source
+    assert 'label="name: test\ldoc: test object\l"' in graph.source
 
     detail_graph = mmodel_G.draw_graph(show_detail=True)
-    assert "input parameters: (a, d, f, b=2)\l" in detail_graph.source
+    assert "parameters: (a, d, f, b=2)\l" in detail_graph.source
     assert detail_graph.name == "test"
-    assert "return parameters: k, m" in detail_graph.source
+    assert "returns: k, m" in detail_graph.source
 
 
 def test_model_draw_graph(mmodel_G):
@@ -74,12 +74,15 @@ def test_model_draw_graph(mmodel_G):
     model = Model(mmodel_G)
     graph = model.draw_graph()
     assert graph.name == "test model"
-    assert 'label="test model: test object\lclass: Model\l"' in graph.source
+    assert (
+        'label="name: test model\ldoc: test object\l'
+        'model type: Model\l"' in graph.source
+    )
 
     detail_graph = model.draw_graph(show_detail=True)
     assert detail_graph.name == "test model"
-    assert "class: Model\l" in detail_graph.source
-    assert "signature: (a, d, f, b=2)\l" in detail_graph.source
+    assert "model type: <class 'mmodel.model.Model'>\l" in detail_graph.source
+    assert "parameters: (a, d, f, b=2)\l" in detail_graph.source
     assert "returns: k, m\l" in detail_graph.source
 
 
@@ -94,10 +97,10 @@ def test_model_loop_draw_graph(mmodel_G):
     detail_graph = model.draw_graph(show_detail=True)
 
     assert detail_graph.name == "test model"
-    assert "class: Model\l" in detail_graph.source
-    assert "signature: (a, d, f, b=2)\l" in detail_graph.source
+    assert "model type: <class 'mmodel.model.Model'>\l" in detail_graph.source
+    assert "parameters: (a, d, f, b=2)\l" in detail_graph.source
     assert "returns: m, k\l" in detail_graph.source
 
     # subgraph content
     assert 'subgraph "cluster loop f"' in detail_graph.source
-    assert 'label="loop f: basic_loop method\l"' in detail_graph.source
+    assert 'label="name: loop f\ldoc: basic_loop method\l"' in detail_graph.source

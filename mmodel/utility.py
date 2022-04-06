@@ -28,8 +28,8 @@ def graph_signature(graph):
         check returns and also the edge parameter
 
     :param DiGraph graph: networkx.Digraph() object,
-        with 'func_signature', 'return_params' defined for nodes
-        and "interm_params" for edges.
+        with 'func_signature', 'returns' defined for nodes
+        and "parameters" for edges.
         The args are a dictionary of inspected signature
     """
 
@@ -41,7 +41,7 @@ def graph_signature(graph):
                     continue
             parameters.update({pname: param})
 
-    for rts in nx.get_node_attributes(graph, "return_params").values():
+    for rts in nx.get_node_attributes(graph, "returns").values():
         for rt in rts:
             parameters.pop(rt, None)  # if doesn't exist return None
 
@@ -58,7 +58,7 @@ def graph_returns(graph):
 
     for node in graph.nodes():
         if graph.out_degree(node) == 0:
-            returns.extend(graph.nodes[node]["return_params"])
+            returns.extend(graph.nodes[node]["returns"])
 
     return returns
 

@@ -9,7 +9,7 @@ from mmodel.utility import (
 )
 from mmodel.loop import subgraph_from_params, redirect_edges, basic_loop
 from mmodel.draw import draw_graph, draw_plain_graph
-from mmodel.doc import helper
+from mmodel.doc import parse_description_graph, parse_description_doc
 
 
 class TopologicalModel(metaclass=ABCMeta):
@@ -25,8 +25,8 @@ class TopologicalModel(metaclass=ABCMeta):
 
         self.__name__ = f"{G.name} model"
         self.G = G.copy()  # graph is a mutable object
-        self.__signature__ = G.input_params
-        self.return_params = G.return_params
+        self.__signature__ = graph_signature(G)
+        self.returns = graph_returns(G)
         self.topological_order = graph_topological_sort(G)
 
     def __call__(self, *args, **kwargs):
@@ -40,7 +40,7 @@ class TopologicalModel(metaclass=ABCMeta):
             except Exception as e:
                 self._raise_node_exception(data_instance, node, node_attr, e)
 
-        return self._finish(data_instance, self.return_params)
+        return self._finish(data_instance, self.returns)
 
     @abstractmethod
     def _initiate(self, *args, **kwargs):
@@ -55,19 +55,24 @@ class TopologicalModel(metaclass=ABCMeta):
         """Raise exception when there is a node failure"""
 
     @abstractmethod
-    def _finish(self, data_instance, return_params):
+    def _finish(self, data_instance, returns):
         """Finish execution"""
 
     def loop_parameter(self, params, method=basic_loop, *args, **kwargs):
         """Construct loop
 
+        Loops with the same parameters are not allowed
+
         TODO
             restructure where the subgraph copy happens
+            better loop parameter checking when duplication occurs
         """
         param_string = ", ".join(params)
         node_name = f"loop {param_string}"
-        while node_name in self.G:
-            node_name = "outer " + node_name
+
+        if node_name in self.G:
+            raise Exception(f'{node_name} already exist')
+
         # description of the subgraph
         node_doc = f"{method.__name__} method"
 
@@ -76,17 +81,17 @@ class TopologicalModel(metaclass=ABCMeta):
         # if subgraph.
         loop_node = self._create_looped_subgraph(subgraph, params, method)
 
-        node_obj, return_params = loop_node
+        node_obj, returns = loop_node
 
         self.G = redirect_edges(
-            self.G, subgraph, node_name, node_obj, return_params, params
+            self.G, subgraph, node_name, node_obj, returns, params
         )
         self.G.nodes[node_name]["node_obj"].G.graph.update(
             {"name": node_name, "doc": node_doc}
         )
         # reset values
         self.__signature__ = graph_signature(self.G)
-        self.return_params = graph_returns(self.G)
+        self.returns = graph_returns(self.G)
         self.topological_order = graph_topological_sort(self.G)
 
     def _create_looped_subgraph(self, subgraph, params, method):
@@ -94,48 +99,50 @@ class TopologicalModel(metaclass=ABCMeta):
 
         node_obj = method(type(self)(subgraph), params)
 
-        return node_obj, node_obj.return_params
+        return node_obj, node_obj.returns
 
     def draw_graph(self, show_detail=False):
         """Draw graph"""
-        if show_detail:
-            label = self.doc_long.replace("\n", "\l")
+        if show_detail: 
+            label = parse_description_graph(self._long_description(False))
             return draw_graph(self.G, self.__name__, label)
         else:
-            label = self.doc_short.replace("\n", "\l")
+            label = parse_description_graph(self._short_description())
             return draw_plain_graph(self.G, self.__name__, label)
 
-    @property
-    def doc_short(self):
+    def _short_description(self):
         """model short documentation"""
 
-        short_docstring = self.G.doc.partition('\n')[0]
-        doc = (
-            f"{self.__name__}: {short_docstring}\n"
-            f"class: {self.__class__.__name__}\n"
-        )
-        return doc
+        short_docstring = self.G.doc.partition("\n")[0]
 
-    @property
-    def doc_long(self):
+        des_list = [
+            ("name", self.__name__),
+            ("doc", short_docstring),
+            ("model type", self.__class__.__name__),
+        ]
+
+        return des_list
+
+    def _long_description(self, long_docstring=True):
         """model long documentation"""
-        short_docstring, _, long_docstring = self.G.doc.partition('\n')
-        short_docstring = short_docstring.strip()
-        long_docstring = long_docstring.strip()
-        doc = (
-            f"{self.__name__}: {short_docstring}\n"
-            f"{long_docstring}\n"
-            f"class: {self.__class__.__name__}\n"
-            f"signature: {self.__signature__}\n"
-            f"returns: {', '.join(self.return_params)}\n"
-        )
+        if long_docstring:
+            doc = self.G.doc
+        else:
+            doc = self.G.doc.partition("\n")[0]
+        des_list = [
+            ("name", self.__name__),
+            ("doc", doc),
+            ("model type", str(self.__class__)),
+            ("parameters", str(self.__signature__)),
+            ("returns", ", ".join(self.returns)),
+        ]
 
-        return doc
+        return des_list
 
-    @property
-    def help(self):
-        """help function"""
-        helper(self)
+    def __repr__(self):
+        """Show instance description"""
+        title = f"{self.__class__.__name__} instance\n\n"
+        return title + parse_description_doc(self._long_description()).expandtabs(4)
 
 
 class Model(TopologicalModel):
@@ -173,11 +180,11 @@ class Model(TopologicalModel):
 
         func_output = node_attr["node_obj"](**kwargs)
 
-        return_params = node_attr["return_params"]
-        if len(return_params) == 1:
-            value_dict[return_params[0]] = func_output
+        returns = node_attr["returns"]
+        if len(returns) == 1:
+            value_dict[returns[0]] = func_output
         else:
-            value_dict.update(dict(zip(return_params, func_output)))
+            value_dict.update(dict(zip(returns, func_output)))
 
         for key in parameters:
             count[key] -= 1
@@ -192,13 +199,13 @@ class Model(TopologicalModel):
 
         raise Exception(f"Exception occurred for node {node, node_attr}") from e
 
-    def _finish(self, data_obj, return_params):
+    def _finish(self, data_obj, returns):
         """Finish and return values"""
         value_dict = data_obj[0]
-        if len(return_params) == 1:
-            return_val = value_dict[return_params[0]]
+        if len(returns) == 1:
+            return_val = value_dict[returns[0]]
         else:
-            return_val = tuple(value_dict[rt] for rt in return_params)
+            return_val = tuple(value_dict[rt] for rt in returns)
 
         return return_val
 
@@ -230,11 +237,11 @@ class PlainModel(TopologicalModel):
 
         func_output = node_attr["node_obj"](**kwargs)
 
-        return_params = node_attr["return_params"]
-        if len(return_params) == 1:
-            value_dict[return_params[0]] = func_output
+        returns = node_attr["returns"]
+        if len(returns) == 1:
+            value_dict[returns[0]] = func_output
         else:
-            value_dict.update(dict(zip(return_params, func_output)))
+            value_dict.update(dict(zip(returns, func_output)))
 
     def _raise_node_exception(self, value_dict, node, node_attr, e):
         """Raise exception
@@ -244,12 +251,12 @@ class PlainModel(TopologicalModel):
 
         raise Exception(f"Exception occurred for node {node, node_attr}") from e
 
-    def _finish(self, value_dict, return_params):
+    def _finish(self, value_dict, returns):
         """Finish and return values"""
-        if len(return_params) == 1:
-            return_val = value_dict[return_params[0]]
+        if len(returns) == 1:
+            return_val = value_dict[returns[0]]
         else:
-            return_val = tuple(value_dict[rt] for rt in return_params)
+            return_val = tuple(value_dict[rt] for rt in returns)
 
         return return_val
 
@@ -300,21 +307,21 @@ class H5Model(TopologicalModel):
 
         func_output = node_attr["node_obj"](**kwargs)
 
-        return_params = node_attr["return_params"]
-        if len(return_params) == 1:
-            self.write({return_params[0]: func_output}, exe_group)
+        returns = node_attr["returns"]
+        if len(returns) == 1:
+            self.write({returns[0]: func_output}, exe_group)
         else:
-            self.write(dict(zip(return_params, func_output)), exe_group)
+            self.write(dict(zip(returns, func_output)), exe_group)
 
-    def _finish(self, data_instance, return_params):
+    def _finish(self, data_instance, returns):
         """output parameters based on returns"""
 
         f, exe_group = data_instance
 
-        if len(return_params) == 1:
-            rt = self.read(return_params[0], exe_group)
+        if len(returns) == 1:
+            rt = self.read(returns[0], exe_group)
         else:
-            rt = tuple(self.read(rt, exe_group) for rt in return_params)
+            rt = tuple(self.read(rt, exe_group) for rt in returns)
 
         f.close()
 
@@ -368,4 +375,4 @@ class H5Model(TopologicalModel):
 
         node_obj = method(type(self)(subgraph, self.h5_filename), params)
 
-        return node_obj, node_obj.return_params
+        return node_obj, node_obj.returns

@@ -1,5 +1,5 @@
 :author: Peter Sun
-:date: 04/5/2022
+:date: 04/6/2022
 
 
 MModel
@@ -32,20 +32,20 @@ To create a nonlinear model:
         return sum_xyz * abs_xy
 
     node_list = [
-        ("func a", {"node_obj": func_a, "return_params": ["sum_xy", "dif_xy"]}),
-        ("func b", {"node_obj": func_b, "return_params": ["sum_xyz"]}),
-        ("func c", {"node_obj": func_c, "return_params": ["abs_xy"]}),
-        ("func d", {"node_obj": func_d, "return_params": ["xyz"]}),
+        ("func a", {"node_obj": func_a, "returns": ["sum_xy", "dif_xy"]}),
+        ("func b", {"node_obj": func_b, "returns": ["sum_xyz"]}),
+        ("func c", {"node_obj": func_c, "returns": ["abs_xy"]}),
+        ("func d", {"node_obj": func_d, "returns": ["xyz"]}),
     ]
 
     edge_list = [
-        ("func a", "func b", {"interm_params": ["sum_xy"]}),
-        ("func a", "func c", {"interm_params": ["dif_xy"]}),
-        ("func b", "func d", {"interm_params": ["sum_xyz"]}),
-        ("func c", "func d", {"interm_params": ["abs_xy"]}),
+        ("func a", "func b", {"parameters": ["sum_xy"]}),
+        ("func a", "func c", {"parameters": ["dif_xy"]}),
+        ("func b", "func d", {"parameters": ["sum_xyz"]}),
+        ("func c", "func d", {"parameters": ["abs_xy"]}),
     ]
 
-    G = MGraph()
+    G = MGraph("Example graph")
     G.add_nodes_from(node_list)
     G.add_edges_from(edge_list)
 
@@ -70,6 +70,13 @@ To draw the graph or the modified model with or without detail
 
     G.draw_graph(show_detail=False)
     model.draw_graph(show_detail=True)
+
+To view the descriptions of the graph and model
+
+.. code-block:: python
+
+    print(G)
+    print(model)
 
 
 Installation
@@ -96,3 +103,7 @@ To install run::
 To run the tests, run::
 
     pytest
+
+To make the documentation, run under the "/docs" directory::
+
+    make html 

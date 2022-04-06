@@ -47,20 +47,11 @@ def test_graph_doc_property(mmodel_G):
     The doc result should update when the value occurs
     """
     
-    assert mmodel_G.doc == "test object\n\nlong docstring"
+    assert mmodel_G.doc == "test object\n\nlong description"
     
     mmodel_G.graph.update({"doc": "new doc"})
     assert mmodel_G.doc == "new doc"
 
-def test_graph_input_params_property(mmodel_G, mmodel_signature):
-    """Test the graph input parameter property"""
-
-    assert mmodel_G.input_params == mmodel_signature
-
-def test_graph_return_params_property(mmodel_G):
-    """Test the graph input parameter property"""
-
-    assert mmodel_G.return_params == ["k", "m"]
 
 def test_add_nodes(mmodel_G, standard_G):
     """Test add_node and add_nodes_from methods
@@ -76,15 +67,15 @@ def test_add_nodes(mmodel_G, standard_G):
     graph_a = mmodel_G.copy()
     graph_b = mmodel_G.copy()
 
-    graph_a.add_node("mock_func", node_obj=mock_func, return_params=["a", "b"])
+    graph_a.add_node("mock_func", node_obj=mock_func, returns=["a", "b"])
     graph_b.add_nodes_from(
-        [("mock_func", {"node_obj": mock_func, "return_params": ["a", "b"]})]
+        [("mock_func", {"node_obj": mock_func, "returns": ["a", "b"]})]
     )
 
     standard_G.add_node(
         "mock_func",
         node_obj=mock_func,
-        return_params=["a", "b"],
+        returns=["a", "b"],
         signature=sig,
         node_type="callable",
     )
@@ -100,7 +91,7 @@ def test_add_nodes_fails(mmodel_G):
     # missing attributes
     with pytest.raises(Exception, match="Node list missing node attributes"):
         mmodel_G.add_nodes_from([("mock_func")])
-    with pytest.raises(Exception, match="Node list missing attribute node_obj or return_params"):
+    with pytest.raises(Exception, match="Node list missing attribute node_obj or returns"):
         mmodel_G.add_nodes_from([("mock_func", {})])
 
 
@@ -110,7 +101,7 @@ def test_add_nodes_object_type_fails(mmodel_G):
     with pytest.raises(Exception, match="Node object type <class 'str'> not supported"):
         mmodel_G.add_node("mock_func", "obj", [])
     with pytest.raises(Exception, match="Node object type <class 'str'> not supported"):
-        mmodel_G.add_nodes_from([("mock_func", {"node_obj": "obj", "return_params": []})])
+        mmodel_G.add_nodes_from([("mock_func", {"node_obj": "obj", "returns": []})])
 
 
 def test_add_edges(mmodel_G, standard_G):
@@ -123,9 +114,9 @@ def test_add_edges(mmodel_G, standard_G):
     graph_a = mmodel_G.copy()
     graph_b = mmodel_G.copy()
 
-    graph_a.add_edge("add", "poly", interm_params=["c"])
-    graph_b.add_edges_from([("add", "poly", {"interm_params": ["c"]})])
-    standard_G.add_edge("add", "poly", interm_params=["c"])
+    graph_a.add_edge("add", "poly", parameters=["c"])
+    graph_b.add_edges_from([("add", "poly", {"parameters": ["c"]})])
+    standard_G.add_edge("add", "poly", parameters=["c"])
 
     # assert graph equal
     graphs_equal(graph_a, graph_b)
@@ -145,8 +136,8 @@ def test_add_edge_fails_nodes(mmodel_G, edge):
 @pytest.mark.parametrize(
     "edge_list",
     [
-        [("mock_func", "add", {"interm_params": ["c"]})],
-        [("add", "mock_func", {"interm_params": ["c"]})],
+        [("mock_func", "add", {"parameters": ["c"]})],
+        [("add", "mock_func", {"parameters": ["c"]})],
     ],
 )
 def test_add_edges_from_fails_nodes(mmodel_G, edge_list):
@@ -160,7 +151,7 @@ def test_add_edges_fails_nodes(mmodel_G):
 
     with pytest.raises(Exception):
         mmodel_G.add_edges_from([("add", "poly")])
-    with pytest.raises(Exception, match="Edge attribute interm_params not defined"):
+    with pytest.raises(Exception, match="Edge attribute parameters not defined"):
         mmodel_G.add_edges_from([("add", "poly", {})])
 
 
@@ -208,7 +199,7 @@ def test_subgraph(mmodel_G):
 
     # partial subgraph
     H = G.subgraph(["subtract", "poly"])
-    assert H.adj == {"subtract": {"poly": {"interm_params": ["e"]}}, "poly": {}}
+    assert H.adj == {"subtract": {"poly": {"parameters": ["e"]}}, "poly": {}}
     assert H._graph == G  # original graph
 
     # empty subgraph
@@ -224,7 +215,7 @@ def test_subgraph_copy(mmodel_G):
     G = mmodel_G
     H = G.subgraph(["subtract", "poly"]).copy()
 
-    assert H.adj == {"subtract": {"poly": {"interm_params": ["e"]}}, "poly": {}}
+    assert H.adj == {"subtract": {"poly": {"parameters": ["e"]}}, "poly": {}}
 
     H.remove_node("poly")
     assert "poly" in G

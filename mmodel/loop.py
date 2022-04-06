@@ -25,7 +25,7 @@ def subgraph_from_params(graph, parameters):
 
 
 def redirect_edges(
-    graph, subgraph, subgraph_node, node_obj, return_params, loop_params
+    graph, subgraph, subgraph_node, node_obj, returns, loop_params
 ):
     """Redirect graph based on subgraph
 
@@ -53,7 +53,7 @@ def redirect_edges(
     graph.add_node(
         subgraph_node,
         node_obj=node_obj,
-        return_params=return_params,
+        returns=returns,
         loop_params=loop_params,
         has_subgraph=True,
         has_loop=True,

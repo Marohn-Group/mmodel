@@ -1,6 +1,7 @@
 import graphviz
 import networkx as nx
 from copy import deepcopy
+from mmodel.doc import parse_description_graph
 
 DEFAULT_SETTINGS = {
     "graph_attr": {
@@ -65,19 +66,19 @@ def draw_graph(G, name, label):
     dot_graph = graphviz.Digraph(name=name, **settings)
 
     for node, ndict in G.nodes(data=True):
-        rts = ", ".join(ndict["return_params"])
+        rts = ", ".join(ndict["returns"])
         label = f"{node}\l\n{ndict['node_obj'].__name__}{ndict['signature']}\lreturn {rts}\l"
         dot_graph.node(node, label=label)
 
     for u, v, edict in G.edges(data=True):
-        dot_graph.edge(u, v, xlabel=" ".join(edict["interm_params"]))
+        dot_graph.edge(u, v, xlabel=" ".join(edict["parameters"]))
 
     for node in nx.get_node_attributes(G, "has_subgraph").keys():
 
         subG = G.nodes[node]["node_obj"].G
 
         # use short docstring for subgraph
-        label = subG.doc_short.replace('\n', '\l')
+        label = parse_description_graph(subG._short_description())
         dot_sub = draw_graph(subG, name=f"cluster {node}", label=label)
         dot_graph.subgraph(dot_sub)
 

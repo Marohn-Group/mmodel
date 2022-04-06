@@ -19,7 +19,7 @@ The class inherits from ``networkx.DiGraph``, which is compatible with all
 A graph node is a callable with user-defined attributes:
 
 - ``node_object``: node callable
-- ``return_params``: the parameter names for the returned values
+- ``returns``: the parameter names for the returned values
 
 .. code-block:: python
 
@@ -27,12 +27,12 @@ A graph node is a callable with user-defined attributes:
         return a + b
 
     G = MGraph()
-    G.add_node("func", node_obj=func, return_params=["c"])
+    G.add_node("func", node_obj=func, returns=["c"])
 
 A graph edge (u, v) is the link between two callable nodes, with
 user-defined attributes:
 
-- ``interm_params``: the names of the parameters that are passed from
+- ``parameters``: the names of the parameters that are passed from
    node u to v. The parameter name should match the input requirement
    of node v.
 
@@ -45,10 +45,10 @@ user-defined attributes:
         return c*c
 
     G = MGraph(name="example", doc="a example MGraph object")
-    G.add_node("func_a", node_obj=func_a, return_params=["c"])
-    G.add_node("func_b", node_obj=func_b, return_params=["d"])
+    G.add_node("func_a", node_obj=func_a, returns=["c"])
+    G.add_node("func_b", node_obj=func_b, returns=["d"])
 
-    G.add_edge("func_a", "func_b", interm_params=["c"])
+    G.add_edge("func_a", "func_b", parameters=["c"])
 
 .. note::
 

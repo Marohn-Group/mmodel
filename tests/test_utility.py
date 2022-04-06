@@ -100,7 +100,7 @@ def test_graph_topological_sort(mmodel_G):
 
     for node, attr in order:
         assert isinstance(attr, dict)
-        assert sorted(list(attr)) == ["node_obj", "return_params", "signature"]
+        assert sorted(list(attr)) == ["node_obj", "returns", "signature"]
         nodes.append(node)
 
     assert nodes == ["add","subtract", "multiply", "log", "poly"]

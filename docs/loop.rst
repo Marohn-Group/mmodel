@@ -22,9 +22,9 @@ To create a loop:
         return c*c
 
     G = MGraph()
-    G.add_node("func_a", node_obj=func_a, return_params=["c"])
-    G.add_node("func_b", node_obj=func_b, return_params=["d"])
-    G.add_edge("func_a", "func_b", interm_params=["c"])
+    G.add_node("func_a", node_obj=func_a, returns=["c"])
+    G.add_node("func_b", node_obj=func_b, returns=["d"])
+    G.add_edge("func_a", "func_b", parameters=["c"])
 
     model = Model(G)
     model.loop_parameter(params=["b"], method=basic_loop)

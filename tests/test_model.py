@@ -54,11 +54,11 @@ class TestTopologicalModel:
         assert "loop f" in model.G
         assert model.G.adj == {
             "add": {
-                "subtract": {"interm_params": ["c"]},
-                "log": {"interm_params": ["c"]},
-                "loop f": {"interm_params": ["c"]},
+                "subtract": {"parameters": ["c"]},
+                "log": {"parameters": ["c"]},
+                "loop f": {"parameters": ["c"]},
             },
-            "subtract": {"loop f": {"interm_params": ["e"]}},
+            "subtract": {"loop f": {"parameters": ["e"]}},
             "log": {},
             "loop f": {},
         }
@@ -74,26 +74,23 @@ class TestTopologicalModel:
         assert "loop d" in model.G
         assert model.G.adj == {
             "add": {
-                "loop d": {"interm_params": ["c"]},
-                "log": {"interm_params": ["c"]},
+                "loop d": {"parameters": ["c"]},
+                "log": {"parameters": ["c"]},
             },
             "log": {},
             "loop d": {},
         }
 
-    def test_double_loop_name(self, monkeypatch, mmodel_G):
+    def test_double_loop_fails(self, monkeypatch, mmodel_G):
         """Test when two loops are created, the name does not overlap"""
 
         monkeypatch.setattr(TopologicalModel, "__abstractmethods__", set())
 
         model = TopologicalModel(mmodel_G)
         model.loop_parameter(params=["f"])
-        model.loop_parameter(params=["f"])
-
-        assert "loop f" not in model.G
-        assert "outer loop f" in model.G
-
-
+        assert "loop f" in model.G
+        with pytest.raises(Exception, match="loop f already exist"):
+            model.loop_parameter(params=["f"])
 
 @pytest.fixture(scope="module")
 def node_a_attr():
@@ -105,7 +102,7 @@ def node_a_attr():
         "node_obj": func_a,
         "signature": signature(func_a),
         "node_type": "callable",
-        "return_params": ["arg4"],
+        "returns": ["arg4"],
     }
 
 
@@ -119,7 +116,7 @@ def node_b_attr():
         "node_obj": func_b,
         "signature": signature(func_b),
         "node_type": "callable",
-        "return_params": ["arg4", "arg5"],
+        "returns": ["arg4", "arg5"],
     }
 
 
@@ -215,7 +212,7 @@ class TestModel:
         """
         model_instance.loop_parameter(params=["f"])
 
-        assert model_instance.return_params == ["m", "k"]
+        assert model_instance.returns == ["m", "k"]
         assert model_instance(1, 2, [2, 3], 4) == (math.log(5, 4), [30, 45])
 
 
@@ -305,7 +302,7 @@ class TestPlainModel:
         """
         plainmodel_instance.loop_parameter(params=["f"])
 
-        assert plainmodel_instance.return_params == ["m", "k"]
+        assert plainmodel_instance.returns == ["m", "k"]
         assert plainmodel_instance(1, 2, [2, 3], 4) == (math.log(5, 4), [30, 45])
 
 
@@ -507,6 +504,6 @@ class TestH5Model:
         """
         h5model_instance.loop_parameter(params=["f"])
 
-        assert h5model_instance.return_params == ["m", "k"]
+        assert h5model_instance.returns == ["m", "k"]
         assert h5model_instance(1, 2, [2, 3], 4)[0] == math.log(5, 4)
         assert all(h5model_instance(1, 2, [2, 3], 4)[1] == [30, 45])

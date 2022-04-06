@@ -42,7 +42,7 @@ def standard_G():
             "add",
             {
                 "node_obj": addition,
-                "return_params": ["c"],
+                "returns": ["c"],
                 "signature": signature(addition),
             },
         ),
@@ -50,7 +50,7 @@ def standard_G():
             "subtract",
             {
                 "node_obj": subtraction,
-                "return_params": ["e"],
+                "returns": ["e"],
                 "signature": signature(subtraction),
             },
         ),
@@ -58,7 +58,7 @@ def standard_G():
             "multiply",
             {
                 "node_obj": multiplication,
-                "return_params": ["g"],
+                "returns": ["g"],
                 "signature": signature(multiplication),
             },
         ),
@@ -66,7 +66,7 @@ def standard_G():
             "poly",
             {
                 "node_obj": polynomial,
-                "return_params": ["k"],
+                "returns": ["k"],
                 "signature": signature(polynomial),
             },
         ),
@@ -74,21 +74,21 @@ def standard_G():
             "log",
             {
                 "node_obj": logarithm,
-                "return_params": ["m"],
+                "returns": ["m"],
                 "signature": signature(logarithm),
             },
         ),
     ]
 
     edge_list = [
-        ("add", "subtract", {"interm_params": ["c"]}),
-        ("subtract", "poly", {"interm_params": ["e"]}),
-        ("add", "multiply", {"interm_params": ["c"]}),
-        ("multiply", "poly", {"interm_params": ["g"]}),
-        ("add", "log", {"interm_params": ["c"]}),
+        ("add", "subtract", {"parameters": ["c"]}),
+        ("subtract", "poly", {"parameters": ["e"]}),
+        ("add", "multiply", {"parameters": ["c"]}),
+        ("multiply", "poly", {"parameters": ["g"]}),
+        ("add", "log", {"parameters": ["c"]}),
     ]
 
-    G = nx.DiGraph(name="test", doc="test object\n\nlong docstring")
+    G = nx.DiGraph(name="test", doc="test object\n\nlong description")
 
     G.add_nodes_from(node_list)
     G.add_edges_from(edge_list)
@@ -114,24 +114,24 @@ def mmodel_G():
 
     def logarithm(c, b):
         return math.log(c, b)
-    doc = "test object\n\nlong docstring"
+    doc = "test object\n\nlong description"
     G = MGraph("test", doc=doc)
 
     # class MockGraph(ModelGraph):
     node_list = [
-        ("add", {"node_obj": addition, "return_params": ["c"]}),
-        ("subtract", {"node_obj": subtraction, "return_params": ["e"]}),
-        ("multiply", {"node_obj": multiplication, "return_params": ["g"]}),
-        ("poly", {"node_obj": polynomial, "return_params": ["k"]}),
-        ("log", {"node_obj": logarithm, "return_params": ["m"]}),
+        ("add", {"node_obj": addition, "returns": ["c"]}),
+        ("subtract", {"node_obj": subtraction, "returns": ["e"]}),
+        ("multiply", {"node_obj": multiplication, "returns": ["g"]}),
+        ("poly", {"node_obj": polynomial, "returns": ["k"]}),
+        ("log", {"node_obj": logarithm, "returns": ["m"]}),
     ]
 
     edge_list = [
-        ("add", "subtract", {"interm_params": ["c"]}),
-        ("subtract", "poly", {"interm_params": ["e"]}),
-        ("add", "multiply", {"interm_params": ["c"]}),
-        ("multiply", "poly", {"interm_params": ["g"]}),
-        ("add", "log", {"interm_params": ["c"]}),
+        ("add", "subtract", {"parameters": ["c"]}),
+        ("subtract", "poly", {"parameters": ["e"]}),
+        ("add", "multiply", {"parameters": ["c"]}),
+        ("multiply", "poly", {"parameters": ["g"]}),
+        ("add", "log", {"parameters": ["c"]}),
     ]
 
     G.add_nodes_from(node_list)

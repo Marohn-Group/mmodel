@@ -5,15 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
-[unreleased]
+[0.1.1] - 2022-04-06
 --------------------
 Added
 ^^^^^
-- ``input_params``, ``return_params`` and ``doc`` attribute for ``MGraph``
-- ``help`` property to model classed and ``MGraph``
+- ``doc`` attribute for ``MGraph``
 - ``draw_graph()`` method to ``MGraph`` and model classes
-- ``doc_short`` and ``doc_long`` to ``MGraph`` and model classes
-- ``doc`` module with modified help function ``helper``
+- ``__repr__`` for ``MGraph`` and model classes
 
 Changed
 ^^^^^^^
@@ -24,7 +22,10 @@ Changed
   inherent attribute ``graph``
 - separate ``draw_plain_graph()`` and ``draw_graph``, the former shows
   a simplified version of graph and latter shows all graph details
-
+- graph title outputs detailed descriptions of the model instance and
+  graph instance
+- change node attribute "return_params" to "returns"
+- change edge attribute "interm_params" to "parameters"
 
 [0.1.0] - 2022-04-02
 --------------------
