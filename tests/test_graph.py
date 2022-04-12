@@ -39,7 +39,7 @@ def test_default_mockgraph(mmodel_G, standard_G):
 
 def test_graph_name(mmodel_G):
     """Test naming and docs of the graph"""
-    mmodel_G.name == "test"
+    assert mmodel_G.name == "test"
 
 def test_graph_doc_property(mmodel_G):
     """Test the graph doc property 
