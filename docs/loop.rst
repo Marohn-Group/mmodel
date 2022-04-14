@@ -27,7 +27,7 @@ To create a loop:
     G.add_edge("func_a", "func_b", parameters=["c"])
 
     model = Model(G)
-    model.loop_parameter(params=["b"], method=basic_loop)
+    model.loop_parameter(parameters=["b"], method=basic_loop)
 
     >>> model(1, [1, 2])
     >>> [4, 9]

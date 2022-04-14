@@ -59,7 +59,7 @@ To loop a specific parameter
 
 .. code-block:: python
 
-    model.loop_parameter(param="z")
+    model.loop_parameter(parameters=["z"])
 
     >>> model(1, 2, [3, 4])
     >>> [6, 7]

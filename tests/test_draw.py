@@ -92,7 +92,7 @@ def test_model_loop_draw_graph(mmodel_G):
     Here test if the label value are plotted correctly
     """
     model = Model(mmodel_G)
-    model.loop_parameter(params=["f"])
+    model.loop_parameter(parameters=["f"])
 
     detail_graph = model.draw_graph(show_detail=True)
 

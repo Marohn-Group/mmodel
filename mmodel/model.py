@@ -58,7 +58,7 @@ class TopologicalModel(metaclass=ABCMeta):
     def _finish(self, data_instance, returns):
         """Finish execution"""
 
-    def loop_parameter(self, params, method=basic_loop, *args, **kwargs):
+    def loop_parameter(self, parameters, method=basic_loop, *args, **kwargs):
         """Construct loop
 
         Loops with the same parameters are not allowed
@@ -67,24 +67,24 @@ class TopologicalModel(metaclass=ABCMeta):
             restructure where the subgraph copy happens
             better loop parameter checking when duplication occurs
         """
-        param_string = ", ".join(params)
+        param_string = ", ".join(parameters)
         node_name = f"loop {param_string}"
 
         if node_name in self.G:
-            raise Exception(f'{node_name} already exist')
+            raise Exception(f"{node_name} already exist")
 
         # description of the subgraph
         node_doc = f"{method.__name__} method"
 
-        subgraph = subgraph_from_params(self.G, params)
+        subgraph = subgraph_from_params(self.G, parameters)
 
         # if subgraph.
-        loop_node = self._create_looped_subgraph(subgraph, params, method)
+        loop_node = self._create_looped_subgraph(subgraph, parameters, method)
 
         node_obj, returns = loop_node
 
         self.G = redirect_edges(
-            self.G, subgraph, node_name, node_obj, returns, params
+            self.G, subgraph, node_name, node_obj, returns, parameters
         )
         self.G.nodes[node_name]["node_obj"].G.graph.update(
             {"name": node_name, "doc": node_doc}
@@ -103,7 +103,7 @@ class TopologicalModel(metaclass=ABCMeta):
 
     def draw_graph(self, show_detail=False):
         """Draw graph"""
-        if show_detail: 
+        if show_detail:
             label = parse_description_graph(self._long_description(False))
             return draw_graph(self.G, self.__name__, label)
         else:

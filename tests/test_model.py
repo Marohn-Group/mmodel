@@ -49,7 +49,7 @@ class TestTopologicalModel:
         monkeypatch.setattr(TopologicalModel, "__abstractmethods__", set())
 
         model = TopologicalModel(mmodel_G)
-        model.loop_parameter(params=["f"])
+        model.loop_parameter(parameters=["f"])
 
         assert "loop f" in model.G
         assert model.G.adj == {
@@ -70,7 +70,7 @@ class TestTopologicalModel:
         )
 
         # add second loop
-        model.loop_parameter(params=["d"])
+        model.loop_parameter(parameters=["d"])
         assert "loop d" in model.G
         assert model.G.adj == {
             "add": {
@@ -87,10 +87,10 @@ class TestTopologicalModel:
         monkeypatch.setattr(TopologicalModel, "__abstractmethods__", set())
 
         model = TopologicalModel(mmodel_G)
-        model.loop_parameter(params=["f"])
+        model.loop_parameter(parameters=["f"])
         assert "loop f" in model.G
         with pytest.raises(Exception, match="loop f already exist"):
-            model.loop_parameter(params=["f"])
+            model.loop_parameter(parameters=["f"])
 
 @pytest.fixture(scope="module")
 def node_a_attr():
@@ -210,7 +210,7 @@ class TestModel:
 
         Node the return parameter shifts
         """
-        model_instance.loop_parameter(params=["f"])
+        model_instance.loop_parameter(parameters=["f"])
 
         assert model_instance.returns == ["m", "k"]
         assert model_instance(1, 2, [2, 3], 4) == (math.log(5, 4), [30, 45])
@@ -300,7 +300,7 @@ class TestPlainModel:
 
         Node the return parameter shifts
         """
-        plainmodel_instance.loop_parameter(params=["f"])
+        plainmodel_instance.loop_parameter(parameters=["f"])
 
         assert plainmodel_instance.returns == ["m", "k"]
         assert plainmodel_instance(1, 2, [2, 3], 4) == (math.log(5, 4), [30, 45])
@@ -502,7 +502,7 @@ class TestH5Model:
 
         Node the return parameter shifts
         """
-        h5model_instance.loop_parameter(params=["f"])
+        h5model_instance.loop_parameter(parameters=["f"])
 
         assert h5model_instance.returns == ["m", "k"]
         assert h5model_instance(1, 2, [2, 3], 4)[0] == math.log(5, 4)

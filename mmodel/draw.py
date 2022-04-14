@@ -83,4 +83,3 @@ def draw_graph(G, name, label):
         dot_graph.subgraph(dot_sub)
 
     return dot_graph
-

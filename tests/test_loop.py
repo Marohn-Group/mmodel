@@ -71,7 +71,7 @@ def test_basic_loop(mock_func):
     assert looped.__doc__ == "Test docstring"
     assert looped._test_attr == "test"
 
-    looped_default = basic_loop(mock_func, params=["c"])
+    looped_default = basic_loop(mock_func, parameters=["c"])
 
     assert inspect.signature(looped_default).parameters['c'].default == [2]
     assert looped_default(0.1, 0.1) == [2.2]

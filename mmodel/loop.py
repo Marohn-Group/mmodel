@@ -63,7 +63,7 @@ def redirect_edges(
     return graph
 
 
-def basic_loop(func, params):
+def basic_loop(func, parameters):
     """Basic loop wrapper, iterates the values from loop
 
     The basic loop only allows to loop one parameter
@@ -79,9 +79,9 @@ def basic_loop(func, params):
         consider not allow multiple loop parameters (but maybe pairwise is allowed?)
     """
 
-    if len(params) != 1:
+    if len(parameters) != 1:
         raise Exception("basic_loop accept one parameter at a time")
-    param = params[0]
+    param = parameters[0]
     # reset the default to a list
     sig_param = dict(signature(func).parameters)
     _param = sig_param[param]
