@@ -77,6 +77,20 @@ def test_graph_signature(mmodel_G, mmodel_signature):
 
     assert util.graph_signature(mmodel_G) == mmodel_signature
 
+def test_replace_signature(mmodel_signature):
+    """Test replace signature"""
+
+    replacement_dict = {'a_rep': ['a'], 'f_rep': ['f']}
+    signature = util.replace_signature(mmodel_signature, replacement_dict)
+
+    assert 'a_rep' in signature.parameters
+    assert 'a' not in signature.parameters
+    assert 'f_rep' in signature.parameters
+    assert 'f' not in signature.parameters
+
+    # make sure the original signature is not modified
+    assert 'a_rep' not in mmodel_signature.parameters
+
 
 def test_graph_returns(mmodel_G):
     """Test graph_returns"""

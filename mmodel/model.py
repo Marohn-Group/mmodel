@@ -6,6 +6,7 @@ from mmodel.utility import (
     graph_returns,
     graph_topological_sort,
     param_counter,
+    replace_signature
 )
 from mmodel.loop import subgraph_from_params, redirect_edges, basic_loop
 from mmodel.draw import draw_graph, draw_plain_graph
@@ -25,9 +26,22 @@ class TopologicalModel(metaclass=ABCMeta):
 
         self.__name__ = f"{G.name} model"
         self.G = G.copy()  # graph is a mutable object
-        self.__signature__ = graph_signature(G)
-        self.returns = graph_returns(G)
-        self.topological_order = graph_topological_sort(G)
+
+        self.sig_replacement = None
+        self.reset_model()
+
+    def reset_model(self):
+        """Define the true signature of the graph if object replacement"""
+
+        signature = graph_signature(self.G)
+
+        if self.sig_replacement is not None:
+            signature = replace_signature(signature, self.sig_replacement)
+
+        self.__signature__ = signature
+        self.returns = graph_returns(self.G)
+        self.topological_order = graph_topological_sort(self.G)
+        
 
     def __call__(self, *args, **kwargs):
         """Execute graph model by layer"""
@@ -90,9 +104,7 @@ class TopologicalModel(metaclass=ABCMeta):
             {"name": node_name, "doc": node_doc}
         )
         # reset values
-        self.__signature__ = graph_signature(self.G)
-        self.returns = graph_returns(self.G)
-        self.topological_order = graph_topological_sort(self.G)
+        self.reset_model()
 
     def _create_looped_subgraph(self, subgraph, params, method):
         """Turn subgraph into a loopped variable returns the node attribute"""

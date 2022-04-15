@@ -7,9 +7,14 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 
 [unreleased]
 ------------
+Added
+^^^^^
+- add `replace_sig` to the modelp
+
 Changed
 ^^^^^^^
 - change loop argument "params" to "parameters"
+
 
 [0.1.1] - 2022-04-06
 --------------------

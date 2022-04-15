@@ -48,6 +48,24 @@ def graph_signature(graph):
     return inspect.Signature(sorted(parameters.values(), key=param_sorter))
 
 
+def replace_signature(signature, replacement_dict):
+    """Replace signature with a dictionary of (key, pair)
+
+    The function is used to replace several input parameters with a object.
+    The signature is the original sigature.
+    The dictionary key should be the replacement object, the values
+    should be a list of the target parameters to be replaced.
+    """
+
+    params = dict(signature.parameters)
+    for obj, target_list in replacement_dict.items():
+        for target in target_list:
+            del params[target]
+        params[obj] = inspect.Parameter(obj, 1)
+
+    return signature.replace(parameters=sorted(params.values(), key=param_sorter))
+
+
 def graph_returns(graph):
     """Obtain the return parameter of the graph
 
