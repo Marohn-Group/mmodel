@@ -25,11 +25,7 @@ test cases:
 import pytest
 from inspect import signature
 from tests.conftest import graphs_equal
-
-
-def test_node(mmodel_G):
-    mmodel_G.copy()
-
+from mmodel import ModelGraph
 
 def test_default_mockgraph(mmodel_G, standard_G):
     """Test if default ModelGraph matches the ones created by DiGraph"""
@@ -41,118 +37,44 @@ def test_graph_name(mmodel_G):
     """Test naming and docs of the graph"""
     assert mmodel_G.name == "test"
 
-def test_graph_doc_property(mmodel_G):
-    """Test the graph doc property 
+def test_update_node_objects(mmodel_G):
 
-    The doc result should update when the value occurs
-    """
-    
-    assert mmodel_G.doc == "test object\n\nlong description"
-    
-    mmodel_G.graph.update({"doc": "new doc"})
-    assert mmodel_G.doc == "new doc"
+    def func_a(a, b):
+        return None
 
+    def func_b(c, d):
+        return None
 
-def test_add_nodes(mmodel_G, standard_G):
-    """Test add_node and add_nodes_from methods
+    G = ModelGraph()
+    G.add_edge('node_a', 'node_b')
+    G.update_node_object('node_a', func_a, ['c'])
+    assert G.nodes['node_a']['rts'] == ['c']
+    assert 'sig' in G.nodes['node_a']
 
-    The result three graph graph_a, graph_b and standard_G
-    should be the same.
-    """
-
-    def mock_func(a, b):
-        return a, b
-
-    sig = signature(mock_func)
-    graph_a = mmodel_G.copy()
-    graph_b = mmodel_G.copy()
-
-    graph_a.add_node("mock_func", node_obj=mock_func, returns=["a", "b"])
-    graph_b.add_nodes_from(
-        [("mock_func", {"node_obj": mock_func, "returns": ["a", "b"]})]
-    )
-
-    standard_G.add_node(
-        "mock_func",
-        node_obj=mock_func,
-        returns=["a", "b"],
-        signature=sig,
-        node_type="callable",
-    )
-
-    # assert graph equal
-    graphs_equal(graph_a, graph_b)
-    graphs_equal(graph_a, standard_G)
+    # test the edges are updated
+    assert G.edges['node_a', 'node_b'] == {}
+    G.update_node_object('node_b', func_b, ['e'])
+    assert G.edges['node_a', 'node_b'] == {'val': ['c']}
 
 
-def test_add_nodes_fails(mmodel_G):
-    """Test if add_nodes_from method fails when missing attributes"""
+def test_update_node_objects_from(mmodel_G):
 
-    # missing attributes
-    with pytest.raises(Exception, match="Node list missing node attributes"):
-        mmodel_G.add_nodes_from([("mock_func")])
-    with pytest.raises(Exception, match="Node list missing attribute node_obj or returns"):
-        mmodel_G.add_nodes_from([("mock_func", {})])
+    def func_a(a, b):
+        return None
 
+    def func_b(c, d):
+        return None
 
-def test_add_nodes_object_type_fails(mmodel_G):
+    G = ModelGraph()
+    G.add_edge('node_a', 'node_b')
+    G.update_node_objects_from([('node_a', func_a, ['c']), ('node_b', func_b, ['e'])])
 
-    # node object should be a callable
-    with pytest.raises(Exception, match="Node object type <class 'str'> not supported"):
-        mmodel_G.add_node("mock_func", "obj", [])
-    with pytest.raises(Exception, match="Node object type <class 'str'> not supported"):
-        mmodel_G.add_nodes_from([("mock_func", {"node_obj": "obj", "returns": []})])
+    assert G.edges['node_a', 'node_b'] == {'val': ['c']}
 
 
-def test_add_edges(mmodel_G, standard_G):
-    """Test add_edge and add_edges_from methods
+def test_graph_repr(mmodel_G):
 
-    The result three graph graph_a, graph_b and standard_G
-    should be the same.
-    """
-
-    graph_a = mmodel_G.copy()
-    graph_b = mmodel_G.copy()
-
-    graph_a.add_edge("add", "poly", parameters=["c"])
-    graph_b.add_edges_from([("add", "poly", {"parameters": ["c"]})])
-    standard_G.add_edge("add", "poly", parameters=["c"])
-
-    # assert graph equal
-    graphs_equal(graph_a, graph_b)
-    graphs_equal(graph_a, standard_G)
-
-
-@pytest.mark.parametrize(
-    "edge", [("add", "mock_func", ["c"]), ("mock_func", "add", ["c"])]
-)
-def test_add_edge_fails_nodes(mmodel_G, edge):
-    """Test if `add_edge`, `add_edges_from` fails when edge nodes are not defined"""
-
-    with pytest.raises(Exception, match="Node mock_func is not defined"):
-        mmodel_G.add_edge(*edge)
-
-
-@pytest.mark.parametrize(
-    "edge_list",
-    [
-        [("mock_func", "add", {"parameters": ["c"]})],
-        [("add", "mock_func", {"parameters": ["c"]})],
-    ],
-)
-def test_add_edges_from_fails_nodes(mmodel_G, edge_list):
-    """Test if `add_edge`, `add_edges_from` fails when edge nodes are not defined"""
-
-    with pytest.raises(Exception, match="Node mock_func is not defined"):
-        mmodel_G.add_edges_from(edge_list)
-
-def test_add_edges_fails_nodes(mmodel_G):
-    """Test if `add_edge`, `add_edges_from` fails when missing edge attributes"""
-
-    with pytest.raises(Exception):
-        mmodel_G.add_edges_from([("add", "poly")])
-    with pytest.raises(Exception, match="Edge attribute parameters not defined"):
-        mmodel_G.add_edges_from([("add", "poly", {})])
+    assert repr(mmodel_G) == "NAME\n\ttest\nDOC\n\ttest object\n\nlong description"
 
 
 def test_copy(mmodel_G):
@@ -199,7 +121,7 @@ def test_subgraph(mmodel_G):
 
     # partial subgraph
     H = G.subgraph(["subtract", "poly"])
-    assert H.adj == {"subtract": {"poly": {"parameters": ["e"]}}, "poly": {}}
+    assert H.adj == {"subtract": {"poly": {'val': ['e']}}, "poly": {}}
     assert H._graph == G  # original graph
 
     # empty subgraph
@@ -215,7 +137,7 @@ def test_subgraph_copy(mmodel_G):
     G = mmodel_G
     H = G.subgraph(["subtract", "poly"]).copy()
 
-    assert H.adj == {"subtract": {"poly": {"parameters": ["e"]}}, "poly": {}}
+    assert H.adj == {"subtract": {"poly": {'val': ['e']}}, "poly": {}}
 
     H.remove_node("poly")
     assert "poly" in G

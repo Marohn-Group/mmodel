@@ -4,7 +4,7 @@ Testing the loop module
 
 import py
 import pytest
-from mmodel.loop import subgraph_from_params, redirect_edges, basic_loop
+from mmodel.loop import subgraph_by_params, redirect_edges, basic_loop
 from tests.conftest import graphs_equal
 import inspect
 
@@ -17,10 +17,10 @@ def mock_func():
     return func
 
 
-def test_subgraph_from_params(mmodel_G):
+def test_subgraph_by_parameters(mmodel_G):
     """Test two different subgraphs"""
 
-    subgraph1 = subgraph_from_params(mmodel_G, ["f"])
+    subgraph1 = subgraph_by_params(mmodel_G, ["f"])
     subgraph2 = mmodel_G.subgraph(["multiply", "poly"])
 
     # have the same copy
@@ -28,10 +28,10 @@ def test_subgraph_from_params(mmodel_G):
     # retains oringinal graph
     assert subgraph1._graph == mmodel_G
 
-    subgraph3 = subgraph_from_params(mmodel_G, ["f", "g"])
+    subgraph3 = subgraph_by_params(mmodel_G, ["f", "g"])
     graphs_equal(subgraph3, subgraph2)
 
-    subgraph4 = subgraph_from_params(mmodel_G, ["a"])
+    subgraph4 = subgraph_by_params(mmodel_G, ["a"])
     graphs_equal(subgraph4, mmodel_G)
 
 

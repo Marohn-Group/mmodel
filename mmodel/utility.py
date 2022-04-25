@@ -34,14 +34,14 @@ def graph_signature(graph):
     """
 
     parameters = {}
-    for sig in nx.get_node_attributes(graph, "signature").values():
+    for sig in nx.get_node_attributes(graph, "sig").values():
         for pname, param in sig.parameters.items():
             if pname in parameters:
                 if param_sorter(parameters[pname]) >= param_sorter(param):
                     continue
             parameters.update({pname: param})
 
-    for rts in nx.get_node_attributes(graph, "returns").values():
+    for rts in nx.get_node_attributes(graph, "rts").values():
         for rt in rts:
             parameters.pop(rt, None)  # if doesn't exist return None
 
@@ -76,8 +76,9 @@ def graph_returns(graph):
 
     for node in graph.nodes():
         if graph.out_degree(node) == 0:
-            returns.extend(graph.nodes[node]["returns"])
+            returns.extend(graph.nodes[node]["rts"])
 
+    returns.sort()
     return returns
 
 
@@ -112,7 +113,7 @@ def param_counter(graph):
     """
 
     value_list = []
-    for sig in nx.get_node_attributes(graph, "signature").values():
+    for sig in nx.get_node_attributes(graph, "sig").values():
         value_list.extend(sig.parameters.keys())
 
     count = {}
@@ -120,3 +121,74 @@ def param_counter(graph):
         count[value] = count.get(value, 0) + 1
 
     return count
+
+
+def loop_signature(signature, parameters):
+    """Change parameter default from scalar to list"""
+
+    # reset the default to a list
+    sig_param = dict(signature.parameters)
+    for parameter in parameters:
+        _param = sig_param[parameter]
+        if _param.default != inspect.Parameter.empty:
+            sig_param[parameter] = inspect.Parameter(
+                _param.name, _param.kind, default=[_param.default]
+            )
+    return inspect.Signature(sig_param.values())
+
+
+def subgraph_by_parameters(graph, parameters):
+    """Construct subgraph based on parameters
+
+    :param list params: target input paramaters to be included in
+        the subgraph
+
+    :return: a copy of the subgraph
+    """
+
+    subgraph_nodes = []
+
+    for node, sig in nx.get_node_attributes(graph, "sig").items():
+        sig_params = sig.parameters
+        for param in parameters:
+            if param in sig_params:
+                subgraph_nodes.append(node)
+                subgraph_nodes.extend(nx.descendants(graph, node))
+
+    return graph.subgraph(subgraph_nodes)
+
+
+def modify_subgraph(model_graph, subgraph, subgraph_name, subgraph_obj):
+    """Redirect graph based on subgraph
+
+    Find all parent node that is not in subgraph but have child node
+    in subgraph. (All child node of subgraph nodes are in the subgraph).
+    The edge attribute is passed down to the new edge
+
+    :param graph model_graph: model_graph to modify
+    :param graph subgraph: subgraph that is being replaced by a node
+    :param str subgraph_name: name of the subgraph
+    """
+
+    graph = graph.copy()
+    visited_parents = []
+    new_edges = []
+    for node in subgraph.nodes():
+        for parent in graph.predecessors(node):
+            if parent not in subgraph and parent not in visited_parents:
+                visited_parents.append(parent)
+                edge_attr = graph[parent][node]
+                new_edges.append([parent, subgraph_name, edge_attr])
+
+    graph.remove_nodes_from(subgraph.nodes)
+
+    graph.add_node(
+        subgraph_name,
+        obj=subgraph_obj,
+        rts=subgraph_obj.returns,
+        sig=subgraph_obj.__signature__,
+        has_subgraph=True,
+    )
+    graph.add_edges_from(new_edges)
+
+    return graph

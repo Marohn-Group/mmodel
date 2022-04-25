@@ -17,7 +17,7 @@ To create a nonlinear model:
 
 .. code-block:: python
 
-    from mmodel import MGraph, Model
+    from mmodel import ModelGraph, ModelExecutor, MemHandler
 
     def func_a(x, y):
         return x + y, x - y
@@ -31,52 +31,67 @@ To create a nonlinear model:
     def func_d(sum_xyz, abs_xy):
         return sum_xyz * abs_xy
 
-    node_list = [
-        ("func a", {"node_obj": func_a, "returns": ["sum_xy", "dif_xy"]}),
-        ("func b", {"node_obj": func_b, "returns": ["sum_xyz"]}),
-        ("func c", {"node_obj": func_c, "returns": ["abs_xy"]}),
-        ("func d", {"node_obj": func_d, "returns": ["xyz"]}),
-    ]
-
-    edge_list = [
-        ("func a", "func b", {"parameters": ["sum_xy"]}),
-        ("func a", "func c", {"parameters": ["dif_xy"]}),
-        ("func b", "func d", {"parameters": ["sum_xyz"]}),
-        ("func c", "func d", {"parameters": ["abs_xy"]}),
-    ]
-
-    G = MGraph("Example graph")
-    G.add_nodes_from(node_list)
-    G.add_edges_from(edge_list)
-
-    model = Model(G)
+    # create graph links
     
-    >>> model(1, 2, 3)
+    edges = [
+        ("func a", ["func b", "func c"]),
+        (["func b", "func"], "func d"),
+    ]
+
+    node_callables = [
+        ("func a", (func_a, ["sum_xy", "dif_xy"])),
+        ("func b", (func_b, ["sum_xyz"])),
+        ("func c", (func_c, ["abs_xy"])),
+        ("func d", (func_d, ["xyz"])),
+    ]
+
+    model_graph = ModelGraph("Example")
+    model_graph.add_linked_edges(edges)
+    model_graph.add_node_callables(node_callables)
+
+    example_func = ModelExecutor(graph, handler=MemExecutor)
+
+    >>> example_func(1, 2, 3)
     >>> 6
 
 
-To loop a specific parameter
+To loop a specific parameter. All modification occurs at the model graph
+level.
 
 .. code-block:: python
 
-    model.loop_parameter(parameters=["z"])
+    from mmodel import subgraph_by_parameters, modify_subgraph
+    from mmodel.modifers import basic_loop
 
-    >>> model(1, 2, [3, 4])
+    subgraph = subgraph_by_parameters("z")
+    loop_mod = basic_loop("z")
+
+    loop_node = ModelExecutor(subgraph, [loop_mod], handler=MemExecutor)
+    loop_model_graph = modify_subgraph(graph, subgraph, "z loop", loop_node)
+
+    example_loop_func = ModelExecutor(loop_model_graph, handler=MemHandler)
+
+    >>> example_loop_func(1, 2, [3, 4])
     >>> [6, 7]
+
+To modify a single node
+
+.. code-block:: python
+
+    modify_node(graph, node, [modifers])
 
 To draw the graph or the modified model with or without detail
 
 .. code-block:: python
 
-    G.draw_graph(show_detail=False)
-    model.draw_graph(show_detail=True)
+    model_graph.draw()
 
 To view the descriptions of the graph and model
 
 .. code-block:: python
 
-    print(G)
-    print(model)
+    print(model_graph)
+    print(example_func)
 
 
 Installation

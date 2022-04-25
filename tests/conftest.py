@@ -13,7 +13,7 @@ and test functions
 import pytest
 from inspect import signature, Signature, Parameter
 import networkx as nx
-from mmodel.graph import MGraph
+from mmodel.graph import ModelGraph
 import math
 from networkx.utils import nodes_equal, edges_equal
 
@@ -38,57 +38,26 @@ def standard_G():
         return math.log(c, b)
 
     node_list = [
-        (
-            "add",
-            {
-                "node_obj": addition,
-                "returns": ["c"],
-                "signature": signature(addition),
-            },
-        ),
-        (
-            "subtract",
-            {
-                "node_obj": subtraction,
-                "returns": ["e"],
-                "signature": signature(subtraction),
-            },
-        ),
+        ("add", {"obj": addition, "rts": ["c"], "sig": signature(addition)}),
+        ("subtract", {"obj": subtraction, "rts": ["e"], "sig": signature(subtraction)}),
         (
             "multiply",
-            {
-                "node_obj": multiplication,
-                "returns": ["g"],
-                "signature": signature(multiplication),
-            },
+            {"obj": multiplication, "rts": ["g"], "sig": signature(multiplication)},
         ),
-        (
-            "poly",
-            {
-                "node_obj": polynomial,
-                "returns": ["k"],
-                "signature": signature(polynomial),
-            },
-        ),
-        (
-            "log",
-            {
-                "node_obj": logarithm,
-                "returns": ["m"],
-                "signature": signature(logarithm),
-            },
-        ),
+        ("poly", {"obj": polynomial, "rts": ["k"], "sig": signature(polynomial)}),
+        ("log", {"obj": logarithm, "rts": ["m"], "sig": signature(logarithm)}),
     ]
 
     edge_list = [
-        ("add", "subtract", {"parameters": ["c"]}),
-        ("subtract", "poly", {"parameters": ["e"]}),
-        ("add", "multiply", {"parameters": ["c"]}),
-        ("multiply", "poly", {"parameters": ["g"]}),
-        ("add", "log", {"parameters": ["c"]}),
+        ("add", "subtract", {'val': ['c']}),
+        ("subtract", "poly", {'val': ['e']}),
+        ("add", "multiply", {'val': ['c']}),
+        ("multiply", "poly", {'val': ['g']}),
+        ("add", "log", {'val': ['c']}),
     ]
 
     G = nx.DiGraph(name="test", doc="test object\n\nlong description")
+    G.graph["type"] = "ModelGraph"  # for comparison
 
     G.add_nodes_from(node_list)
     G.add_edges_from(edge_list)
@@ -114,29 +83,25 @@ def mmodel_G():
 
     def logarithm(c, b):
         return math.log(c, b)
+
     doc = "test object\n\nlong description"
-    G = MGraph("test", doc=doc)
 
+    linked_edges = [
+        ("add", ["subtract", "multiply", "log"]),
+        (["subtract", "multiply"], "poly"),
+    ]
     # class MockGraph(ModelGraph):
-    node_list = [
-        ("add", {"node_obj": addition, "returns": ["c"]}),
-        ("subtract", {"node_obj": subtraction, "returns": ["e"]}),
-        ("multiply", {"node_obj": multiplication, "returns": ["g"]}),
-        ("poly", {"node_obj": polynomial, "returns": ["k"]}),
-        ("log", {"node_obj": logarithm, "returns": ["m"]}),
+    node_objects = [
+        ("add", addition, ["c"]),
+        ("subtract", subtraction, ["e"]),
+        ("multiply", multiplication, ["g"]),
+        ("poly", polynomial, ["k"]),
+        ("log", logarithm, ["m"]),
     ]
 
-    edge_list = [
-        ("add", "subtract", {"parameters": ["c"]}),
-        ("subtract", "poly", {"parameters": ["e"]}),
-        ("add", "multiply", {"parameters": ["c"]}),
-        ("multiply", "poly", {"parameters": ["g"]}),
-        ("add", "log", {"parameters": ["c"]}),
-    ]
-
-    G.add_nodes_from(node_list)
-    G.add_edges_from(edge_list)
-
+    G = ModelGraph(name="test", doc=doc)
+    G.add_linked_edges_from(linked_edges)
+    G.update_node_objects_from(node_objects)
     return G
 
 

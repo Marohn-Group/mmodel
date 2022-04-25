@@ -17,6 +17,7 @@ import random
 import mmodel.utility as util
 from collections import OrderedDict
 from inspect import Parameter
+from tests.conftest import graphs_equal
 
 
 def mock_func(a, c, b=2, *args, d, e=10, **kwargs):
@@ -114,7 +115,7 @@ def test_graph_topological_sort(mmodel_G):
 
     for node, attr in order:
         assert isinstance(attr, dict)
-        assert sorted(list(attr)) == ["node_obj", "returns", "signature"]
+        assert sorted(list(attr)) == ["obj", "rts", "sig"]
         nodes.append(node)
 
     assert nodes == ["add","subtract", "multiply", "log", "poly"]
@@ -126,4 +127,47 @@ def test_param_counter(mmodel_G):
     counter = util.param_counter(mmodel_G)
 
     assert counter == {"a": 1, "b": 2, "c": 3, "d": 1, "e": 1, "f": 1, "g": 1}
+
+
+def test_subgraph_by_parameters(mmodel_G):
+    """Test two different subgraphs"""
+
+    subgraph1 = util.subgraph_by_parameters(mmodel_G, ["f"])
+    subgraph2 = mmodel_G.subgraph(["multiply", "poly"])
+
+    # have the same copy
+    graphs_equal(subgraph1, subgraph2)
+    # retains oringinal graph
+    assert subgraph1._graph == mmodel_G
+
+    # multiple parameters
+    subgraph3 = util.subgraph_by_parameters(mmodel_G, ["f", "g"])
+    graphs_equal(subgraph3, subgraph2)
+
+    # whole graph
+    subgraph4 = util.subgraph_by_parameters(mmodel_G, ["a"])
+    graphs_equal(subgraph4, mmodel_G)
+
+
+def test_modify_subgraph(mmodel_G):
+    """Test redirect edges based on subgraph and subgraph node"""
+
+    subgraph = mmodel_G.subgraph(["multiply", "poly"])
+
+    def mock_obj(x, y):
+        return
+
+    graph = util.modify_subgraph(mmodel_G, subgraph, "test", )
+
+    # a copy is created
+    assert graph != mmodel_G
+    assert "test" in graph
+    assert graph.nodes["test"] == {
+        "node_obj": mock_obj,
+        "returns": ["z"],
+        "signature": inspect.signature(mock_obj),
+        "loop_params": ["f"],
+        "has_subgraph": True,
+        "has_loop": True
+    }
 

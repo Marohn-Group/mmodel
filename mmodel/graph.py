@@ -1,11 +1,7 @@
 import inspect
 import networkx as nx
-from mmodel.utility import graph_returns, graph_signature
-from mmodel.draw import draw_graph, draw_plain_graph
-from mmodel.doc import parse_description_graph, parse_description_doc
 
-
-class MGraph(nx.DiGraph):
+class ModelGraph(nx.DiGraph):
 
     """Base class for mmodel Graph
 
@@ -21,126 +17,53 @@ class MGraph(nx.DiGraph):
         the graph.
     """
 
-    def __init__(self, name="", doc="", **attr):
+    # add the graph attribute
+    # this is used for checking
+    graph_attr_dict = {"type": "ModelGraph"}
 
-        super().__init__(name=name, doc=doc, **attr)
+    def single_graph_attr_dict(self):
+        return self.graph_attr_dict
 
-    def add_node(self, node_for_adding, node_obj, returns, **attr):
-        """re-define the add_node method
+    graph_attr_dict_factory = single_graph_attr_dict
 
-        Require arguments func and returns"""
+    def update_node_object(self, node, obj, returns):
+        """Update the functions of existing node"""
 
-        if callable(node_obj):
-            sig = inspect.signature(node_obj)
-        else:
-            raise Exception(f"Node object type {type(node_obj)} not supported")
+        sig = inspect.signature(obj)
+        self.nodes[node]["obj"] = obj
+        self.nodes[node]["sig"] = sig
+        self.nodes[node]["rts"] = returns
+        
+        self._update_edge_attrs()
 
-        super().add_node(
-            node_for_adding,
-            node_obj=node_obj,
-            returns=returns,
-            signature=sig,
-            **attr,
-        )
+    def update_node_objects_from(self, node_objects):
+        """Update the functions of exisiting nodes"""
 
-    def add_nodes_from(self, nodes_for_adding, **attr):
-        """re-define the add_nodes_from method
+        for node, obj, rts in node_objects:
+            sig = inspect.signature(obj)
+            self.nodes[node]["obj"] = obj
+            self.nodes[node]["sig"] = sig
+            self.nodes[node]["rts"] = rts
 
-        TODO
-            check node name duplications
-        """
+        self._update_edge_attrs()
 
-        try:
-            nodes = []
-            for n, ndict in nodes_for_adding:
+    def add_linked_edges_from(self, linked_edges):
+        """Add edges from linked value"""
 
-                if ("node_obj" not in ndict) or ("returns" not in ndict):
+        for u, v in linked_edges:
+            if isinstance(u, list):
+                for _u in u:
+                    self.add_edge(_u, v)
+            elif isinstance(v, list):
+                for _v in v:
+                    self.add_edge(u, _v)
 
-                    raise Exception(
-                        "Node list missing attribute node_obj or returns"
-                    )
-                node_obj = ndict["node_obj"]
-                if callable(node_obj):
-                    ndict["signature"] = inspect.signature(node_obj)
-                else:
-                    raise Exception(f"Node object type {type(node_obj)} not supported")
+    def _update_edge_attrs(self):
+        
+        for u, v in self.edges:
+            u_rts = set(self.nodes[u].get('rts', ()))
+            v_sig = self.nodes[v].get('sig', None)
 
-                nodes.append([n, ndict])
-        except ValueError:
-            raise Exception("Node list missing node attributes")
-
-        super().add_nodes_from(nodes, **attr)
-
-    def add_edge(self, u_of_edge, v_of_edge, parameters, **attr):
-        """re-define the add_edge method"""
-
-        if u_of_edge not in self._succ:
-            raise Exception(f"Node {u_of_edge} is not defined")
-        if v_of_edge not in self._succ:
-            raise Exception(f"Node {v_of_edge} is not defined")
-
-        super().add_edge(u_of_edge, v_of_edge, parameters=parameters, **attr)
-
-    def add_edges_from(self, ebunch_to_add, **attr):
-        """re-define the add_edges_from method"""
-
-        edges = []
-        try:
-            for u_of_edge, v_of_edge, edict in ebunch_to_add:
-                if u_of_edge not in self._succ:
-                    raise Exception(f"Node {u_of_edge} is not defined")
-                if v_of_edge not in self._succ:
-                    raise Exception(f"Node {v_of_edge} is not defined")
-                if "parameters" not in edict:
-                    raise Exception("Edge attribute parameters not defined")
-
-                edges.append([u_of_edge, v_of_edge, edict])
-        except ValueError:
-            raise Exception("Edge attribute parameters not defined")
-
-        super().add_edges_from(edges, **attr)
-
-    @property
-    def doc(self):
-        """doc property (for easier access)"""
-        return self.graph["doc"]
-
-    def draw_graph(self, show_detail=False):
-        """Draw graph"""
-        if show_detail:
-            label = parse_description_graph(self._long_description(False))
-            return draw_graph(self, self.name, label)
-        else:
-            label = parse_description_graph(self._short_description())
-            return draw_plain_graph(self, self.name, label)
-
-    def _short_description(self):
-        """graph short documentation"""
-
-        short_docstring = self.doc.partition("\n")[0]
-
-        des_list = [("name", self.name), ("doc", short_docstring)]
-
-        return des_list
-
-    def _long_description(self, long_docstring=True):
-        """graph long documentation"""
-        if long_docstring:
-            doc = self.doc
-        else:
-            doc = self.doc.partition("\n")[0]
-
-        des_list = [
-            ("name", self.name),
-            ("doc", doc),
-            ("graph type", str(self.__class__)),
-            ("parameters", str(graph_signature(self))),
-            ("returns", ", ".join(graph_returns(self))),
-        ]
-
-        return des_list
-
-    def __repr__(self):
-        """Show instance description"""
-        title = f"{self.__class__.__name__} instance\n\n"
-        return title + parse_description_doc(self._long_description()).expandtabs(4)
+            if v_sig is not None:
+                v_params = set(v_sig.parameters.keys())
+                self.edges[u, v]['val'] = list(u_rts.intersection(v_params))
