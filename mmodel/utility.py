@@ -140,6 +140,8 @@ def loop_signature(signature, parameters):
 def subgraph_by_parameters(graph, parameters):
     """Construct subgraph based on parameters
 
+    The function is specifically used for loops. In the looping,
+    the subgraph needs to be a complete version.
     :param list params: target input paramaters to be included in
         the subgraph
 
@@ -157,8 +159,15 @@ def subgraph_by_parameters(graph, parameters):
 
     return graph.subgraph(subgraph_nodes)
 
+def subgraph_by_nodes(graph, nodes):
+    """Construct subgraph based on nodes"""
 
-def modify_subgraph(model_graph, subgraph, subgraph_name, subgraph_obj):
+    return graph.subgraph(nodes)
+
+
+def modify_subgraph(
+    model_graph, subgraph, subgraph_name, subgraph_obj, subgraph_returns
+):
     """Redirect graph based on subgraph
 
     Find all parent node that is not in subgraph but have child node
@@ -170,25 +179,26 @@ def modify_subgraph(model_graph, subgraph, subgraph_name, subgraph_obj):
     :param str subgraph_name: name of the subgraph
     """
 
-    graph = graph.copy()
-    visited_parents = []
+    graph = model_graph.copy()
+
     new_edges = []
     for node in subgraph.nodes():
         for parent in graph.predecessors(node):
-            if parent not in subgraph and parent not in visited_parents:
-                visited_parents.append(parent)
-                edge_attr = graph[parent][node]
-                new_edges.append([parent, subgraph_name, edge_attr])
+            if parent not in subgraph:
+                new_edges.append((parent, subgraph_name))
+        for child in graph.successors(node):
+            if child not in subgraph:
+                new_edges.append((subgraph_name, child))
 
     graph.remove_nodes_from(subgraph.nodes)
+    # remove unique edges
+    graph.add_edges_from(set(new_edges))
 
-    graph.add_node(
+    graph.update_node_object(
         subgraph_name,
         obj=subgraph_obj,
-        rts=subgraph_obj.returns,
-        sig=subgraph_obj.__signature__,
+        rts=subgraph_returns,
         has_subgraph=True,
     )
-    graph.add_edges_from(new_edges)
 
     return graph

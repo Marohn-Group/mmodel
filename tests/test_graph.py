@@ -72,9 +72,9 @@ def test_update_node_objects_from(mmodel_G):
     assert G.edges['node_a', 'node_b'] == {'val': ['c']}
 
 
-def test_graph_repr(mmodel_G):
+# def test_graph_repr(mmodel_G):
 
-    assert repr(mmodel_G) == "NAME\n\ttest\nDOC\n\ttest object\n\nlong description"
+#     assert repr(mmodel_G) == "NAME\n\ttest\nDOC\n\ttest object\n\nlong description"
 
 
 def test_copy(mmodel_G):
@@ -85,13 +85,6 @@ def test_copy(mmodel_G):
 
 """The following tests are modified based on networkx.classes.tests"""
 
-
-def test_str_named(mmodel_G):
-    """Test the string value"""
-    assert (
-        str(mmodel_G)
-        == f"{type(mmodel_G).__name__} named 'test' with 5 nodes and 5 edges"
-    )
 
 
 def test_graph_chain(mmodel_G):

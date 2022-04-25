@@ -1,5 +1,7 @@
 import inspect
 import networkx as nx
+from mmodel.doc import attr_to_doc
+
 
 class ModelGraph(nx.DiGraph):
 
@@ -26,14 +28,15 @@ class ModelGraph(nx.DiGraph):
 
     graph_attr_dict_factory = single_graph_attr_dict
 
-    def update_node_object(self, node, obj, returns):
+    def update_node_object(self, node, obj, rts, **kwargs):
         """Update the functions of existing node"""
 
         sig = inspect.signature(obj)
         self.nodes[node]["obj"] = obj
         self.nodes[node]["sig"] = sig
-        self.nodes[node]["rts"] = returns
-        
+        self.nodes[node]["rts"] = rts
+        self.nodes[node].update(kwargs)
+
         self._update_edge_attrs()
 
     def update_node_objects_from(self, node_objects):
@@ -59,11 +62,26 @@ class ModelGraph(nx.DiGraph):
                     self.add_edge(u, _v)
 
     def _update_edge_attrs(self):
-        
+        """Update edge attributes"""
+
         for u, v in self.edges:
-            u_rts = set(self.nodes[u].get('rts', ()))
-            v_sig = self.nodes[v].get('sig', None)
+            u_rts = set(self.nodes[u].get("rts", ()))
+            v_sig = self.nodes[v].get("sig", None)
 
             if v_sig is not None:
                 v_params = set(v_sig.parameters.keys())
-                self.edges[u, v]['val'] = list(u_rts.intersection(v_params))
+                self.edges[u, v]["val"] = list(u_rts.intersection(v_params))
+
+    def __str__(self):
+
+        # default string is the string output of networkx.Graph
+        default_str = "".join(
+            [
+                type(self).__name__,
+                f" named {self.name!r}" if self.name else "",
+                f" with {self.number_of_nodes()} nodes and {self.number_of_edges()} edges",
+            ]
+        )
+        docstring = self.graph.get("doc", "")
+
+        return f"{default_str}\n\n{docstring}"

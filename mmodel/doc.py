@@ -14,7 +14,7 @@ def parse_description_graph(des_list):
     return ''.join(des_str_list)
 
 
-def attr_to_docstring(attr_dict):
+def attr_to_doc(attr_dict):
     """Parse description list to display in graph
     
     The line breaks use '\l' to make sure they align left
@@ -23,7 +23,6 @@ def attr_to_docstring(attr_dict):
     attr_str_list = []
 
     for name, content in attr_dict.items():
-        tab_content = '\n\t'.join(content.split('\n'))
-        attr_str_list.append(f"{name.upper()}\n\t{tab_content}\n")
+        attr_str_list.append(f"{name.upper()} - {content}\n")
 
     return ''.join(attr_str_list).expandtabs(4)

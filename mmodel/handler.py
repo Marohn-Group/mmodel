@@ -260,4 +260,3 @@ class H5Handler(TopologicalHandler):
         """
 
         return group[key][()]
-

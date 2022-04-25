@@ -149,25 +149,67 @@ def test_subgraph_by_parameters(mmodel_G):
     graphs_equal(subgraph4, mmodel_G)
 
 
-def test_modify_subgraph(mmodel_G):
-    """Test redirect edges based on subgraph and subgraph node"""
+def test_subgraph_by_nodes(mmodel_G):
+    """Test if the subgraph contains all necessary nodes"""
+
+    subgraph = util.subgraph_by_nodes(mmodel_G, ["subtract", "multiply"])
+
+    assert sorted(list(subgraph.nodes)) == ["multiply", "subtract"]
+
+
+def test_modify_subgraph_terminal(mmodel_G):
+    """Test redirect edges based on subgraph and subgraph node
+    
+    This test specifically the terminal node
+    """
 
     subgraph = mmodel_G.subgraph(["multiply", "poly"])
 
-    def mock_obj(x, y):
+    def mock_obj(c, x, y):
         return
 
-    graph = util.modify_subgraph(mmodel_G, subgraph, "test", )
+    graph = util.modify_subgraph(mmodel_G, subgraph, "test", mock_obj, [])
 
     # a copy is created
     assert graph != mmodel_G
     assert "test" in graph
     assert graph.nodes["test"] == {
-        "node_obj": mock_obj,
-        "returns": ["z"],
-        "signature": inspect.signature(mock_obj),
-        "loop_params": ["f"],
-        "has_subgraph": True,
-        "has_loop": True
+        "obj": mock_obj,
+        "rts": [],
+        "sig": inspect.signature(mock_obj),
+        "has_subgraph": True
     }
+
+    # Test the edge attributes
+    assert graph.edges['add', 'test']['val'] == ["c"]
+    assert graph.edges['subtract', 'test']['val'] == []
+
+
+
+def test_modify_subgraph_middle(mmodel_G):
+    """Test redirect edges based on subgraph and subgraph node
+    
+    This test specifically the middle node
+    """
+
+    subgraph = mmodel_G.subgraph(["multiply", "subtract"])
+
+    def mock_obj(c, x, y):
+        return x + y
+
+    graph = util.modify_subgraph(mmodel_G, subgraph, "test", mock_obj, ["e"])
+
+    # a copy is created
+    assert graph != mmodel_G
+    assert "test" in graph
+    assert graph.nodes["test"] == {
+        "obj": mock_obj,
+        "rts": ["e"],
+        "sig": inspect.signature(mock_obj),
+        "has_subgraph": True
+    }
+
+    # Test the edge attributes
+    assert graph.edges['add', 'test']['val'] == ["c"]
+    assert graph.edges['test', 'poly']['val'] == ["e"]
 

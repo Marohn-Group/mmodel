@@ -29,3 +29,7 @@ class ModelExectuor:
         values = self.__signature__.bind(*args, **kwargs)
         values.apply_defaults()
         return values.arguments
+
+    def __str__(self):
+
+        ...
