@@ -1,5 +1,4 @@
 from mmodel.modifier import basic_loop, zip_loop
-import inspect
 import pytest
 
 @pytest.fixture

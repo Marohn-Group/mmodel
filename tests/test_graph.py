@@ -27,6 +27,13 @@ from inspect import signature
 from tests.conftest import graphs_equal
 from mmodel import ModelGraph
 
+GRAPH_REPR = """ModelGraph named 'test' with 5 nodes and 5 edges
+
+test object
+
+long description"""
+
+
 def test_default_mockgraph(mmodel_G, standard_G):
     """Test if default ModelGraph matches the ones created by DiGraph"""
 
@@ -37,7 +44,13 @@ def test_graph_name(mmodel_G):
     """Test naming and docs of the graph"""
     assert mmodel_G.name == "test"
 
-def test_update_node_objects(mmodel_G):
+def test_graph_str(mmodel_G):
+    """Test graph representation"""
+
+
+    assert str(mmodel_G) == GRAPH_REPR
+
+def test_update_node_objects():
 
     def func_a(a, b):
         return None
@@ -57,7 +70,7 @@ def test_update_node_objects(mmodel_G):
     assert G.edges['node_a', 'node_b'] == {'val': ['c']}
 
 
-def test_update_node_objects_from(mmodel_G):
+def test_update_node_objects_from():
 
     def func_a(a, b):
         return None
@@ -70,11 +83,6 @@ def test_update_node_objects_from(mmodel_G):
     G.update_node_objects_from([('node_a', func_a, ['c']), ('node_b', func_b, ['e'])])
 
     assert G.edges['node_a', 'node_b'] == {'val': ['c']}
-
-
-# def test_graph_repr(mmodel_G):
-
-#     assert repr(mmodel_G) == "NAME\n\ttest\nDOC\n\ttest object\n\nlong description"
 
 
 def test_copy(mmodel_G):

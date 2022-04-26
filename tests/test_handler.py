@@ -12,7 +12,6 @@ The test stredgy works as the following:
 from mmodel.handler import TopologicalHandler, MemHandler, PlainHandler, H5Handler
 from inspect import signature
 import pytest
-from collections import OrderedDict
 import h5py
 import numpy as np
 import math
@@ -42,56 +41,6 @@ class TestTopologicalHandler:
         assert model.model_graph != mmodel_G
 
         graphs_equal(model.model_graph, mmodel_G)
-
-
-#     def test_create_loop(self, monkeypatch, mmodel_G):
-#         """Test create loops for graph"""
-
-#         monkeypatch.setattr(TopologicalModel, "__abstractmethods__", set())
-
-#         model = TopologicalModel(mmodel_G)
-#         model.loop_parameter(parameters=["f"])
-
-#         assert "loop f" in model.G
-#         assert model.G.adj == {
-#             "add": {
-#                 "subtract": {"parameters": ["c"]},
-#                 "log": {"parameters": ["c"]},
-#                 "loop f": {"parameters": ["c"]},
-#             },
-#             "subtract": {"loop f": {"parameters": ["e"]}},
-#             "log": {},
-#             "loop f": {},
-#         }
-
-#         # test the node (unwrapped) in an instance of TopologicalModel
-#         assert isinstance(
-#             model.G.nodes["loop f"]["node_obj"].__wrapped__,
-#             TopologicalModel,
-#         )
-
-#         # add second loop
-#         model.loop_parameter(parameters=["d"])
-#         assert "loop d" in model.G
-#         assert model.G.adj == {
-#             "add": {
-#                 "loop d": {"parameters": ["c"]},
-#                 "log": {"parameters": ["c"]},
-#             },
-#             "log": {},
-#             "loop d": {},
-#         }
-
-#     def test_double_loop_fails(self, monkeypatch, mmodel_G):
-#         """Test when two loops are created, the name does not overlap"""
-
-#         monkeypatch.setattr(TopologicalModel, "__abstractmethods__", set())
-
-#         model = TopologicalModel(mmodel_G)
-#         model.loop_parameter(parameters=["f"])
-#         assert "loop f" in model.G
-#         with pytest.raises(Exception, match="loop f already exist"):
-#             model.loop_parameter(parameters=["f"])
 
 
 @pytest.fixture(scope="module")
@@ -203,16 +152,6 @@ class TestMemHandler:
         assert handler_instance(a=1, d=2, f=3, b=4) == (45, math.log(5, 4))
 
 
-#     def test_loop(self, model_instance):
-#         """Test loop
-
-#         Node the return parameter shifts
-#         """
-#         model_instance.loop_parameter(parameters=["f"])
-
-#         assert model_instance.returns == ["m", "k"]
-#         assert model_instance(1, 2, [2, 3], 4) == (math.log(5, 4), [30, 45])
-
 
 class TestPlainHandler:
     """Test class Model"""
@@ -291,16 +230,6 @@ class TestPlainHandler:
 
         assert handler_instance(a=10, d=15, f=20, b=2) == (-720, math.log(12, 2))
         assert handler_instance(a=1, d=2, f=3, b=4) == (45, math.log(5, 4))
-
-    # def test_loop(self, handler_instance):
-    #     """Test loop
-
-    #     Node the return parameter shifts
-    #     """
-    #     handler_instance.loop_parameter(parameters=["f"])
-
-    #     assert handler_instance.returns == ["m", "k"]
-    #     assert handler_instance(1, 2, [2, 3], 4) == (math.log(5, 4), [30, 45])
 
 
 class TestH5Handler:
@@ -493,14 +422,3 @@ class TestH5Handler:
 
         assert handler_instance(a=10, d=15, f=20, b=2) == (-720, math.log(12, 2))
         assert handler_instance(a=1, d=2, f=3, b=4) == (45, math.log(5, 4))
-
-    # def test_loop(self, h5model_instance):
-    #     """Test loop
-
-    #     Node the return parameter shiftss
-    #     """
-    #     h5model_instance.loop_parameter(parameters=["f"])
-
-    #     assert h5model_instance.returns == ["m", "k"]
-    #     assert h5model_instance(1, 2, [2, 3], 4)[0] == math.log(5, 4)
-    #     assert all(h5model_instance(1, 2, [2, 3], 4)[1] == [30, 45])

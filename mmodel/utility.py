@@ -123,18 +123,18 @@ def param_counter(graph):
     return count
 
 
-def loop_signature(signature, parameters):
-    """Change parameter default from scalar to list"""
+# def loop_signature(signature, parameters):
+#     """Change parameter default from scalar to list"""
 
-    # reset the default to a list
-    sig_param = dict(signature.parameters)
-    for parameter in parameters:
-        _param = sig_param[parameter]
-        if _param.default != inspect.Parameter.empty:
-            sig_param[parameter] = inspect.Parameter(
-                _param.name, _param.kind, default=[_param.default]
-            )
-    return inspect.Signature(sig_param.values())
+#     # reset the default to a list
+#     sig_param = dict(signature.parameters)
+#     for parameter in parameters:
+#         _param = sig_param[parameter]
+#         if _param.default != inspect.Parameter.empty:
+#             sig_param[parameter] = inspect.Parameter(
+#                 _param.name, _param.kind, default=[_param.default]
+#             )
+#     return inspect.Signature(sig_param.values())
 
 
 def subgraph_by_parameters(graph, parameters):
@@ -180,6 +180,8 @@ def modify_subgraph(
     """
 
     graph = model_graph.copy()
+    subgraph = subgraph.copy()
+    subgraph.name = subgraph_name
 
     new_edges = []
     for node in subgraph.nodes():
@@ -198,7 +200,16 @@ def modify_subgraph(
         subgraph_name,
         obj=subgraph_obj,
         rts=subgraph_returns,
-        has_subgraph=True,
+        subgraph=subgraph,
     )
 
     return graph
+
+
+def parse_input(signature, *args, **kwargs):
+    """parse argument based on signature and input"""
+
+    values = signature.bind(*args, **kwargs)
+    values.apply_defaults()
+    return values.arguments
+

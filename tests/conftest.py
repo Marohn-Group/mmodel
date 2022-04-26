@@ -67,7 +67,12 @@ def standard_G():
 
 @pytest.fixture()
 def mmodel_G():
-    """Mock test graph generated using ModelGraph"""
+    """Mock test graph generated using ModelGraph
+    
+    The result is:
+    k = (a + b - d)(a + b)f
+    m = log(a + b, b)
+    """
 
     def addition(a, b=2):
         return a + b

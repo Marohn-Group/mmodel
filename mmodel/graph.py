@@ -1,6 +1,5 @@
 import inspect
 import networkx as nx
-from mmodel.doc import attr_to_doc
 
 
 class ModelGraph(nx.DiGraph):
@@ -73,7 +72,7 @@ class ModelGraph(nx.DiGraph):
                 self.edges[u, v]["val"] = list(u_rts.intersection(v_params))
 
     def __str__(self):
-
+        """Output graph information"""
         # default string is the string output of networkx.Graph
         default_str = "".join(
             [

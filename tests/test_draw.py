@@ -4,103 +4,70 @@ draw_model returns a graphviz.DiGraph object, the tests consist of two parts
 1. if draw model creates the correct dot string
 """
 
-# from mmodel.draw import draw_graph, draw_plain_graph, update_settings, DEFAULT_SETTINGS
-# # from mmodel.model import Model
+from mmodel.draw import draw_graph, draw_plain_graph, update_settings, DEFAULT_SETTINGS
+import networkx as nx
 
 
-# dot_source = """digraph test {
-# graph [label="test label" labeljust=l labelloc=t ordering=out splines=ortho]
-# node [shape=box]
-# add
-# subtract
-# multiply
-# poly
-# log
-# add -> subtract
-# add -> multiply
-# add -> log
-# subtract -> poly
-# multiply -> poly
-# }"""
+dot_source = """digraph test {
+graph [label="test label" labeljust=l labelloc=t ordering=out splines=ortho]
+node [shape=box]
+add
+subtract
+multiply
+log
+poly
+add -> subtract
+add -> multiply
+add -> log
+subtract -> poly
+multiply -> poly
+}"""
+
+plain_dot_source = """digraph test {
+graph [label="test label" labeljust=l labelloc=t ordering=out splines=ortho]
+node [shape=box]
+a [label=a]
+b [label=b]
+a -> b [xlabel=""]
+}"""
 
 
-# def test_update_settings():
-#     """Test the update_settings function"""
+def test_update_settings():
+    """Test the update_settings function"""
 
-#     setttings = update_settings("test label")
-#     assert setttings["graph_attr"]["label"] == "test label"
+    setttings = update_settings("test label")
+    assert setttings["graph_attr"]["label"] == "test label"
 
-#     # check default is deepcopied
-#     assert not "label" in DEFAULT_SETTINGS["graph_attr"]
-
-
-# def test_draw_plain_model(mmodel_G):
-#     """Test the model without the node detail"""
-
-#     dot_graph = draw_plain_graph(mmodel_G, name="test", label="test label")
-#     assert dot_graph.source.replace("\n", "").replace("\t", "") == dot_source.replace(
-#         "\n", ""
-#     )
+    # check default is deepcopied
+    assert not "label" in DEFAULT_SETTINGS["graph_attr"]
 
 
-# def test_draw_graph(mmodel_G):
-#     """Test the model with full node and edge detail"""
+def test_draw_plain_model(mmodel_G):
+    """Test the model without the node detail"""
 
-#     dot_graph = draw_graph(mmodel_G, name="test", label="test label")
-#     # test if add function is included
-#     assert "add\l\naddition(a, b=2)\lreturn c\l" in dot_graph.source
-
-
-# def test_graph_draw_graph(mmodel_G):
-#     """Test graph draw_model
-
-#     Here test if the label value are plotted correctly
-#     """
-#     graph = mmodel_G.draw_graph()
-#     assert graph.name == "test"
-#     assert 'label="name: test\ldoc: test object\l"' in graph.source
-
-#     detail_graph = mmodel_G.draw_graph(show_detail=True)
-#     assert "parameters: (a, d, f, b=2)\l" in detail_graph.source
-#     assert detail_graph.name == "test"
-#     assert "returns: k, m" in detail_graph.source
+    dot_graph = draw_plain_graph(mmodel_G, label="test label")
+    assert dot_graph.source.replace("\n", "").replace("\t", "") == dot_source.replace(
+        "\n", ""
+    )
 
 
-# def test_model_draw_graph(mmodel_G):
-#     """Test graph model_model
+def test_draw_graph(mmodel_G):
+    """Test the model with full node and edge detail"""
 
-#     Here test if the label value are plotted correctly
-#     """
-#     model = Model(mmodel_G)
-#     graph = model.draw_graph()
-#     assert graph.name == "test model"
-#     assert (
-#         'label="name: test model\ldoc: test object\l'
-#         'model type: Model\l"' in graph.source
-#     )
-
-#     detail_graph = model.draw_graph(show_detail=True)
-#     assert detail_graph.name == "test model"
-#     assert "model type: <class 'mmodel.model.Model'>\l" in detail_graph.source
-#     assert "parameters: (a, d, f, b=2)\l" in detail_graph.source
-#     assert "returns: k, m\l" in detail_graph.source
+    dot_graph = draw_graph(mmodel_G, label="test label")
+    # test if add function is included
+    assert "add\l\naddition(a, b=2)\lreturn c\l" in dot_graph.source
 
 
-# def test_model_loop_draw_graph(mmodel_G):
-#     """Test graph model_model with loop
+def test_draw_partial_graph():
+    """Test draw graph without node object information"""
 
-#     Here test if the label value are plotted correctly
-#     """
-#     model = Model(mmodel_G)
-#     model.loop_parameter(parameters=["f"])
+    G = nx.DiGraph()
+    G.add_edge("a", "b")
+    G.name = "test"
 
-#     detail_graph = model.draw_graph(show_detail=True)
+    dot_graph = draw_graph(G, label="test label")
 
-#     assert detail_graph.name == "test model"
-#     assert "model type: <class 'mmodel.model.Model'>\l" in detail_graph.source
-#     assert "parameters: (a, d, f, b=2)\l" in detail_graph.source
-#     assert "returns: m, k\l" in detail_graph.source
-
-#     # subgraph content
-#     assert 'subgraph "cluster loop f"' in detail_graph.source
-#     assert 'label="name: loop f\ldoc: basic_loop method\l"' in detail_graph.source
+    assert dot_graph.source.replace("\n", "").replace(
+        "\t", ""
+    ) == plain_dot_source.replace("\n", "")

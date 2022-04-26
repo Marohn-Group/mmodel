@@ -78,19 +78,20 @@ def test_graph_signature(mmodel_G, mmodel_signature):
 
     assert util.graph_signature(mmodel_G) == mmodel_signature
 
+
 def test_replace_signature(mmodel_signature):
     """Test replace signature"""
 
-    replacement_dict = {'a_rep': ['a'], 'f_rep': ['f']}
+    replacement_dict = {"a_rep": ["a"], "f_rep": ["f"]}
     signature = util.replace_signature(mmodel_signature, replacement_dict)
 
-    assert 'a_rep' in signature.parameters
-    assert 'a' not in signature.parameters
-    assert 'f_rep' in signature.parameters
-    assert 'f' not in signature.parameters
+    assert "a_rep" in signature.parameters
+    assert "a" not in signature.parameters
+    assert "f_rep" in signature.parameters
+    assert "f" not in signature.parameters
 
     # make sure the original signature is not modified
-    assert 'a_rep' not in mmodel_signature.parameters
+    assert "a_rep" not in mmodel_signature.parameters
 
 
 def test_graph_returns(mmodel_G):
@@ -118,7 +119,7 @@ def test_graph_topological_sort(mmodel_G):
         assert sorted(list(attr)) == ["obj", "rts", "sig"]
         nodes.append(node)
 
-    assert nodes == ["add","subtract", "multiply", "log", "poly"]
+    assert nodes == ["add", "subtract", "multiply", "log", "poly"]
 
 
 def test_param_counter(mmodel_G):
@@ -159,7 +160,7 @@ def test_subgraph_by_nodes(mmodel_G):
 
 def test_modify_subgraph_terminal(mmodel_G):
     """Test redirect edges based on subgraph and subgraph node
-    
+
     This test specifically the terminal node
     """
 
@@ -173,22 +174,24 @@ def test_modify_subgraph_terminal(mmodel_G):
     # a copy is created
     assert graph != mmodel_G
     assert "test" in graph
+
+    node_subgraph = graph.nodes["test"].pop("subgraph")
+    assert node_subgraph.name == "test"
+
     assert graph.nodes["test"] == {
         "obj": mock_obj,
         "rts": [],
         "sig": inspect.signature(mock_obj),
-        "has_subgraph": True
     }
 
     # Test the edge attributes
-    assert graph.edges['add', 'test']['val'] == ["c"]
-    assert graph.edges['subtract', 'test']['val'] == []
-
+    assert graph.edges["add", "test"]["val"] == ["c"]
+    assert graph.edges["subtract", "test"]["val"] == []
 
 
 def test_modify_subgraph_middle(mmodel_G):
     """Test redirect edges based on subgraph and subgraph node
-    
+
     This test specifically the middle node
     """
 
@@ -202,14 +205,16 @@ def test_modify_subgraph_middle(mmodel_G):
     # a copy is created
     assert graph != mmodel_G
     assert "test" in graph
+
+    node_subgraph = graph.nodes["test"].pop("subgraph")
+    assert node_subgraph.name == "test"
+
     assert graph.nodes["test"] == {
         "obj": mock_obj,
         "rts": ["e"],
         "sig": inspect.signature(mock_obj),
-        "has_subgraph": True
     }
 
     # Test the edge attributes
-    assert graph.edges['add', 'test']['val'] == ["c"]
-    assert graph.edges['test', 'poly']['val'] == ["e"]
-
+    assert graph.edges["add", "test"]["val"] == ["c"]
+    assert graph.edges["test", "poly"]["val"] == ["e"]

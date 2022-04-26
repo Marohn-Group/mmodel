@@ -1,7 +1,5 @@
 import graphviz
-import networkx as nx
 from copy import deepcopy
-from mmodel.doc import parse_description_graph
 
 DEFAULT_SETTINGS = {
     "graph_attr": {
@@ -16,7 +14,7 @@ DEFAULT_SETTINGS = {
 
 def update_settings(label):
     """Update graphviz settings
-    
+
     Creates a copy of the default dictionary
     and update the graph label in graph attribute
     """
@@ -28,9 +26,9 @@ def update_settings(label):
     return new_settings
 
 
-def draw_plain_graph(G, name, label):
+def draw_plain_graph(G, label=""):
     """Draw plain graph
-    
+
     :param str name: name of the graph
     :param str label: title of the graph
 
@@ -39,7 +37,7 @@ def draw_plain_graph(G, name, label):
     """
 
     settings = update_settings(label)
-    dot_graph = graphviz.Digraph(name=name, **settings)
+    dot_graph = graphviz.Digraph(name=G.name, **settings)
 
     for node in G.nodes:
         dot_graph.node(node)
@@ -50,9 +48,10 @@ def draw_plain_graph(G, name, label):
     return dot_graph
 
 
-def draw_graph(G, name, label):
+
+def draw_graph(G, label=""):
     """Draw detailed graph
-    
+
     :param str name: name of the graph
     :param str label: title of the graph
 
@@ -63,23 +62,36 @@ def draw_graph(G, name, label):
     """
 
     settings = update_settings(label)
-    dot_graph = graphviz.Digraph(name=name, **settings)
+
+    dot_graph = graphviz.Digraph(name=G.name, **settings)
 
     for node, ndict in G.nodes(data=True):
-        rts = ", ".join(ndict["returns"])
-        label = f"{node}\l\n{ndict['node_obj'].__name__}{ndict['signature']}\lreturn {rts}\l"
+
+        if "obj" in ndict:
+            label = (
+                f"{node}\l\n{ndict['obj'].__name__}"
+                f"{ndict['sig']}\lreturn {', '.join(ndict['rts'])}\l"
+            )
+        else:
+            label = node
         dot_graph.node(node, label=label)
 
     for u, v, edict in G.edges(data=True):
-        dot_graph.edge(u, v, xlabel=" ".join(edict["parameters"]))
 
-    for node in nx.get_node_attributes(G, "has_subgraph").keys():
+        if "val" in edict:
+            xlabel = ", ".join(edict["val"])
+        else:
+            xlabel = ""
 
-        subG = G.nodes[node]["node_obj"].G
+        dot_graph.edge(u, v, xlabel=xlabel)
 
-        # use short docstring for subgraph
-        label = parse_description_graph(subG._short_description())
-        dot_sub = draw_graph(subG, name=f"cluster {node}", label=label)
-        dot_graph.subgraph(dot_sub)
+    # temperarily disable subgraph plotting
+    # for node, subgraph in nx.get_node_attributes(G, "subgraph").items():
+
+    #     # use short docstring for subgraph
+    #     dot_subgraph = draw_graph(subgraph, label=f"{node}", name=f"cluster {node}")
+    #     dot_graph.subgraph(dot_subgraph)
 
     return dot_graph
+
+
