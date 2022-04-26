@@ -33,12 +33,12 @@ To create a nonlinear model:
 
     # create graph links
     
-    edges = [
+    linked_edges = [
         ("func a", ["func b", "func c"]),
         (["func b", "func"], "func d"),
     ]
 
-    node_callables = [
+    node_objects = [
         ("func a", (func_a, ["sum_xy", "dif_xy"])),
         ("func b", (func_b, ["sum_xyz"])),
         ("func c", (func_c, ["abs_xy"])),
@@ -46,10 +46,10 @@ To create a nonlinear model:
     ]
 
     model_graph = ModelGraph("Example")
-    model_graph.add_linked_edges(edges)
-    model_graph.add_node_callables(node_callables)
+    model_graph.add_linked_edges(linked_edges)
+    model_graph.update_node_objects_from(node_objects)
 
-    example_func = ModelExecutor(graph, handler=MemExecutor)
+    example_func = Model(model_graph, handler=MemExecutor)
 
     >>> example_func(1, 2, 3)
     >>> 6
@@ -60,31 +60,33 @@ level.
 
 .. code-block:: python
 
-    from mmodel import subgraph_by_parameters, modify_subgraph
-    from mmodel.modifers import basic_loop
+    from mmodel import subgraph_by_parameters, modify_subgraph, basic_loop
 
-    subgraph = subgraph_by_parameters("z")
+    subgraph = subgraph_by_parameters(["z"])
     loop_mod = basic_loop("z")
+    loop_node = Model(subgraph, handler=MemExecutor, modifiers=[loop_mod])
+    loop_model_graph = modify_subgraph(
+        graph, subgraph, "z loop node", loop_node, loop_node.returns
+        )
 
-    loop_node = ModelExecutor(subgraph, [loop_mod], handler=MemExecutor)
-    loop_model_graph = modify_subgraph(graph, subgraph, "z loop", loop_node)
-
-    example_loop_func = ModelExecutor(loop_model_graph, handler=MemHandler)
+    example_loop_func = Model(loop_model_graph, handler=MemHandler)
 
     >>> example_loop_func(1, 2, [3, 4])
     >>> [6, 7]
 
-To modify a single node
+.. To modify a single node
 
-.. code-block:: python
+.. .. code-block:: python
 
-    modify_node(graph, node, [modifers])
+..     modify_node(graph, node, modifiers=[])
 
 To draw the graph or the modified model with or without detail
 
 .. code-block:: python
 
-    model_graph.draw()
+    from mmodel import draw_graph
+    
+    draw_graph(model_graph, label="Example Figure")
 
 To view the descriptions of the graph and model
 
