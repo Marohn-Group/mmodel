@@ -23,6 +23,10 @@ Changelog
 
    changelog
 
+License
+=========
+
+.. include:: ../LICENSE
 
 Indices and tables
 ==================
