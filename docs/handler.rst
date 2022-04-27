@@ -1,15 +1,15 @@
-Model
-=====
+Handler
+=======
 
-The models in ``mmodel`` represent different execution methods for the provided
-graph. All models execute the nodes in topological order, a linear ordering of
+Handlers in ``mmodel`` represent different execution methods for the provided
+graph. Currently handler execute the nodes in topological order, a linear ordering of
 the nodes for each directed edge u -> v, u is ordered ahead of v. Since the
 edge represents the data flow. The topological order ensures the correct
 execution order.
 
 .. autosummary::
 
-    mmodel.model.TopologicalModel
+    mmodel.model.TopologicalHandler
 
 To crate and execute a model:
 
@@ -35,7 +35,7 @@ The models provided are:
 
 .. autosummary::
 
-    mmodel.model.Model
+    mmodel.handler.MemHandler
 
 ``Model`` instance calculates each input parameter usage. Then, the instance
 executes each node and stores the result in a dictionary. After each node
@@ -52,7 +52,7 @@ intermediate values are preserved in the dictionary.
 
 .. autosummary::
 
-    mmodel.model.H5Model
+    mmodel.model.H5Handler
 
 ``H5Model`` executes each node and stores the result in an h5 file. For each
 node execution, the parameters are read from the h5 file. Each instance call
@@ -64,18 +64,18 @@ the h5 subgroup entries are unique for each instance run.
 :mod:`model` module
 --------------------
 
-.. autoclass:: mmodel.model.TopologicalModel
+.. autoclass:: mmodel.model.TopologicalHandler
     :members:
     :show-inheritance:
 
-.. autoclass:: mmodel.model.Model
+.. autoclass:: mmodel.handler.MemHandler
     :members:
     :show-inheritance:
 
-.. autoclass:: mmodel.model.PlainModel
+.. autoclass:: mmodel.handler.PlainHandler
     :members:
     :show-inheritance:
     
-.. autoclass:: mmodel.model.H5Model
+.. autoclass:: mmodel.handler.H5Handler
     :members:
     :show-inheritance:

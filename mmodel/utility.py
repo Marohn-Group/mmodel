@@ -205,6 +205,25 @@ def modify_subgraph(
 
     return graph
 
+def modify_node(model_graph, node,  modifiers, node_returns=None):
+    """Add modifiers to node
+    
+    The result is a new graph with node object modified
+    """
+
+    graph = model_graph.copy()
+    obj = graph.nodes[node]['obj']
+    rts = node_returns or graph.nodes[node]['rts']
+
+    for mdf in modifiers:
+        obj = mdf(obj)
+
+    # update the loop value
+    graph.update_node_object(node, obj=obj, rts=rts)
+
+    return graph
+
+
 
 def parse_input(signature, *args, **kwargs):
     """parse argument based on signature and input"""

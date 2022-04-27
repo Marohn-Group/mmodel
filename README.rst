@@ -13,7 +13,7 @@ a modular package that is fast, easy to test, and user-friendly.
 Quickstart
 ----------
 
-To create a nonlinear model:
+To create a nonlinear model that has the end result of :math:`\abs(x - y)(x - y + z)`:
 
 .. code-block:: python
 
@@ -42,7 +42,7 @@ To create a nonlinear model:
         ("func a", (func_a, ["sum_xy", "dif_xy"])),
         ("func b", (func_b, ["sum_xyz"])),
         ("func c", (func_c, ["abs_xy"])),
-        ("func d", (func_d, ["xyz"])),
+        ("func d", (func_d, ["result"])),
     ]
 
     model_graph = ModelGraph("Example")
@@ -74,11 +74,12 @@ level.
     >>> example_loop_func(1, 2, [3, 4])
     >>> [6, 7]
 
-.. To modify a single node
+To modify a single node (add loop to a single node):
 
-.. .. code-block:: python
+.. code-block:: python
 
-..     modify_node(graph, node, modifiers=[])
+    loop_mod = basic_loop("z")
+    modify_node(graph, 'func b', modifiers=[loop_mod])
 
 To draw the graph or the modified model with or without detail
 

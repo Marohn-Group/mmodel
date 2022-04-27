@@ -18,6 +18,8 @@ import mmodel.utility as util
 from collections import OrderedDict
 from inspect import Parameter
 from tests.conftest import graphs_equal
+import networkx as nx
+from functools import wraps
 
 
 def mock_func(a, c, b=2, *args, d, e=10, **kwargs):
@@ -218,3 +220,28 @@ def test_modify_subgraph_middle(mmodel_G):
     # Test the edge attributes
     assert graph.edges["add", "test"]["val"] == ["c"]
     assert graph.edges["test", "poly"]["val"] == ["e"]
+
+
+def test_modify_node(mmodel_G):
+    """Test modify_node
+    
+    Test if the node have the correct signature and result
+    """
+
+    def mock_obj(c, x, y):
+        return x + y
+
+    def mod(func):
+        
+        @wraps(func)
+        def wrapped(*args, **kwargs):
+            return func(*args, **kwargs) + 1
+
+        return wrapped
+
+    mod_G = util.modify_node(mmodel_G, 'subtract', [mod], ['g'])
+
+    # add one to the final value
+    assert mod_G.nodes['subtract']['obj'](1, 2) == 0 
+    # make sure the edge value is updated
+    assert mod_G['subtract']['poly']['val'] == ['g']

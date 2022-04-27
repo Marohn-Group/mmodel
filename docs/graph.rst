@@ -3,7 +3,7 @@ Graph
 
 .. autosummary::
 
-    mmodel.graph.MGraph
+    mmodel.graph.ModelGraph
 
 A directed acyclic graph (DAG) is a directed graph without any cycles.
 The model graphs in ``mmodel`` are based on the DAG, where each node represents
@@ -26,7 +26,7 @@ A graph node is a callable with user-defined attributes:
     def func(a, b):
         return a + b
 
-    G = MGraph()
+    G = ModelGraph()
     G.add_node("func", node_obj=func, returns=["c"])
 
 A graph edge (u, v) is the link between two callable nodes, with

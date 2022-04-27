@@ -7,14 +7,23 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 
 [unreleased]
 ------------
+
+Version 0.2.0 changed the model building from inheritence to composition. ``Model`` class
+is used to create executable. 
+
 Added
 ^^^^^
-- add `zip_loop` wrapper
+- add ``zip_loop`` wrapper
 
 Changed
 ^^^^^^^
-- change loop argument "params" to "parameters"
-
+- API for creating executable
+- loop construction changed as a modifier
+- ``MGraph`` to ``ModelGraph``
+- model graph allows node defintion without node object
+- model graph allows linked edges to simplify graph definition with ``add_linked_edges_from``
+- model graph node attributes does not need to provide
+  key with ``update_node_object`` and ``update_node_objects_from``
 
 [0.1.1] - 2022-04-06
 --------------------
@@ -31,7 +40,7 @@ Changed
 - remove ``title`` input for ``draw_graph``
 - change model attribute ``graph`` to ``G``, to avoid confusion of the graph's
   inherent attribute ``graph``
-- separate ``draw_plain_graph()`` and ``draw_graph``, the former shows
+- separate ``draw_plain_graph()`` and ``draw_graph()``, the former shows
   a simplified version of graph and latter shows all graph details
 - graph title outputs detailed descriptions of the model instance and
   graph instance
