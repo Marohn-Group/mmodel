@@ -5,11 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
-[unreleased]
-------------
+[0.2.0] - 2022-04-27
+--------------------
 
-Version 0.2.0 changed the model building from inheritence to composition. ``Model`` class
-is used to create executable. 
+Version 0.2.0 changed the model building from inheritence to composition.
+``Model`` class is used to create executable. 
 
 Added
 ^^^^^
@@ -21,7 +21,8 @@ Changed
 - loop construction changed as a modifier
 - ``MGraph`` to ``ModelGraph``
 - model graph allows node defintion without node object
-- model graph allows linked edges to simplify graph definition with ``add_linked_edges_from``
+- model graph allows linked edges to simplify graph definition
+  with ``add_linked_edges_from``
 - model graph node attributes does not need to provide
   key with ``update_node_object`` and ``update_node_objects_from``
 

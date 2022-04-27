@@ -1,15 +1,3 @@
-"""Test graph operations
-
-1. `test_param_sorter` - test `param_sorter` result
-2. `test_param_sorter_order` - test if parameters are sorted
-    correctly with `param_sorter`
-3. `test_graph_signature` - test graph_signature
-4. `test_graph_returns` - test graph_returns
-5. `test_graph_returns` - test graph_returns
-6. `test_parameter_c` - test graph_returns
-7. `test_h5_read` - test reading h5 data
-8. `test_h5_write` - test reading 
-"""
 
 import inspect
 import pytest

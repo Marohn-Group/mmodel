@@ -1,11 +1,11 @@
-"""Test Models
+"""Test Handler
 
-Currently all models inherits from TopologicalModel, which is an abstract class.
+Currently all models inherits from TopologicalHanlder, which is an abstract class.
 The test stredgy works as the following:
 
 - create a mock instance of the abstract class, and test the attributes
 - test individual method of child class methods
-- test Model as a whole
+- test Handler as a whole
 
 """
 

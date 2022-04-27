@@ -11,54 +11,52 @@ an execution step, and each edge represents the data flow from one callable
 to another. DAG structure allows us to create model graphs with nonlinear
 nodes.
 
-The ``MGraph`` class is the main graph class to establish a model graph.
+The ``ModelGraph`` class is the main graph class to establish a model graph.
 The class inherits from ``networkx.DiGraph``, which is compatible with all
 ``networkx`` operations
 (see `documentation <https://networkx.org/documentation/stable/>`_).
 
-A graph node is a callable with user-defined attributes:
+Another benefit of using graphs is that they can be added as a component in
+a more complex graph. Again, this increases the reusability of the models.
 
-- ``node_object``: node callable
-- ``returns``: the parameter names for the returned values
+A graph node is a callable with user-defined attributes. The object of the
+nodes can be updated by supplying the node object and the return key of the
+callable.
 
 .. code-block:: python
 
     def func(a, b):
+        # returns "c"
         return a + b
 
     G = ModelGraph()
-    G.add_node("func", node_obj=func, returns=["c"])
+    G.add_node("func")
+    G.update_node_object("func", func, ["c"])
 
 A graph edge (u, v) is the link between two callable nodes, with
 user-defined attributes:
 
-- ``parameters``: the names of the parameters that are passed from
-   node u to v. The parameter name should match the input requirement
-   of node v.
-
 .. code-block:: python
 
     def func_a(a, b):
+        # returns c
         return a + b
 
     def func_b(c):
+        # returns d
         return c*c
 
-    G = MGraph(name="example", doc="a example MGraph object")
-    G.add_node("func_a", node_obj=func_a, returns=["c"])
-    G.add_node("func_b", node_obj=func_b, returns=["d"])
+    # model that represents (a + b)(a + b)
+    G = ModelGraph(name="example", doc="a example MGraph object")
 
-    G.add_edge("func_a", "func_b", parameters=["c"])
+    G.add_edge("func_a", "func_b")
+    G.update_node_object("func_a", func_a, ["c"])
+    G.update_node_object("func_b", func_b, ["d"])
 
-.. note::
-
-    For ``MGraph``, all nodes in an edge need to be added first.
-    The behavior is different from networkx graphs, where the user can
-    define the edge without all nodes defined.
 
 :mod:`graph` module
 ----------------------
 
-.. autoclass:: mmodel.graph.MGraph
+.. autoclass:: mmodel.graph.ModelGraph
     :members:
     :show-inheritance:

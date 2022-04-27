@@ -23,6 +23,7 @@ class ModelGraph(nx.DiGraph):
     graph_attr_dict = {"type": "ModelGraph"}
 
     def single_graph_attr_dict(self):
+        """Add type to graph"""
         return self.graph_attr_dict
 
     graph_attr_dict_factory = single_graph_attr_dict

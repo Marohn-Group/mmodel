@@ -1,5 +1,4 @@
 :author: Peter Sun
-:date: 04/6/2022
 
 
 MModel
@@ -13,7 +12,8 @@ a modular package that is fast, easy to test, and user-friendly.
 Quickstart
 ----------
 
-To create a nonlinear model that has the end result of :math:`\abs(x - y)(x - y + z)`:
+To create a nonlinear model that has the end result of
+:math:`|x - y|(x - y + z)`:
 
 .. code-block:: python
 
@@ -39,14 +39,14 @@ To create a nonlinear model that has the end result of :math:`\abs(x - y)(x - y 
     ]
 
     node_objects = [
-        ("func a", (func_a, ["sum_xy", "dif_xy"])),
-        ("func b", (func_b, ["sum_xyz"])),
-        ("func c", (func_c, ["abs_xy"])),
-        ("func d", (func_d, ["result"])),
+        ("func a", func_a, ["sum_xy", "dif_xy"]),
+        ("func b", func_b, ["sum_xyz"]),
+        ("func c", func_c, ["abs_xy"]),
+        ("func d", func_d, ["result"]),
     ]
 
     model_graph = ModelGraph("Example")
-    model_graph.add_linked_edges(linked_edges)
+    model_graph.add_linked_edges_from(linked_edges)
     model_graph.update_node_objects_from(node_objects)
 
     example_func = Model(model_graph, handler=MemExecutor)
@@ -57,6 +57,14 @@ To create a nonlinear model that has the end result of :math:`\abs(x - y)(x - y 
 
 To loop a specific parameter. All modification occurs at the model graph
 level.
+
+.. note::
+
+    To create a loop for a subgraph requires three steps:  
+
+    1. locate the subgraph with ``subgraph_by_parameters``  
+    2. create subgraph model with ``Model`` and loop modifiers  
+    3. update graph with the subgraph nodes with ``modify_subgraph``  
 
 .. code-block:: python
 
@@ -102,7 +110,7 @@ Installation
 
 
 Graphviz installation
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
 
 To view the graph, Graphviz needs to be installed:
 `Graphviz Installation <https://graphviz.org/download/>`_

@@ -1,8 +1,3 @@
-"""Test draw_model function
-
-draw_model returns a graphviz.DiGraph object, the tests consist of two parts
-1. if draw model creates the correct dot string
-"""
 
 from mmodel.draw import draw_graph, draw_plain_graph, update_settings, DEFAULT_SETTINGS
 import networkx as nx

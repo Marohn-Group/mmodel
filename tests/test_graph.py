@@ -1,26 +1,3 @@
-"""Test GraphModel class
-
-test cases:
-
-1. `test_default_mockgraph` - test if the default graph matches
-    the same one generated using `networkx.DiGraph`
-2. `test_add_nodes` - test `add_node` and `add_nodes_from` method
-3. `test_add_nodes_fails` - test if exception raise when node attribute
-    not provided
-4. `test_add_edges` - test `add_edge` and `add_edges_from` method
-5. `test_add_edges_fails_nodes` - test if `add_edge`, `add_edges_from` raise
-    exception when nodes are not defined
-6. `test_add_edges_fails_attrs` - test if `add_edge`, `add_edges_from` raise
-    exception when edge attribute is not defined
-7. "test_copy" - test graph copy option
-
-8-11 are modified from networkx.classes.tests.test_graph
-8. "test_str_named" - test string value of the graph
-9. "test_graph_chain" - test graph chain
-10. "test_subgraph" - test if subgraph generate the correct view
-11. "test_subgraph_copy" - test if copy subgraph create a copy of subgraph
-"""
-
 
 import pytest
 from inspect import signature

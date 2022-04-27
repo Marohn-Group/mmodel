@@ -1,23 +1,27 @@
-.. MModel documentation master file, created by
-   sphinx-quickstart on Fri Mar  4 10:31:57 2022.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
 .. include:: ../README.rst
 
-API Documentation
------------------
+mmodel API
+==========
 
 .. toctree::
    :maxdepth: 2
-   :caption: MModel API
+   :titlesonly:
+   :caption: Documentation
 
+   overview
    graph
    model
-   loop
+   handler
+   modifier
 
+Changelog
+=========
 
-.. include:: ../CHANGELOG.rst
+.. toctree::
+   :maxdepth: 2
+
+   changelog
 
 
 Indices and tables
