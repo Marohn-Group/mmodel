@@ -15,7 +15,7 @@ import pytest
 import h5py
 import numpy as np
 import math
-from tests.conftest import graphs_equal
+from tests.conftest import assert_graphs_equal
 import re
 
 
@@ -33,14 +33,15 @@ class TestTopologicalHandler:
         # instantiate
         monkeypatch.setattr(TopologicalHandler, "__abstractmethods__", set())
 
-        model = TopologicalHandler(mmodel_G)
+        model = TopologicalHandler(mmodel_G, ['c'])
 
         assert signature(model) == mmodel_signature
         # assert model.__name__ == "test model"
         # make sure the graph is a copy
         assert model.model_graph != mmodel_G
 
-        graphs_equal(model.model_graph, mmodel_G)
+        assert_graphs_equal(model.model_graph, mmodel_G)
+        assert model.returns == ['c', 'k', 'm']
 
 
 @pytest.fixture(scope="module")
@@ -49,7 +50,7 @@ def node_a_attr():
         """Test function node for Model _run_node method"""
         return arg1 + arg2 + arg3
 
-    return {"obj": func_a, "sig": signature(func_a), "rts": ["arg4"]}
+    return {"obj": func_a, "sig": signature(func_a), "returns": ["arg4"]}
 
 
 @pytest.fixture(scope="module")
@@ -58,7 +59,7 @@ def node_b_attr():
         """Test function node for Model _run_node method"""
         return arg1 + arg2, arg3
 
-    return {"obj": func_b, "sig": signature(func_b), "rts": ["arg4", "arg5"]}
+    return {"obj": func_b, "sig": signature(func_b), "returns": ["arg4", "arg5"]}
 
 
 class TestMemHandler:
@@ -67,7 +68,7 @@ class TestMemHandler:
     @pytest.fixture
     def handler_instance(self, mmodel_G):
         """Create Model object for the test"""
-        return MemHandler(mmodel_G)
+        return MemHandler(mmodel_G, [])
 
     def test_instance_attrs(self, handler_instance):
         """Test the memhandler count attribute"""
@@ -151,7 +152,11 @@ class TestMemHandler:
         assert handler_instance(a=10, d=15, f=20, b=2) == (-720, math.log(12, 2))
         assert handler_instance(a=1, d=2, f=3, b=4) == (45, math.log(5, 4))
 
-
+    def test_add_returns(self, mmodel_G):
+        """Test if the handler returns the proper parameters add_returns specified"""
+        
+        handler_instance = MemHandler(mmodel_G, ['c'])
+        assert handler_instance(a=10, d=15, f=20, b=2) == (12, -720, math.log(12, 2))
 
 class TestPlainHandler:
     """Test class Model"""
@@ -159,7 +164,7 @@ class TestPlainHandler:
     @pytest.fixture
     def handler_instance(self, mmodel_G):
         """Create Model object for the test"""
-        return PlainHandler(mmodel_G)
+        return PlainHandler(mmodel_G, [])
 
     def test_initiate(self, handler_instance):
         """Test _initiate method
@@ -251,7 +256,7 @@ class TestH5Handler:
         The scope of the tmp_path is "function", the file
         object and model instance are destroyed after each test function
         """
-        return H5Handler(mmodel_G, h5_filename)
+        return H5Handler(mmodel_G, [], h5_filename)
 
     @pytest.mark.parametrize("scalar, value", [("float", 1.14), ("str", b"test")])
     def test_read_scalar(self, scalar, value, handler_instance, h5_filename):

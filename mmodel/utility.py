@@ -41,8 +41,8 @@ def graph_signature(graph):
                     continue
             parameters.update({pname: param})
 
-    for rts in nx.get_node_attributes(graph, "rts").values():
-        for rt in rts:
+    for returns in nx.get_node_attributes(graph, "returns").values():
+        for rt in returns:
             parameters.pop(rt, None)  # if doesn't exist return None
 
     return inspect.Signature(sorted(parameters.values(), key=param_sorter))
@@ -52,7 +52,7 @@ def replace_signature(signature, replacement_dict):
     """Replace signature with a dictionary of (key, pair)
 
     The function is used to replace several input parameters with a object.
-    The signature is the original sigature.
+    The signature is the original signature.
     The dictionary key should be the replacement object, the values
     should be a list of the target parameters to be replaced.
     """
@@ -76,7 +76,7 @@ def graph_returns(graph):
 
     for node in graph.nodes():
         if graph.out_degree(node) == 0:
-            returns.extend(graph.nodes[node]["rts"])
+            returns.extend(graph.nodes[node]["returns"])
 
     returns.sort()
     return returns
@@ -103,10 +103,14 @@ def graph_topological_sort(graph):
     return topological_order
 
 
-def param_counter(graph):
+def param_counter(graph, add_returns):
     """Count the number of times a parameter is used for graph execution
 
-    This is done by counting the all function signature parameters
+    This is done by counting the all function signature parameters. For
+    additional parameters (returns), simply add one to each count values.
+
+    :param list add_params: added intermediate parameter to return for
+        output. 
 
     return: dictionary with parameter_name: count pair
     rtype: dict
@@ -115,6 +119,9 @@ def param_counter(graph):
     value_list = []
     for sig in nx.get_node_attributes(graph, "sig").values():
         value_list.extend(sig.parameters.keys())
+
+    # add the additional parameter to list
+    value_list += add_returns
 
     count = {}
     for value in value_list:
@@ -159,6 +166,7 @@ def subgraph_by_parameters(graph, parameters):
 
     return graph.subgraph(subgraph_nodes)
 
+
 def subgraph_by_nodes(graph, nodes):
     """Construct subgraph based on nodes"""
 
@@ -166,7 +174,7 @@ def subgraph_by_nodes(graph, nodes):
 
 
 def modify_subgraph(
-    model_graph, subgraph, subgraph_name, subgraph_obj, subgraph_returns
+    model_graph, subgraph, subgraph_name, subgraph_obj, subgraph_returns=None
 ):
     """Redirect graph based on subgraph
 
@@ -196,39 +204,45 @@ def modify_subgraph(
     # remove unique edges
     graph.add_edges_from(set(new_edges))
 
-    graph.update_node_object(
-        subgraph_name,
-        obj=subgraph_obj,
-        rts=subgraph_returns,
-        subgraph=subgraph,
-    )
+    # subgraph requires to have the returns attribute
+    if subgraph_returns is None:
+        try:
+            subgraph_returns = subgraph_obj.returns
+        except AttributeError:
+            raise Exception("'subgraph_returns' not defined")
+
+    graph.add_node_object(subgraph_name, obj=subgraph_obj, returns=subgraph_returns)
+    # add the subgraph attribute to node
+    graph.nodes[subgraph_name]["subgraph"] = subgraph
 
     return graph
 
-def modify_node(model_graph, node,  modifiers, node_returns=None):
+
+def modify_node(model_graph, node, modifiers, node_returns=None):
     """Add modifiers to node
-    
+
     The result is a new graph with node object modified
     """
 
     graph = model_graph.copy()
-    obj = graph.nodes[node]['obj']
-    rts = node_returns or graph.nodes[node]['rts']
+    obj = graph.nodes[node]["obj"]
+    returns = node_returns or graph.nodes[node]["returns"]
 
     for mdf in modifiers:
         obj = mdf(obj)
 
     # update the loop value
-    graph.update_node_object(node, obj=obj, rts=rts)
+    graph.add_node_object(node, obj=obj, returns=returns)
 
     return graph
 
 
-
 def parse_input(signature, *args, **kwargs):
-    """parse argument based on signature and input"""
+    """parse argument based on signature and input
+
+    The default value is automatically filled.
+    """
 
     values = signature.bind(*args, **kwargs)
     values.apply_defaults()
     return values.arguments
-

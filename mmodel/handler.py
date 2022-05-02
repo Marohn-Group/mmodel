@@ -18,14 +18,14 @@ class TopologicalHandler(metaclass=ABCMeta):
     each execution or when exception occurs.
     """
 
-    def __init__(self, model_graph):
+    def __init__(self, model_graph, add_returns):
 
         self.__signature__ = graph_signature(model_graph)
-        self.returns = graph_returns(model_graph)
+        self.returns = sorted(graph_returns(model_graph) + add_returns)
         self.order = graph_topological_sort(model_graph)
         self.model_graph = model_graph.copy()
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, **kwargs):
         """Execute graph model by layer"""
 
         data_instance = self.initiate(**kwargs)
@@ -55,7 +55,6 @@ class TopologicalHandler(metaclass=ABCMeta):
         """Finish execution"""
 
 
-
 class MemHandler(TopologicalHandler):
     """Default model of mmodel module
 
@@ -64,19 +63,15 @@ class MemHandler(TopologicalHandler):
     deleted if the counter reaches 0.
     """
 
-    def __init__(self, model_graph):
+    def __init__(self, model_graph, add_returns):
         """Add counter to the object"""
-        self.counter = param_counter(model_graph)
-        super().__init__(model_graph)
+        super().__init__(model_graph, add_returns)
+        self.counter = param_counter(model_graph, add_returns)
 
     def initiate(self, **kwargs):
         """Initiate the value dictionary"""
 
-        # values = self.__signature__.bind(*args, **kwargs)
-        # values.apply_defaults()
-        # value_dict = values.arguments
         count = self.counter.copy()
-
         return kwargs, count
 
     def run_node(self, data_instance, node, node_attr):
@@ -90,7 +85,7 @@ class MemHandler(TopologicalHandler):
         kwargs = {key: value_dict[key] for key in parameters}
         func_output = node_attr["obj"](**kwargs)
 
-        returns = node_attr["rts"]
+        returns = node_attr["returns"]
         if len(returns) == 1:
             value_dict[returns[0]] = func_output
         else:
@@ -143,7 +138,7 @@ class PlainHandler(TopologicalHandler):
         kwargs = {key: value_dict[key] for key in parameters}
         func_output = node_attr["obj"](**kwargs)
 
-        returns = node_attr["rts"]
+        returns = node_attr["returns"]
         if len(returns) == 1:
             value_dict[returns[0]] = func_output
         else:
@@ -174,14 +169,14 @@ class H5Handler(TopologicalHandler):
     and execution number
     """
 
-    def __init__(self, model_graph, h5_filename):
+    def __init__(self, model_graph, add_returns, h5_filename):
 
         # check if file exist
         # write id attribute
         self.h5_filename = h5_filename
         self.exe_count = 0
 
-        super().__init__(model_graph)
+        super().__init__(model_graph, add_returns)
 
     def initiate(self, **kwargs):
         """Initate dictionary value"""
@@ -207,7 +202,7 @@ class H5Handler(TopologicalHandler):
 
         func_output = node_attr["obj"](**kwargs)
 
-        returns = node_attr["rts"]
+        returns = node_attr["returns"]
         if len(returns) == 1:
             self.write({returns[0]: func_output}, exe_group)
         else:
@@ -249,7 +244,6 @@ class H5Handler(TopologicalHandler):
 
         for k, v in value_dict.items():
             group.create_dataset(k, data=v)
-
 
     @staticmethod
     def read(key, group):

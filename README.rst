@@ -1,6 +1,5 @@
 :author: Peter Sun
 
-
 MModel
 ======
 
@@ -33,7 +32,7 @@ To create a nonlinear model that has the end result of
 
     # create graph links
     
-    linked_edges = [
+    grouped_edges = [
         ("func a", ["func b", "func c"]),
         (["func b", "func"], "func d"),
     ]
@@ -46,8 +45,8 @@ To create a nonlinear model that has the end result of
     ]
 
     model_graph = ModelGraph("Example")
-    model_graph.add_linked_edges_from(linked_edges)
-    model_graph.update_node_objects_from(node_objects)
+    model_graph.add_grouped_edges_from(grouped_edges)
+    model_graph.add_node_objects_from(node_objects)
 
     example_func = Model(model_graph, handler=MemExecutor)
 
@@ -68,10 +67,10 @@ level.
 
 .. code-block:: python
 
-    from mmodel import subgraph_by_parameters, modify_subgraph, basic_loop
+    from mmodel import subgraph_by_parameters, modify_subgraph, loop_modifier
 
     subgraph = subgraph_by_parameters(["z"])
-    loop_mod = basic_loop("z")
+    loop_mod = loop_modifier("z")
     loop_node = Model(subgraph, handler=MemExecutor, modifiers=[loop_mod])
     loop_model_graph = modify_subgraph(
         graph, subgraph, "z loop node", loop_node, loop_node.returns
@@ -86,7 +85,7 @@ To modify a single node (add loop to a single node):
 
 .. code-block:: python
 
-    loop_mod = basic_loop("z")
+    loop_mod = loop_modifier("z")
     modify_node(graph, 'func b', modifiers=[loop_mod])
 
 To draw the graph or the modified model with or without detail
@@ -104,10 +103,8 @@ To view the descriptions of the graph and model
     print(model_graph)
     print(example_func)
 
-
 Installation
 ------------
-
 
 Graphviz installation
 ^^^^^^^^^^^^^^^^^^^^^
@@ -119,8 +116,11 @@ system PATH for all users/current user" during the setup.
 
 Development installation
 ^^^^^^^^^^^^^^^^^^^^^^^^
+``mmodel`` uses `poetry <https://python-poetry.org/docs/>`_ as
+the build system. The package works with both pip and poetry
+installation. 
 
-To install run::
+To install test despondencies run::
 
     pip install .[test]
 
@@ -130,6 +130,20 @@ To run the tests, run::
 
     pytest
 
+To run the tests in different python environments (py38 and py39)::
+
+    tox
+
+To install docs despondencies run::
+
+    pip install .[docs]
+
 To make the documentation, run under the "/docs" directory::
 
     make html 
+
+.. Note::
+
+    To install both test and docs despondencies::
+        
+        pip install .[test] .[docs]

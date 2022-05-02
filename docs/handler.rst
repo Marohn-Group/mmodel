@@ -29,8 +29,8 @@ To crate and execute a model:
     G = ModelGraph(name="example", doc="a example MGraph object")
 
     G.add_edge("func_a", "func_b")
-    G.update_node_object("func_a", func_a, ["c"])
-    G.update_node_object("func_b", func_b, ["d"])
+    G.add_node_object("func_a", func_a, ["c"])
+    G.add_node_object("func_b", func_b, ["d"])
 
     model = Model(G, handler=PlainHandler)
 

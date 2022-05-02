@@ -48,7 +48,6 @@ def draw_plain_graph(G, label=""):
     return dot_graph
 
 
-
 def draw_graph(G, label=""):
     """Draw detailed graph
 
@@ -70,7 +69,7 @@ def draw_graph(G, label=""):
         if "obj" in ndict:
             label = (
                 f"{node}\l\n{ndict['obj'].__name__}"
-                f"{ndict['sig']}\lreturn {', '.join(ndict['rts'])}\l"
+                f"{ndict['sig']}\lreturn {', '.join(ndict['returns'])}\l"
             )
         else:
             label = node
@@ -85,7 +84,8 @@ def draw_graph(G, label=""):
 
         dot_graph.edge(u, v, xlabel=xlabel)
 
-    # temperarily disable subgraph plotting
+    # temporarily disable subgraph plotting
+    # subgraph plotting should be done by users
     # for node, subgraph in nx.get_node_attributes(G, "subgraph").items():
 
     #     # use short docstring for subgraph
@@ -93,5 +93,3 @@ def draw_graph(G, label=""):
     #     dot_graph.subgraph(dot_subgraph)
 
     return dot_graph
-
-

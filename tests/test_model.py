@@ -1,7 +1,7 @@
 import pytest
 from mmodel.model import Model
 from mmodel.handler import PlainHandler, H5Handler
-from mmodel.modifier import basic_loop
+from mmodel.modifier import loop_modifier
 import math
 
 MODEL_REPR = """test model
@@ -19,7 +19,7 @@ def model_instance(mmodel_G):
     return Model(mmodel_G, PlainHandler)
 
 def test_model_attr(model_instance, mmodel_signature):
-    """Test the model has the correct name, singature, returns"""
+    """Test the model has the correct name, signature, returns"""
 
     assert model_instance.__name__ == "test model"
     assert model_instance.__signature__ == mmodel_signature
@@ -40,7 +40,7 @@ def test_execution(model_instance):
 def model_mod_instance(mmodel_G):
     """Construct a model instance"""
 
-    loop_mod = basic_loop('a')
+    loop_mod = loop_modifier('a')
 
     return Model(mmodel_G, PlainHandler, modifiers=[loop_mod])
 

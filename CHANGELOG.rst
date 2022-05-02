@@ -5,10 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
+[0.2.1] - 2022-05-02
+---------------------
+Added
+^^^^^
+- add ``add_grouped_edges_from``
+- add ``add_returns`` as additional input to model. The parameter is used to
+  output intermediate values in the returns.
+- add ``tox`` command for different python version test environments
+
+Changed
+^^^^^^^
+- node attribute ``rts`` to ``returns``.
+- ``add_linked_edge`` to ``add_grouped_edge``
+- ``add_edge`` and ``add_edges_from`` updates graph edge attributes
+- move ``mmodel`` build method from ``steptools`` to ``poetry``
+
 [0.2.0] - 2022-04-27
 --------------------
 
-Version 0.2.0 changed the model building from inheritence to composition.
+Version 0.2.0 changed the model building from inheritance to composition.
 ``Model`` class is used to create executable. 
 
 Added
@@ -20,7 +36,7 @@ Changed
 - API for creating executable
 - loop construction changed as a modifier
 - ``MGraph`` to ``ModelGraph``
-- model graph allows node defintion without node object
+- model graph allows node definition without node object
 - model graph allows linked edges to simplify graph definition
   with ``add_linked_edges_from``
 - model graph node attributes does not need to provide

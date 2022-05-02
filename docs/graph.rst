@@ -30,8 +30,7 @@ callable.
         return a + b
 
     G = ModelGraph()
-    G.add_node("func")
-    G.update_node_object("func", func, ["c"])
+    G.add_node_object("func", func, ["c"])
 
 A graph edge (u, v) is the link between two callable nodes, with
 user-defined attributes:
@@ -50,8 +49,8 @@ user-defined attributes:
     G = ModelGraph(name="example", doc="a example MGraph object")
 
     G.add_edge("func_a", "func_b")
-    G.update_node_object("func_a", func_a, ["c"])
-    G.update_node_object("func_b", func_b, ["d"])
+    G.add_node_object("func_a", func_a, ["c"])
+    G.add_node_object("func_b", func_b, ["d"])
 
 
 :mod:`graph` module

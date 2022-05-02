@@ -6,7 +6,7 @@ from functools import wraps
 # import inspect
 # from mmodel.utility import loop_signature
 
-def basic_loop(parameter):
+def loop_modifier(parameter):
     """Basic loop wrapper, iterates the values from loop
 
     :param list parameter: target parameter to loop
@@ -28,7 +28,7 @@ def basic_loop(parameter):
     return wrapper
 
 
-def zip_loop(parameters):
+def zip_loop_modifier(parameters):
     """Pairwise wrapper, iterates the values from loop
 
     :param list parameters: list of the parameter to loop

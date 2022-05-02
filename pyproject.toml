@@ -1,40 +1,74 @@
-[project]
+[tool.poetry]
 name = "MModel"
-version = "0.2.0"
-requires-python = ">=3.8"
-
-description = "Modular Modeling System"
+version = "0.2.1"
+description = "Modular Model Building System"
 readme = "README.rst"
-# license = { file = "LICENSE" }
-authors = [{ name = "Peter Sun", email = "hs859@cornell.edu" }]
-maintainers = [{ name = "Peter Sun", email = "hs859@cornell.edu" }]
-dependencies = ["networkx", "h5py", "graphviz"]
-
-[project.optional-dependencies]
-test = [
-    "pytest",
-    "pytest-cov",
-    "pipenv",
-    "tox",
-    "tox-pipenv",
-    "numpy",
-    "nbsphinx",
-    "sphinx",
-    "sphinx_book_theme"
-]
-
-# [project.urls]
-# repository = "github.coecis.cornell.edu/Marohn-Group/MModel"
-# changelog = "github.coecis.cornell.edu/Marohn-Group/MModel/CHANGELOG.rst"
+license = "BSD-3-Clause"
+authors = ["Peter Sun <hs859@cornell.edu>"]
+maintainers = ["Peter Sun <hs859@cornell.edu>"]
+repository = "github.coecis.cornell.edu/Marohn-Group/MModel"
+packages = [{ include = "mmodel" }]
 
 [build-system]
-# Minimum requirements for the build system to execute.
-requires = ["setuptools", "wheel"]      # PEP 508 specifications.
-build-backend = "setuptools.build_meta"
+requires = ["poetry_core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dependencies]
+python = ">=3.6"
+networkx = ">=2.7.1"
+h5py = ">=3.6.0"
+graphviz = ">=0.16"
+tox = { version = ">=3.24.5", optional = true }
+pytest = { version = ">=7.1.1", optional = true }
+pytest-cov = { version = ">=3.0.0", optional = true }
+sphinx = { version = "^4.4.0", optional = true }
+sphinx-book-theme = { version = "^0.3.2", optional = true }
+nbsphinx = { version = "^0.8.8", optional = true }
+
+[tool.poetry.dev-dependencies]
+tox = ">=3.24.5"
+pytest = ">=7.1.1"
+pytest-cov = ">=3.0.0"
+sphinx = "^4.4.0"
+sphinx-book-theme = "^0.3.2"
+nbsphinx = "^0.8.8"
+
+[tool.tox]
+# for testing different python environments
+# somehow poetry, tox and python3.10 don't work
+legacy_tox_ini = """
+[tox]
+envlist = py38, py39, coverage
+isolated_build = True
+
+[testenv:py38]
+deps = pytest >= 7.1.1
+commands = pytest
+
+[testenv:py39]
+deps = pytest >= 7.1.1
+commands = pytest
+
+[testenv:coverage]
+deps = 
+    pytest >= 7.1.1
+    pytest-cov >= 3.0.0
+commands =
+    coverage run --source=tests -m pytest
+    coverage html
+    coverage report
+"""
 
 
-[tool.setuptools]
-packages = ["mmodel"]
+
+[tool.poetry.extras]
+test = ["pytest", "pytest-cov"]
+docs = ["nbsphinx", "sphinx", "sphinx_book_theme"]
+
+[tool.coverage.run]
+# pytest coverage
+source_pkgs = ['mmodel']
+omit = ['tests/*']
 
 [tool.pytest.ini_options]
 filterwarnings = [

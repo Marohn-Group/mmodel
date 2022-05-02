@@ -5,7 +5,7 @@ import random
 import mmodel.utility as util
 from collections import OrderedDict
 from inspect import Parameter
-from tests.conftest import graphs_equal
+from tests.conftest import assert_graphs_equal
 import networkx as nx
 from functools import wraps
 
@@ -106,7 +106,7 @@ def test_graph_topological_sort(mmodel_G):
 
     for node, attr in order:
         assert isinstance(attr, dict)
-        assert sorted(list(attr)) == ["obj", "rts", "sig"]
+        assert sorted(list(attr)) == ["obj", "returns", "sig"]
         nodes.append(node)
 
     assert nodes == ["add", "subtract", "multiply", "log", "poly"]
@@ -115,10 +115,16 @@ def test_graph_topological_sort(mmodel_G):
 def test_param_counter(mmodel_G):
     """Test param_counter"""
 
-    counter = util.param_counter(mmodel_G)
+    counter = util.param_counter(mmodel_G, [])
 
     assert counter == {"a": 1, "b": 2, "c": 3, "d": 1, "e": 1, "f": 1, "g": 1}
 
+def test_param_counter_add_returns(mmodel_G):
+    """Test param_counter with added returns"""
+
+    counter = util.param_counter(mmodel_G, ['c', 'g'])
+
+    assert counter == {"a": 1, "b": 2, "c": 4, "d": 1, "e": 1, "f": 1, "g": 2}
 
 def test_subgraph_by_parameters(mmodel_G):
     """Test two different subgraphs"""
@@ -127,17 +133,17 @@ def test_subgraph_by_parameters(mmodel_G):
     subgraph2 = mmodel_G.subgraph(["multiply", "poly"])
 
     # have the same copy
-    graphs_equal(subgraph1, subgraph2)
+    assert_graphs_equal(subgraph1, subgraph2)
     # retains oringinal graph
     assert subgraph1._graph == mmodel_G
 
     # multiple parameters
     subgraph3 = util.subgraph_by_parameters(mmodel_G, ["f", "g"])
-    graphs_equal(subgraph3, subgraph2)
+    assert_graphs_equal(subgraph3, subgraph2)
 
     # whole graph
     subgraph4 = util.subgraph_by_parameters(mmodel_G, ["a"])
-    graphs_equal(subgraph4, mmodel_G)
+    assert_graphs_equal(subgraph4, mmodel_G)
 
 
 def test_subgraph_by_nodes(mmodel_G):
@@ -165,12 +171,13 @@ def test_modify_subgraph_terminal(mmodel_G):
     assert graph != mmodel_G
     assert "test" in graph
 
+    # pop subgraph to test if they are the same
     node_subgraph = graph.nodes["test"].pop("subgraph")
-    assert node_subgraph.name == "test"
+    assert_graphs_equal(subgraph, node_subgraph)
 
     assert graph.nodes["test"] == {
         "obj": mock_obj,
-        "rts": [],
+        "returns": [],
         "sig": inspect.signature(mock_obj),
     }
 
@@ -196,18 +203,58 @@ def test_modify_subgraph_middle(mmodel_G):
     assert graph != mmodel_G
     assert "test" in graph
 
+    # pop subgraph to test if they are the same
     node_subgraph = graph.nodes["test"].pop("subgraph")
-    assert node_subgraph.name == "test"
+    assert_graphs_equal(subgraph, node_subgraph)
 
     assert graph.nodes["test"] == {
         "obj": mock_obj,
-        "rts": ["e"],
+        "returns": ["e"],
         "sig": inspect.signature(mock_obj),
     }
 
     # Test the edge attributes
     assert graph.edges["add", "test"]["val"] == ["c"]
     assert graph.edges["test", "poly"]["val"] == ["e"]
+
+
+def test_modify_subgraph_none_returns(mmodel_G):
+    """Test subgraph modification when returns are not specificed
+
+    This test specifically the middle node
+    """
+
+    subgraph = mmodel_G.subgraph(["multiply", "poly"])
+
+    def mock_obj(c, x, y):
+        return
+    
+    mock_obj.returns = ['e']
+
+    graph = util.modify_subgraph(mmodel_G, subgraph, "test", mock_obj)
+
+    # remove subgraph attribute see above for subgraph test
+    graph.nodes["test"].pop("subgraph")
+    assert graph.nodes["test"] == {
+        "obj": mock_obj,
+        "returns": ['e'],
+        "sig": inspect.signature(mock_obj),
+    }
+
+def test_modify_subgraph_none_returns_fails(mmodel_G):
+    """Test subgraph modification when returns are not specificed
+
+    The method fails when the subgraph node does not have a 
+    return attribute
+    """
+
+    subgraph = mmodel_G.subgraph(["multiply", "poly"])
+
+    def mock_obj(c, x, y):
+        return
+
+    with pytest.raises(Exception, match="'subgraph_returns' not defined"):
+        util.modify_subgraph(mmodel_G, subgraph, "test", mock_obj)
 
 
 def test_modify_node(mmodel_G):

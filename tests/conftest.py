@@ -20,7 +20,12 @@ from networkx.utils import nodes_equal, edges_equal
 
 @pytest.fixture()
 def standard_G():
-    """Standard test graph generated using DiGraph"""
+    """Standard test graph generated using DiGraph
+    
+    The result is:
+    k = (a + b - d)(a + b)f
+    m = log(a + b, b)    
+    """
 
     def addition(a, b=2):
         return a + b
@@ -38,14 +43,14 @@ def standard_G():
         return math.log(c, b)
 
     node_list = [
-        ("add", {"obj": addition, "rts": ["c"], "sig": signature(addition)}),
-        ("subtract", {"obj": subtraction, "rts": ["e"], "sig": signature(subtraction)}),
+        ("add", {"obj": addition, "returns": ["c"], "sig": signature(addition)}),
+        ("subtract", {"obj": subtraction, "returns": ["e"], "sig": signature(subtraction)}),
         (
             "multiply",
-            {"obj": multiplication, "rts": ["g"], "sig": signature(multiplication)},
+            {"obj": multiplication, "returns": ["g"], "sig": signature(multiplication)},
         ),
-        ("poly", {"obj": polynomial, "rts": ["k"], "sig": signature(polynomial)}),
-        ("log", {"obj": logarithm, "rts": ["m"], "sig": signature(logarithm)}),
+        ("poly", {"obj": polynomial, "returns": ["k"], "sig": signature(polynomial)}),
+        ("log", {"obj": logarithm, "returns": ["m"], "sig": signature(logarithm)}),
     ]
 
     edge_list = [
@@ -91,7 +96,7 @@ def mmodel_G():
 
     doc = "test object\n\nlong description"
 
-    linked_edges = [
+    grouped_edges = [
         ("add", ["subtract", "multiply", "log"]),
         (["subtract", "multiply"], "poly"),
     ]
@@ -105,8 +110,8 @@ def mmodel_G():
     ]
 
     G = ModelGraph(name="test", doc=doc)
-    G.add_linked_edges_from(linked_edges)
-    G.update_node_objects_from(node_objects)
+    G.add_grouped_edges_from(grouped_edges)
+    G.add_node_objects_from(node_objects)
     return G
 
 
@@ -124,7 +129,7 @@ def mmodel_signature():
     return Signature(param_list)
 
 
-def graphs_equal(G1, G2):
+def assert_graphs_equal(G1, G2):
     """Test if graphs have the same nodes, edges and attributes"""
 
     assert nodes_equal(G1._node, G2._node)
