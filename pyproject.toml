@@ -33,12 +33,29 @@ sphinx = "^4.4.0"
 sphinx-book-theme = "^0.3.2"
 nbsphinx = "^0.8.8"
 
+[tool.poetry.extras]
+test = ["pytest", "pytest-cov"]
+docs = ["nbsphinx", "sphinx", "sphinx_book_theme"]
+
+[tool.coverage.run]
+# pytest coverage
+source_pkgs = ['mmodel']
+omit = ['tests/*']
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    # note the use of single quote below to denote "raw" strings in TOML
+    # the escape sequence is necessary in graphviz dot string
+    # used to left align node text
+    'ignore:invalid escape sequence \\l:DeprecationWarning',
+]
+
 [tool.tox]
 # for testing different python environments
 # somehow poetry, tox and python3.10 don't work
 legacy_tox_ini = """
 [tox]
-envlist = py38, py39, coverage
+envlist = py38, py39, coverage, docs
 isolated_build = True
 
 [testenv:py38]
@@ -57,23 +74,14 @@ commands =
     coverage run --source=tests -m pytest
     coverage html
     coverage report
+
+[testenv:docs]
+deps = 
+    sphinx == 4.4.0
+    sphinx-book-theme == 0.3.2
+    nbsphinx == 0.8.8
+commands =
+    # sphinx-build -W -b html ./docs ./docs/_build/html
+    sphinx-build -W -b html -d "{toxworkdir}/docs" docs "{toxinidir}/docs/_build/html"
 """
 
-
-
-[tool.poetry.extras]
-test = ["pytest", "pytest-cov"]
-docs = ["nbsphinx", "sphinx", "sphinx_book_theme"]
-
-[tool.coverage.run]
-# pytest coverage
-source_pkgs = ['mmodel']
-omit = ['tests/*']
-
-[tool.pytest.ini_options]
-filterwarnings = [
-    # note the use of single quote below to denote "raw" strings in TOML
-    # the escape sequence is necessary in graphviz dot string
-    # used to left align node text
-    'ignore:invalid escape sequence \\l:DeprecationWarning',
-]

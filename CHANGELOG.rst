@@ -12,14 +12,15 @@ Added
 - add ``add_grouped_edges_from``
 - add ``add_returns`` as additional input to model. The parameter is used to
   output intermediate values in the returns.
-- add ``tox`` command for different python version test environments
+- add ``tox`` command for different python version test environments: py38, py39,
+  coverage, and docs. The latter two checks test coverage and build sphinx docs.
 
 Changed
 ^^^^^^^
 - node attribute ``rts`` to ``returns``.
 - ``add_linked_edge`` to ``add_grouped_edge``
 - ``add_edge`` and ``add_edges_from`` updates graph edge attributes
-- move ``mmodel`` build method from ``steptools`` to ``poetry``
+- move ``mmodel`` build method from ``setuptools`` to ``poetry``
 
 [0.2.0] - 2022-04-27
 --------------------
