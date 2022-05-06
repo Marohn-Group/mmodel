@@ -26,15 +26,20 @@ class ModelGraph(nx.DiGraph):
 
     graph_attr_dict_factory = single_graph_attr_dict
 
-    def add_node_object(self, node, obj, returns):
+    def add_node_object(self, node, obj, returns, modifiers=[]):
         """Add or update the functions of existing node
 
         If the node does not exist, create the node.
         In the end, the edge attributes are re-determined
+
+        Modifiers is applied directly onto the node.
         """
 
         if node not in self.nodes:
             self.add_node(node)
+
+        for mod in modifiers:
+            obj = mod(obj)
 
         sig = inspect.signature(obj)
         self.nodes[node]["obj"] = obj
@@ -44,12 +49,13 @@ class ModelGraph(nx.DiGraph):
 
     def add_node_objects_from(self, node_objects):
         """Update the functions of existing nodes
-        
+
         The method is the same as add node object
         """
 
-        for node, obj, returns in node_objects:
-            self.add_node_object(node, obj, returns)
+        for node_obj in node_objects:
+            # unzipping works for input with or without modifiers
+            self.add_node_object(*node_obj)
 
     def add_grouped_edge(self, u, v):
         """Add linked edge
@@ -61,9 +67,9 @@ class ModelGraph(nx.DiGraph):
 
         if isinstance(u, list) and isinstance(v, list):
             raise Exception(f"only one edge node can be a list")
-        
+
         # use add edges from to run less update graph
-        # currently a compromise 
+        # currently a compromise
         if isinstance(u, list):
             self.add_edges_from([(_u, v) for _u in u])
         elif isinstance(v, list):
@@ -79,7 +85,7 @@ class ModelGraph(nx.DiGraph):
 
     def add_edge(self, u_of_edge, v_of_edge, **attr):
         """Modify add_edge to update the edge attribute in the end"""
-        
+
         super().add_edge(u_of_edge, v_of_edge, **attr)
         self.update_graph()
 

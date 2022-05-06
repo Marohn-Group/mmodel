@@ -18,6 +18,18 @@ define the signature, add ``__signature__`` attribute to the wrapped function.
 See documentation for `wraps <https://docs.python.org/3/library/functools.html#functools.wraps>`_
 and `inspect.signature <https://docs.python.org/3/library/inspect.html?highlight=signature#inspect.signature>`_
 
+When supplying modifiers, the inner modifier should be listed first.
+
+.. Note::
+    It is not recommended to use the modifiers as a function decorator. This is
+    because modified function requires keyword argument input regardless of its
+    an original signature, and it does not provide argument checking (whether an
+    input is missing). The behavior is by design. The input parameters are only checked
+    once at the model level for performance reasons.
+
+    If necessary, ``signature_binding_modifier()`` can be use to add the binding
+    and check steps.
+
 To create a loop for the whole model:
 
 .. code-block:: python
@@ -50,3 +62,5 @@ To create a loop for the whole model:
 
 .. autofunction:: mmodel.modifier.loop_modifier
 .. autofunction:: mmodel.modifier.zip_loop_modifier
+.. autofunction:: mmodel.modifier.signature_modifier
+.. autofunction:: mmodel.modifier.signature_binding_modifier

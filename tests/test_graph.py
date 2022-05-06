@@ -1,6 +1,7 @@
 from tests.conftest import assert_graphs_equal
 from mmodel import ModelGraph
 import pytest
+from functools import wraps
 
 GRAPH_REPR = """ModelGraph named 'test' with 5 nodes and 5 edges
 
@@ -29,6 +30,7 @@ def test_graph_str(mmodel_G):
 
 def test_add_node_object():
     """Test add node objects"""
+
     def func_a(a, b):
         return None
 
@@ -62,6 +64,30 @@ def test_add_undefined_node_object():
     assert "node_a" in G.nodes
 
 
+def test_add_node_object_modifiers():
+    """Test behavior when modifiers are added to node object
+
+    Here we mock a wrapper that changes the node result
+    """
+
+    def func_a(a, b):
+        return a + b
+
+    def mod_method(func):
+        @wraps(func)
+        def wrapper(**kwargs):
+            return func(**kwargs) + 1
+
+        return wrapper
+
+    G = ModelGraph()
+    G.add_node_object("node_a", func_a, ["c"], modifiers=[mod_method])
+
+    func = G.nodes["node_a"]["obj"]
+
+    assert func(a=1, b=2) == 4
+
+
 def test_add_node_objects_from():
     """Test add_node_objects_from method
 
@@ -80,17 +106,45 @@ def test_add_node_objects_from():
 
     assert G.edges["node_a", "node_b"] == {"val": ["c"]}
 
+
+def test_add_node_objects_from_modifiers():
+    """Test add_node_objects_from method with modifiers added to some nodes
+
+    Test if the modifiers are properly implemented with the unzip method
+    """
+
+    def func_a(a, b):
+        return a + b
+
+    def func_b(c, d):
+        return c, d
+
+    def mod_method(func):
+        @wraps(func)
+        def wrapper(**kwargs):
+            return func(**kwargs) + 1
+
+        return wrapper
+
+    G = ModelGraph()
+    G.add_edge("node_a", "node_b")
+    G.add_node_objects_from([("node_a", func_a, ["c"], [mod_method]), ("node_b", func_b, ["e"])])
+
+    assert G.nodes["node_a"]["obj"](a=1, b=2) == 4
+    assert G.nodes["node_b"]["obj"](1, 2) == (1, 2)
+
+
 def test_add_edge(mmodel_G):
     """Test add_edge updates the graph"""
 
     def func_a(m, b):
         return None
 
-    mmodel_G.add_node_object('func_a', func_a, ['n'])
-    mmodel_G.add_edge('log', 'func_a')
+    mmodel_G.add_node_object("func_a", func_a, ["n"])
+    mmodel_G.add_edge("log", "func_a")
 
-    assert mmodel_G.edges['log', 'func_a']['val'] == ['m']
-    
+    assert mmodel_G.edges["log", "func_a"]["val"] == ["m"]
+
 
 def test_add_edges_from(mmodel_G):
     """Test add_edges_from updates the graph"""
@@ -98,11 +152,12 @@ def test_add_edges_from(mmodel_G):
     def func_a(c, m):
         return None
 
-    mmodel_G.add_node_object('func_a', func_a, ['n'])
-    mmodel_G.add_edges_from([['add', 'func_a'], ['log', 'func_a']])
+    mmodel_G.add_node_object("func_a", func_a, ["n"])
+    mmodel_G.add_edges_from([["add", "func_a"], ["log", "func_a"]])
 
-    assert mmodel_G.edges['add', 'func_a']['val'] == ['c']
-    assert mmodel_G.edges['log', 'func_a']['val'] == ['m']
+    assert mmodel_G.edges["add", "func_a"]["val"] == ["c"]
+    assert mmodel_G.edges["log", "func_a"]["val"] == ["m"]
+
 
 def test_add_grouped_edge_no_list():
     """Test add_grouped_edge

@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
+[0.2.2] - 2022-05-06
+--------------------------
+Added
+^^^^^
+- add ``modifiers`` input argument to ``ModelGraph.add_node_object``, allowing
+  modifiers to be applied to nodes
+- add ``signature_modifier`` that changes function signature
+- add ``signature_binding_modifier`` that adds binding and checking to wrapped
+  function
+
 [0.2.1] - 2022-05-02
 ---------------------
 Added
@@ -30,7 +40,7 @@ Version 0.2.0 changed the model building from inheritance to composition.
 
 Added
 ^^^^^
-- add ``zip_loop`` wrapper
+- add ``zip_loop_modifier`` modifier that zips multiple arguments for loop
 
 Changed
 ^^^^^^^
