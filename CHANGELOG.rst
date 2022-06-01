@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
+[Unrealeased]
+------------------
+Added
+^^^^^
+- ``subgraph_by_returns`` filters graph by node returns
+
+Changed
+^^^^^^^
+- move ``subgraph_by_nodes`` and ``subgraph_by_parameters`` to ``filter`` module
+
 [0.2.2] - 2022-05-06
 --------------------------
 Added

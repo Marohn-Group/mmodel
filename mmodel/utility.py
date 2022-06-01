@@ -144,35 +144,6 @@ def param_counter(graph, add_returns):
 #     return inspect.Signature(sig_param.values())
 
 
-def subgraph_by_parameters(graph, parameters):
-    """Construct subgraph based on parameters
-
-    The function is specifically used for loops. In the looping,
-    the subgraph needs to be a complete version.
-    :param list params: target input paramaters to be included in
-        the subgraph
-
-    :return: a copy of the subgraph
-    """
-
-    subgraph_nodes = []
-
-    for node, sig in nx.get_node_attributes(graph, "sig").items():
-        sig_params = sig.parameters
-        for param in parameters:
-            if param in sig_params:
-                subgraph_nodes.append(node)
-                subgraph_nodes.extend(nx.descendants(graph, node))
-
-    return graph.subgraph(subgraph_nodes)
-
-
-def subgraph_by_nodes(graph, nodes):
-    """Construct subgraph based on nodes"""
-
-    return graph.subgraph(nodes)
-
-
 def modify_subgraph(
     model_graph, subgraph, subgraph_name, subgraph_obj, subgraph_returns=None
 ):

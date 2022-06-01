@@ -126,33 +126,6 @@ def test_param_counter_add_returns(mmodel_G):
 
     assert counter == {"a": 1, "b": 2, "c": 4, "d": 1, "e": 1, "f": 1, "g": 2}
 
-def test_subgraph_by_parameters(mmodel_G):
-    """Test two different subgraphs"""
-
-    subgraph1 = util.subgraph_by_parameters(mmodel_G, ["f"])
-    subgraph2 = mmodel_G.subgraph(["multiply", "poly"])
-
-    # have the same copy
-    assert_graphs_equal(subgraph1, subgraph2)
-    # retains oringinal graph
-    assert subgraph1._graph == mmodel_G
-
-    # multiple parameters
-    subgraph3 = util.subgraph_by_parameters(mmodel_G, ["f", "g"])
-    assert_graphs_equal(subgraph3, subgraph2)
-
-    # whole graph
-    subgraph4 = util.subgraph_by_parameters(mmodel_G, ["a"])
-    assert_graphs_equal(subgraph4, mmodel_G)
-
-
-def test_subgraph_by_nodes(mmodel_G):
-    """Test if the subgraph contains all necessary nodes"""
-
-    subgraph = util.subgraph_by_nodes(mmodel_G, ["subtract", "multiply"])
-
-    assert sorted(list(subgraph.nodes)) == ["multiply", "subtract"]
-
 
 def test_modify_subgraph_terminal(mmodel_G):
     """Test redirect edges based on subgraph and subgraph node
