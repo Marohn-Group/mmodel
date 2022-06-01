@@ -160,3 +160,6 @@ tests/test.ipynb
 
 # macOS
 .DS_Store
+
+# pipenv
+Pipfile
