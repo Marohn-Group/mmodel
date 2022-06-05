@@ -10,6 +10,7 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 Added
 ^^^^^
 - ``subgraph_by_returns`` filters graph by node returns
+- ``is_valid_model`` method graph for Model class to validate graph for building model executable
 
 Changed
 ^^^^^^^

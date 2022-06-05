@@ -110,7 +110,7 @@ def param_counter(graph, add_returns):
     additional parameters (returns), simply add one to each count values.
 
     :param list add_params: added intermediate parameter to return for
-        output. 
+        output.
 
     return: dictionary with parameter_name: count pair
     rtype: dict
@@ -217,3 +217,22 @@ def parse_input(signature, *args, **kwargs):
     values = signature.bind(*args, **kwargs)
     values.apply_defaults()
     return values.arguments
+
+
+def is_node_attr_defined(graph, attr: str):
+    """Check if all graph nodes have the target attribute defined
+    
+    Use ``set`` to ignore order. Returns true if all nodes have the target
+    attribute
+    """
+
+    return set(nx.get_node_attributes(graph, attr).keys()) == set(graph.nodes)
+
+def is_edge_attr_defined(graph, attr: str):
+    """Check if all graph edges have the target attribute defined
+    
+    Use ``set`` to ignore order. Returns true if all nodes have the target
+    attribute
+    """
+
+    return set(nx.get_edge_attributes(graph, attr).keys()) == set(graph.edges)

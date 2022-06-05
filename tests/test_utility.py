@@ -1,4 +1,3 @@
-
 import inspect
 import pytest
 import random
@@ -119,10 +118,11 @@ def test_param_counter(mmodel_G):
 
     assert counter == {"a": 1, "b": 2, "c": 3, "d": 1, "e": 1, "f": 1, "g": 1}
 
+
 def test_param_counter_add_returns(mmodel_G):
     """Test param_counter with added returns"""
 
-    counter = util.param_counter(mmodel_G, ['c', 'g'])
+    counter = util.param_counter(mmodel_G, ["c", "g"])
 
     assert counter == {"a": 1, "b": 2, "c": 4, "d": 1, "e": 1, "f": 1, "g": 2}
 
@@ -201,8 +201,8 @@ def test_modify_subgraph_none_returns(mmodel_G):
 
     def mock_obj(c, x, y):
         return
-    
-    mock_obj.returns = ['e']
+
+    mock_obj.returns = ["e"]
 
     graph = util.modify_subgraph(mmodel_G, subgraph, "test", mock_obj)
 
@@ -210,14 +210,15 @@ def test_modify_subgraph_none_returns(mmodel_G):
     graph.nodes["test"].pop("subgraph")
     assert graph.nodes["test"] == {
         "obj": mock_obj,
-        "returns": ['e'],
+        "returns": ["e"],
         "sig": inspect.signature(mock_obj),
     }
+
 
 def test_modify_subgraph_none_returns_fails(mmodel_G):
     """Test subgraph modification when returns are not specificed
 
-    The method fails when the subgraph node does not have a 
+    The method fails when the subgraph node does not have a
     return attribute
     """
 
@@ -232,7 +233,7 @@ def test_modify_subgraph_none_returns_fails(mmodel_G):
 
 def test_modify_node(mmodel_G):
     """Test modify_node
-    
+
     Test if the node have the correct signature and result
     """
 
@@ -240,16 +241,51 @@ def test_modify_node(mmodel_G):
         return x + y
 
     def mod(func):
-        
         @wraps(func)
         def wrapped(*args, **kwargs):
             return func(*args, **kwargs) + 1
 
         return wrapped
 
-    mod_G = util.modify_node(mmodel_G, 'subtract', [mod], ['g'])
+    mod_G = util.modify_node(mmodel_G, "subtract", [mod], ["g"])
 
     # add one to the final value
-    assert mod_G.nodes['subtract']['obj'](1, 2) == 0 
+    assert mod_G.nodes["subtract"]["obj"](1, 2) == 0
     # make sure the edge value is updated
-    assert mod_G['subtract']['poly']['val'] == ['g']
+    assert mod_G["subtract"]["poly"]["val"] == ["g"]
+
+
+def test_is_node_attr_defined():
+    """Test is_node_attr_defined"""
+
+    # all nodes defined
+    g = nx.DiGraph()
+    g.add_node(1, weight=0.5)
+    g.add_node(2, weight=0.2)
+
+    assert util.is_node_attr_defined(g, "weight")
+
+    # missing attribute
+    g = nx.DiGraph()
+    g.add_node(1, weight=0.5)
+    g.add_node(2)
+
+    assert not util.is_node_attr_defined(g, "weight")
+
+
+def test_is_edge_attr_defined():
+    """Test is_edge_attr_defined"""
+
+    # all nodes defined
+    g = nx.DiGraph()
+    g.add_edge(1, 2, weight=0.5)
+    g.add_edge(2, 3, weight=0.2)
+
+    assert util.is_edge_attr_defined(g, "weight")
+
+    # missing attribute
+    g = nx.DiGraph()
+    g.add_edge(1, 2, weight=0.5)
+    g.add_edge(2, 3)
+
+    assert not util.is_edge_attr_defined(g, "weight")

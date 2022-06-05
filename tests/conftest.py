@@ -133,7 +133,7 @@ def assert_graphs_equal(G1, G2):
     """Test if graphs have the same nodes, edges and attributes"""
 
     assert nodes_equal(G1._node, G2._node)
-    # assert edges_equal(mmodel_G._adj, standard_G._adj)
+    assert edges_equal(G1._adj, G2._adj)
 
     assert G1._pred == G2._pred
     assert G1._succ == G2._succ
