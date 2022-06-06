@@ -1,7 +1,7 @@
 import inspect
 import pytest
 from mmodel.model import Model
-from mmodel.handler import PlainHandler, H5Handler
+from mmodel.handler import PlainHandler, H5Handler, partial_handler
 from mmodel.modifier import loop_modifier
 import math
 import networkx as nx
@@ -75,12 +75,15 @@ def test_mod_execution(model_mod_instance):
     assert model_mod_instance(a=[1, 2], b=2, d=3, f=4) == [(0, math.log(3, 2)), (16, 2)]
 
 
-def test_mod_with_argument(mmodel_G):
-    """Test if the handler arguments is correctly transferred"""
+def test_mod_with_argument(mmodel_G, tmp_path):
+    """Test if partial_handler works with the H5Handler"""
 
-    h5model = Model(mmodel_G, H5Handler, handler_args={"h5_filename": "test_file"})
+    path = tmp_path / "h5model_test.h5"
+    NewH5Handler = partial_handler(H5Handler, h5_filename=path)
+    h5model = Model(mmodel_G, NewH5Handler)
 
-    assert h5model.executor.h5_filename == "test_file"
+    assert h5model.executor.h5_filename == path
+    assert h5model(a=10, d=15, f=20, b=2) == (-720, math.log(12, 2))
 
 
 class TestModelValidation:
@@ -144,14 +147,16 @@ class TestModelValidation:
         g.add_edge("log", "test")
 
         with pytest.raises(
-            AssertionError, match="invalid graph: graph contains nodes with undefined callables"
+            AssertionError,
+            match="invalid graph: graph contains nodes with undefined callables",
         ):
             Model.is_graph_valid(g)
 
         g.nodes["test"]["obj"] = test
 
         with pytest.raises(
-            AssertionError, match="invalid graph: graph contains nodes with undefined callables returns"
+            AssertionError,
+            match="invalid graph: graph contains nodes with undefined callables returns",
         ):
             Model.is_graph_valid(g)
 
@@ -167,13 +172,13 @@ class TestModelValidation:
 
         with pytest.raises(
             AssertionError,
-            match="invalid graph: graph contains edges with undefined variable attributes"
+            match="invalid graph: graph contains edges with undefined variable attributes",
         ):
             Model.is_graph_valid(g)
 
         # the last one will pass even tho it is empty
 
-        g.edges["log", "test"]['val'] = []
+        g.edges["log", "test"]["val"] = []
         assert Model.is_graph_valid(g)
 
     def test_is_graph_valid_passing(self, mmodel_G):

@@ -6,27 +6,34 @@ import networkx as nx
 class Model:
     """Create model executable
 
-    :param object model_graph: ModelGraph instance
+    :param object graph: ModelGraph instance (digraph)
     :param class handler: Handler class that handles model execution
-    :param dict handler_args: additional handler argument that is not model_graph
-        and add_returns. Optional, default to a empty dict.
+        Handler class can only take two parameter arguments, graph and
+        additional_returns. If additional parameters are required,
+        use partial_handler to define updated Handler class.
     :param list modifiers: modifiers used for the whole graph model executable.
         Optional, defaults to a empty list.
     :param list add_returns: additional parameters to return. The parameter is
-        used for retriving intermediate values of the graph model.
+        used for retrieving intermediate values of the graph model.
         Optional, defaults to a empty list.
     """
 
     def __init__(
-        self, model_graph, handler, handler_args={}, modifiers=[], add_returns=[]
+        self, graph, handler, modifiers: list = [], additional_returns: list = []
     ):
 
-        assert self.is_graph_valid(model_graph)
+        assert self.is_graph_valid(graph)
 
-        self.__name__ = f"{model_graph.name} model"
-        self.model_graph = model_graph.copy()
+        self.__name__ = f"{graph.name} model"
 
-        executor = handler(model_graph, add_returns, **handler_args)
+        # store only the copy of the graph, note this is not the same copy
+        # used by the handler
+        # modify self._graph does not change the model itself
+        self._graph = graph.copy()
+        self._modifiers = modifiers
+        self._handler = handler
+
+        executor = handler(graph, additional_returns)
 
         for mdf in modifiers:
             executor = mdf(executor)
@@ -34,8 +41,6 @@ class Model:
         self.__signature__ = executor.__signature__
         self.returns = executor.returns
         self.executor = executor
-
-        self.handler_name = handler.__name__
 
     def __call__(self, *args, **kwargs):
 
@@ -54,8 +59,8 @@ class Model:
                 f"{self.__name__}",
                 f"signature - {', '.join(sig_list)}",
                 f"returns - {', '.join(self.returns)}",
-                f"handler - {self.handler_name}",
-                f"{self.model_graph.graph.get('doc', '')}",
+                f"handler - {self._handler.__name__}",
+                f"{self._graph.graph.get('doc', '')}",
             ]
         )
 
@@ -86,7 +91,7 @@ class Model:
             "invalid graph: graph contains nodes with undefined callables signatures, "
             "recommend using ModelGraph add_node_object method to add node object"
         )
-        assert is_edge_attr_defined(G, 'val'), (
+        assert is_edge_attr_defined(G, "val"), (
             "invalid graph: graph contains edges with undefined variable attributes, "
             "recommend using ModelGraph add_node_object method to add node object"
         )

@@ -1,12 +1,46 @@
 from abc import ABCMeta, abstractmethod
 import h5py
+from functools import partialmethod
 
 from mmodel.utility import (
-    graph_signature,
-    graph_returns,
+    model_signature,
+    model_returns,
     graph_topological_sort,
     param_counter,
 )
+
+
+def partial_handler(cls, **kwargs):
+    """Partial Handler class given the keyword arguments
+
+    :param class cls: handler class
+    :return: class with partial __init__ parameter defined
+
+    The returned class retains the same class name but with modified __init__ method.
+    The function is used to modify Handler classes with additional parameter arguments.
+    Only keyword arguments are accepted. The resulting class does not complete share
+    the properties of the original class. Therefore this is only recommend for modifying
+    handler class.
+    
+    The function is adopted from:
+    https://stackoverflow.com/a/58039373/7542501
+
+    The built in ``collection.namedtuple`` has similar implementation:
+    https://github.com/python/cpython/blob/
+    9081bbd036934ab435291db9d32d02fd42282951/Lib/collections/__init__.py#L501
+
+    A similar implementation is discussed on python issue 77600:
+    https://github.com/python/cpython/issues/77600
+
+    The tests for this function is adopted from
+    https://github.com/python/cpython/pull/6699
+    """
+
+    name = cls.__name__
+    class_namespace = {"__init__": partialmethod(cls.__init__, **kwargs)}
+    new_cls = type(name, (cls,), class_namespace)
+
+    return new_cls
 
 
 class TopologicalHandler(metaclass=ABCMeta):
@@ -18,12 +52,12 @@ class TopologicalHandler(metaclass=ABCMeta):
     each execution or when exception occurs.
     """
 
-    def __init__(self, model_graph, add_returns):
+    def __init__(self, graph, additional_returns: list):
 
-        self.__signature__ = graph_signature(model_graph)
-        self.returns = sorted(graph_returns(model_graph) + add_returns)
-        self.order = graph_topological_sort(model_graph)
-        self.model_graph = model_graph.copy()
+        self.__signature__ = model_signature(graph)
+        self.returns = sorted(model_returns(graph) + additional_returns)
+        self.order = graph_topological_sort(graph)
+        self.graph = graph.copy()
 
     def __call__(self, **kwargs):
         """Execute graph model by layer"""
@@ -63,10 +97,10 @@ class MemHandler(TopologicalHandler):
     deleted if the counter reaches 0.
     """
 
-    def __init__(self, model_graph, add_returns):
+    def __init__(self, graph, additional_returns: list):
         """Add counter to the object"""
-        super().__init__(model_graph, add_returns)
-        self.counter = param_counter(model_graph, add_returns)
+        super().__init__(graph, additional_returns)
+        self.counter = param_counter(graph, additional_returns)
 
     def initiate(self, **kwargs):
         """Initiate the value dictionary"""
@@ -116,7 +150,7 @@ class MemHandler(TopologicalHandler):
 
 
 class PlainHandler(TopologicalHandler):
-    """A fast and barebone model
+    """A fast and bare-bone model
 
     The method simply store all intermediate values in memory. The calculation steps
     are very similar to Model.
@@ -169,14 +203,14 @@ class H5Handler(TopologicalHandler):
     and execution number
     """
 
-    def __init__(self, model_graph, add_returns, h5_filename):
+    def __init__(self, graph, additional_returns: list, h5_filename: str):
 
         # check if file exist
         # write id attribute
         self.h5_filename = h5_filename
         self.exe_count = 0
 
-        super().__init__(model_graph, add_returns)
+        super().__init__(graph, additional_returns)
 
     def initiate(self, **kwargs):
         """Initate dictionary value"""

@@ -57,7 +57,7 @@ def test_param_sorter_order():
     assert sorted(shuffled_params.values(), key=util.param_sorter) == param_list
 
 
-def test_graph_signature(mmodel_G, mmodel_signature):
+def test_model_signature(mmodel_G, mmodel_signature):
     """Test graph_signature
 
     There are two functions in the mmodel_G have parameter
@@ -65,7 +65,7 @@ def test_graph_signature(mmodel_G, mmodel_signature):
     should have default value.
     """
 
-    assert util.graph_signature(mmodel_G) == mmodel_signature
+    assert util.model_signature(mmodel_G) == mmodel_signature
 
 
 def test_replace_signature(mmodel_signature):
@@ -83,10 +83,10 @@ def test_replace_signature(mmodel_signature):
     assert "a_rep" not in mmodel_signature.parameters
 
 
-def test_graph_returns(mmodel_G):
+def test_model_returns(mmodel_G):
     """Test graph_returns"""
 
-    assert util.graph_returns(mmodel_G) == ["k", "m"]
+    assert util.model_returns(mmodel_G) == ["k", "m"]
 
 
 def test_graph_topological_sort(mmodel_G):
@@ -192,7 +192,7 @@ def test_modify_subgraph_middle(mmodel_G):
 
 
 def test_modify_subgraph_none_returns(mmodel_G):
-    """Test subgraph modification when returns are not specificed
+    """Test subgraph modification when returns are not specified
 
     This test specifically the middle node
     """
@@ -216,7 +216,7 @@ def test_modify_subgraph_none_returns(mmodel_G):
 
 
 def test_modify_subgraph_none_returns_fails(mmodel_G):
-    """Test subgraph modification when returns are not specificed
+    """Test subgraph modification when returns are not specified
 
     The method fails when the subgraph node does not have a
     return attribute

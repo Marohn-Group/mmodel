@@ -9,7 +9,13 @@ The test stredgy works as the following:
 
 """
 
-from mmodel.handler import TopologicalHandler, MemHandler, PlainHandler, H5Handler
+from mmodel.handler import (
+    partial_handler,
+    TopologicalHandler,
+    MemHandler,
+    PlainHandler,
+    H5Handler,
+)
 from inspect import signature
 import pytest
 import h5py
@@ -17,6 +23,48 @@ import numpy as np
 import math
 from tests.conftest import assert_graphs_equal
 import re
+
+
+class TestPartialHandler:
+    @pytest.fixture
+    def parent_cls(self):
+        class Test:
+            ATTR = "class attr"
+
+            def __init__(self, a, b):
+                self.a = a
+                self.b = b
+
+            def test_method(self):
+                return self.a + self.b
+
+        return Test
+
+    def test_class(self, parent_cls):
+        """Test if partial_handler creates a new class correctly
+
+        Checks if the returned class has the same name, the instance retains all
+        attributes and is instance of the original class
+        """
+        new_cls = partial_handler(parent_cls, b=2)
+
+        assert new_cls.__name__ == parent_cls.__name__
+        assert issubclass(new_cls, parent_cls)
+
+
+    def test_instance(self, parent_cls):
+        """Test if partial_handler creates a new class correctly
+
+        Checks if the returned class has the same name, the instance retains all
+        attributes and is instance of the original class
+        """
+        new_cls = partial_handler(parent_cls, b=2)
+
+        test = new_cls(a=1)
+        # shares the same attributes
+        assert vars(test) == vars(parent_cls(1, 2))
+        assert test.test_method() == 3
+
 
 
 class TestTopologicalHandler:
@@ -29,19 +77,19 @@ class TestTopologicalHandler:
         itself. Here we monkeypatch to remove the abstractmethods and test
         the basic init and method behaviors.
         """
-        # monkeypatch the abstractmethod to empty to TopologicalModel can
-        # instantiate
+        # monkeypatch the abstractmethod to empty to TopologicalModel
+        # so that it can instantiate
         monkeypatch.setattr(TopologicalHandler, "__abstractmethods__", set())
 
-        model = TopologicalHandler(mmodel_G, ['c'])
+        model = TopologicalHandler(mmodel_G, ["c"])
 
         assert signature(model) == mmodel_signature
-        # assert model.__name__ == "test model"
-        # make sure the graph is a copy
-        assert model.model_graph != mmodel_G
 
-        assert_graphs_equal(model.model_graph, mmodel_G)
-        assert model.returns == ['c', 'k', 'm']
+        # make sure the graph is a copy
+        assert model.graph != mmodel_G
+
+        assert_graphs_equal(model.graph, mmodel_G)
+        assert model.returns == ["c", "k", "m"]
 
 
 @pytest.fixture(scope="module")
@@ -154,9 +202,10 @@ class TestMemHandler:
 
     def test_add_returns(self, mmodel_G):
         """Test if the handler returns the proper parameters add_returns specified"""
-        
-        handler_instance = MemHandler(mmodel_G, ['c'])
+
+        handler_instance = MemHandler(mmodel_G, ["c"])
         assert handler_instance(a=10, d=15, f=20, b=2) == (12, -720, math.log(12, 2))
+
 
 class TestPlainHandler:
     """Test class Model"""

@@ -11,10 +11,13 @@ Added
 ^^^^^
 - ``subgraph_by_returns`` filters graph by node returns
 - ``is_valid_model`` method graph for Model class to validate graph for building model executable
+- ``partial_handler`` that creates class with partial parameters defined
 
 Changed
 ^^^^^^^
 - move ``subgraph_by_nodes`` and ``subgraph_by_parameters`` to ``filter`` module
+- ``Model`` and handlers parameter "model_graph" to "graph"
+- ``Model`` no longer accept handler arguments (unify behavior of modifiers and handlers)
 
 [0.2.2] - 2022-05-06
 --------------------------

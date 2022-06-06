@@ -20,8 +20,8 @@ def param_sorter(parameter):
         return parameter.kind, False, parameter.name
 
 
-def graph_signature(graph):
-    """Obtain the signature of the graph
+def model_signature(graph):
+    """Obtain the signature from the model graph
 
     TODO
         add parameter checking method
@@ -66,8 +66,8 @@ def replace_signature(signature, replacement_dict):
     return signature.replace(parameters=sorted(params.values(), key=param_sorter))
 
 
-def graph_returns(graph):
-    """Obtain the return parameter of the graph
+def model_returns(graph):
+    """Obtain the return parameter from the model graph
 
     The assumption is that all return parmaeter names are unique
     """
