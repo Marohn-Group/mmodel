@@ -1,4 +1,3 @@
-
 from mmodel.draw import draw_graph, draw_plain_graph, update_settings, DEFAULT_SETTINGS
 import networkx as nx
 

@@ -1,6 +1,7 @@
 """Filters that used to create subgraph"""
 import networkx as nx
 
+
 def subgraph_by_parameters(graph, parameters: list):
     """Construct subgraph based on parameters
 
@@ -29,9 +30,10 @@ def subgraph_by_nodes(graph, nodes: list):
 
     return graph.subgraph(nodes)
 
+
 def subgraph_by_returns(graph, returns: list):
     """Construct subgraph based on node returns
-    
+
     For mmodel graphs, returns from all the internal nodes are unique.
     Therefore the function only checks if function nodes overlaps with
     the target return list. If a child node is included, so are the
@@ -42,7 +44,7 @@ def subgraph_by_returns(graph, returns: list):
 
     for node, rts in nx.get_node_attributes(graph, "returns").items():
 
-        if not set(rts).isdisjoint(returns): # check if they overlap
+        if not set(rts).isdisjoint(returns):  # check if they overlap
             subgraph_nodes.append(node)
             subgraph_nodes.extend(nx.ancestors(graph, node))
 

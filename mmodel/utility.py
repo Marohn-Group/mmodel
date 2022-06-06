@@ -221,16 +221,17 @@ def parse_input(signature, *args, **kwargs):
 
 def is_node_attr_defined(graph, attr: str):
     """Check if all graph nodes have the target attribute defined
-    
+
     Use ``set`` to ignore order. Returns true if all nodes have the target
     attribute
     """
 
     return set(nx.get_node_attributes(graph, attr).keys()) == set(graph.nodes)
 
+
 def is_edge_attr_defined(graph, attr: str):
     """Check if all graph edges have the target attribute defined
-    
+
     Use ``set`` to ignore order. Returns true if all nodes have the target
     attribute
     """

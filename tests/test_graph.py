@@ -128,7 +128,9 @@ def test_add_node_objects_from_modifiers():
 
     G = ModelGraph()
     G.add_edge("node_a", "node_b")
-    G.add_node_objects_from([("node_a", func_a, ["c"], [mod_method]), ("node_b", func_b, ["e"])])
+    G.add_node_objects_from(
+        [("node_a", func_a, ["c"], [mod_method]), ("node_b", func_b, ["e"])]
+    )
 
     assert G.nodes["node_a"]["obj"](a=1, b=2) == 4
     assert G.nodes["node_b"]["obj"](1, 2) == (1, 2)

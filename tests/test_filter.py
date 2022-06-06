@@ -29,6 +29,7 @@ def test_subgraph_by_nodes(mmodel_G):
 
     assert sorted(list(subgraph.nodes)) == ["multiply", "subtract"]
 
+
 def test_subgraph_by_returns(mmodel_G):
     """Test if the subgraph returns all nodes (including parents)"""
 
