@@ -18,13 +18,14 @@ def mockedfunc():
     return func
 
 
-def test_basic_loop(mockedfunc):
-    """Test redirect edges based on subgraph and subgraph node"""
+def test_loop(mockedfunc):
+    """Test loop modifier"""
 
     loop_mod = loop_modifier("b")
     looped = loop_mod(mockedfunc)
 
     assert looped(a=1, b=[1, 2, 3], c=4) == [6, 7, 8]
+    assert loop_mod.info == "loop_modifier(b)"
 
     # test the method with default
     # loop_mod = loop_modifier("c")
@@ -35,13 +36,14 @@ def test_basic_loop(mockedfunc):
     # assert looped_default(a=0.1, b=0.1, c=[3, 4]) == [3.2, 4.2]
 
 
-def test_zip_loop(mockedfunc):
-    """Test redirect edges based on subgraph and subgraph node"""
+def test_zip_loop_list(mockedfunc):
+    """Test zip loop modifier with list input"""
 
     loop_mod = zip_loop_modifier(["a", "b"])
     looped = loop_mod(mockedfunc)
 
     assert looped(a=[0.1, 0.2, 0.3], b=[1, 2, 3], c=10) == [11.1, 12.2, 13.3]
+    assert loop_mod.info == "zip_loop_modifier(a, b)"
 
     # test the method with default
     # loop_mod = loop_modifier("c")
@@ -50,6 +52,16 @@ def test_zip_loop(mockedfunc):
     # assert inspect.signature(looped_default).parameters['c'].default == [2]
     # assert looped_default(a=0.1, b=0.1, c=[2]) == [2.2]
     # assert looped_default(a=0.1, b=0.1, c=[3, 4]) == [3.2, 4.2]
+
+
+def test_zip_loop_str(mockedfunc):
+    """Test zip loop modifier with string input"""
+
+    loop_mod = zip_loop_modifier("a, b")
+    looped = loop_mod(mockedfunc)
+
+    assert looped(a=[0.1, 0.2, 0.3], b=[1, 2, 3], c=10) == [11.1, 12.2, 13.3]
+    assert loop_mod.info == "zip_loop_modifier(a, b)"
 
 
 def test_signature_modifiers(mockedfunc):
@@ -66,12 +78,14 @@ def test_signature_modifiers(mockedfunc):
     # the default value is applied
     assert mod_func_1(d=1, e=2) == 5
     assert list(inspect.signature(mod_func_1).parameters.keys()) == ["d", "e"]
+    assert sig_mod_1.info == "signature_modifier(d, e)"
 
     sig_mod_2 = signature_modifier(["d", "e", "f"])
     mod_func_2 = sig_mod_2(mockedfunc)
 
     assert mod_func_2(d=1, e=2, f=3) == 6
     assert list(inspect.signature(mod_func_2).parameters.keys()) == ["d", "e", "f"]
+    assert sig_mod_2.info == "signature_modifier(d, e, f)"
 
 
 def test_signature_modifiers_fails(mockedfunc):
@@ -99,7 +113,10 @@ def test_signature_binding_modifier(mockedfunc):
     The result function should behave the same as before
     """
 
-    mod_func = signature_binding_modifier()(mockedfunc)
+    sig_b_mod = signature_binding_modifier()
+    assert sig_b_mod.info == "signature_binding_modifier"
+
+    mod_func = sig_b_mod(mockedfunc)
 
     assert mod_func(1, 2) == 5
     assert mod_func(1, 2, 3) == 6

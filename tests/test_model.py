@@ -17,10 +17,11 @@ def test_invalid_model(mmodel_G):
         Model(g, PlainHandler)
 
 
-MODEL_REPR = """test model
-signature - a, d, f, b=2
-returns - k, m
-handler - PlainHandler
+MODEL_STR = """test model
+  signature: a, d, f, b=2
+  returns: k, m
+  handler: PlainHandler
+  modifiers: none
 test object
 
 long description"""
@@ -44,7 +45,7 @@ def test_model_attr(model_instance, mmodel_signature):
 def test_model_str(model_instance):
     """Test model representation"""
 
-    assert str(model_instance) == MODEL_REPR
+    assert str(model_instance) == MODEL_STR
 
 
 def test_execution(model_instance):
@@ -54,28 +55,51 @@ def test_execution(model_instance):
     assert model_instance(a=1, d=2, f=3, b=4) == (45, math.log(5, 4))
 
 
+MOD_MODEL_STR = """test model
+  signature: a, d, f, b=2
+  returns: k, m
+  handler: PlainHandler
+  modifiers: loop_modifier(a)
+test object
+
+long description"""
+
+
+def test_mod_model_str(mmodel_G):
+    """Test the string representation with modifiers
+
+    with multiple modifiers, the modifiers are delimited by ", "
+    """
+    loop_mod = loop_modifier("a")
+    single_mod = Model(mmodel_G, PlainHandler, modifiers=[loop_mod])
+    assert str(single_mod) == MOD_MODEL_STR
+
+    double_mod = Model(mmodel_G, PlainHandler, modifiers=[loop_mod, loop_mod])
+    assert "modifiers: loop_modifier(a), loop_modifier(a)" in str(double_mod)
+
+
 @pytest.fixture
-def model_mod_instance(mmodel_G):
-    """Construct a model instance"""
+def mod_model_instance(mmodel_G):
+    """Construct a model instance with loop modifier"""
 
     loop_mod = loop_modifier("a")
 
     return Model(mmodel_G, PlainHandler, modifiers=[loop_mod])
 
 
-def test_mod_attr(model_mod_instance):
+def test_mod_model_attr(mod_model_instance):
     """Test if adding modifier changes the handler attribute (returns)"""
 
-    assert model_mod_instance.returns == ["k", "m"]
+    assert mod_model_instance.returns == ["k", "m"]
 
 
-def test_mod_execution(model_mod_instance):
+def test_model_execution(mod_model_instance):
     """Test if adding modifier changes the handler attribute (returns)"""
 
-    assert model_mod_instance(a=[1, 2], b=2, d=3, f=4) == [(0, math.log(3, 2)), (16, 2)]
+    assert mod_model_instance(a=[1, 2], b=2, d=3, f=4) == [(0, math.log(3, 2)), (16, 2)]
 
 
-def test_mod_with_argument(mmodel_G, tmp_path):
+def test_model_with_handler_argument(mmodel_G, tmp_path):
     """Test if partial_handler works with the H5Handler"""
 
     path = tmp_path / "h5model_test.h5"
@@ -84,6 +108,7 @@ def test_mod_with_argument(mmodel_G, tmp_path):
 
     assert h5model.executor.h5_filename == path
     assert h5model(a=10, d=15, f=20, b=2) == (-720, math.log(12, 2))
+    assert f"H5Handler({path})" in str(h5model)
 
 
 class TestModelValidation:

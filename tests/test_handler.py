@@ -51,7 +51,6 @@ class TestPartialHandler:
         assert new_cls.__name__ == parent_cls.__name__
         assert issubclass(new_cls, parent_cls)
 
-
     def test_instance(self, parent_cls):
         """Test if partial_handler creates a new class correctly
 
@@ -64,7 +63,6 @@ class TestPartialHandler:
         # shares the same attributes
         assert vars(test) == vars(parent_cls(1, 2))
         assert test.test_method() == 3
-
 
 
 class TestTopologicalHandler:
@@ -306,6 +304,11 @@ class TestH5Handler:
         object and model instance are destroyed after each test function
         """
         return H5Handler(mmodel_G, [], h5_filename)
+
+    def test_handler_info(self, handler_instance, h5_filename):
+        """Test the handler has the correct information"""
+
+        assert handler_instance.info == f"H5Handler({h5_filename})"
 
     @pytest.mark.parametrize("scalar, value", [("float", 1.14), ("str", b"test")])
     def test_read_scalar(self, scalar, value, handler_instance, h5_filename):

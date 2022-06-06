@@ -7,7 +7,7 @@ import inspect
 from mmodel.utility import parse_input
 
 
-def loop_modifier(parameter):
+def loop_modifier(parameter: str):
     """Basic loop wrapper, iterates the values from loop
 
     :param list parameter: target parameter to loop
@@ -26,15 +26,21 @@ def loop_modifier(parameter):
 
         return loop_wrapped
 
+    wrapper.info = f"loop_modifier({parameter})"
+
     return wrapper
 
 
 def zip_loop_modifier(parameters):
     """Pairwise wrapper, iterates the values from loop
 
-    :param list parameters: list of the parameter to loop
-        only one parameter is allowed
+    :param list or string parameters: list of the parameter to loop
+        only one parameter is allowed. If string of parameters are
+        provided, the parameters should be delimited by ", ".
     """
+
+    if isinstance(parameters, str):
+        parameters = parameters.split(", ")
 
     def wrapper(func):
         @wraps(func)
@@ -57,6 +63,7 @@ def zip_loop_modifier(parameters):
 
         return loop_wrapped
 
+    wrapper.info = f"zip_loop_modifier({', '.join(parameters)})"
     return wrapper
 
 
@@ -104,6 +111,7 @@ def signature_modifier(signature_parameters):
 
         return wrapped
 
+    wrapper.info = f"signature_modifier{sig}"
     return wrapper
 
 
@@ -113,12 +121,13 @@ def signature_binding_modifier():
     The additional wrapper is unnecessary, but to keep a consistent
     modifier syntax. The modifier can be used on wrapped functions
     that do not have a parameter binding steps (ones that only allow
-    keyword arguments). 
+    keyword arguments).
 
     The parse_input method, binds the input args and kwargs, and fills
     default values automatically. The resulting function behaves the
     same as a python function.
     """
+
     def wrapper(func):
 
         sig = inspect.signature(func)
@@ -132,4 +141,5 @@ def signature_binding_modifier():
 
         return wrapped
 
+    wrapper.info = "signature_binding_modifier"
     return wrapper

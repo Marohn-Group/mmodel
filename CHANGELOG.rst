@@ -18,6 +18,11 @@ Changed
 - move ``subgraph_by_nodes`` and ``subgraph_by_parameters`` to ``filter`` module
 - ``Model`` and handlers parameter "model_graph" to "graph"
 - ``Model`` no longer accept handler arguments (unify behavior of modifiers and handlers)
+- ``Model`` instance str now shows modifier information
+- modifiers with parameters requires to have "info" attribute set to the wrapper 
+  (the closure that takes func as a parameter). The "info" is used to show the modifier information
+  in model instance.
+
 
 [0.2.2] - 2022-05-06
 --------------------------

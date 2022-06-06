@@ -21,7 +21,7 @@ def partial_handler(cls, **kwargs):
     Only keyword arguments are accepted. The resulting class does not complete share
     the properties of the original class. Therefore this is only recommend for modifying
     handler class.
-    
+
     The function is adopted from:
     https://stackoverflow.com/a/58039373/7542501
 
@@ -209,6 +209,7 @@ class H5Handler(TopologicalHandler):
         # write id attribute
         self.h5_filename = h5_filename
         self.exe_count = 0
+        self.info = f"H5Handler({h5_filename})"
 
         super().__init__(graph, additional_returns)
 

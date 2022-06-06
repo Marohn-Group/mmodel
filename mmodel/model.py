@@ -34,6 +34,7 @@ class Model:
         self._handler = handler
 
         executor = handler(graph, additional_returns)
+        self._handler_info = getattr(executor, "info", self._handler.__name__)
 
         for mdf in modifiers:
             executor = mdf(executor)
@@ -54,12 +55,19 @@ class Model:
 
         sig_list = [str(param) for param in self.__signature__.parameters.values()]
 
+        mod_str_list = [getattr(mod, "info", mod.__name__) for mod in self._modifiers]
+        if mod_str_list:
+            mod_str = ", ".join(mod_str_list)
+        else:
+            mod_str = "none"
+
         return "\n".join(
             [
                 f"{self.__name__}",
-                f"signature - {', '.join(sig_list)}",
-                f"returns - {', '.join(self.returns)}",
-                f"handler - {self._handler.__name__}",
+                f"  signature: {', '.join(sig_list)}",
+                f"  returns: {', '.join(self.returns)}",
+                f"  handler: {self._handler_info}",
+                f"  modifiers: {mod_str}",
                 f"{self._graph.graph.get('doc', '')}",
             ]
         )
