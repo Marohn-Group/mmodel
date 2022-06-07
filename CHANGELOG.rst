@@ -12,6 +12,9 @@ Added
 - ``subgraph_by_returns`` filters graph by node returns
 - ``is_valid_model`` method graph for Model class to validate graph for building model executable
 - ``partial_handler`` that creates class with partial parameters defined
+- ``draw`` method to ``ModelGraph`` and ``Model`` classes
+- add ``get_node`` and ``get_node_object`` methods to ``Model`` class
+- add ``view_node``to ``ModelGraph`` and ``Model`` classes
 
 Changed
 ^^^^^^^
@@ -21,7 +24,8 @@ Changed
 - ``Model`` instance str now shows modifier information
 - modifiers with parameters requires to have "info" attribute set to the wrapper 
   (the closure that takes func as a parameter). The "info" is used to show the modifier information
-  in model instance.
+  in model instance
+- ``modify_subgraph`` no longer store the subgraph information as a node attribute
 
 
 [0.2.2] - 2022-05-06

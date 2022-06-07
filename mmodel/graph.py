@@ -1,5 +1,6 @@
 import inspect
 import networkx as nx
+from mmodel.draw import draw_graph
 
 
 class ModelGraph(nx.DiGraph):
@@ -38,13 +39,18 @@ class ModelGraph(nx.DiGraph):
         if node not in self.nodes:
             self.add_node(node)
 
+        node_dict = self.nodes[node]
+
+        # store the base object
+        node_dict["base_obj"] = obj
+
         for mod in modifiers:
             obj = mod(obj)
 
         sig = inspect.signature(obj)
-        self.nodes[node]["obj"] = obj
-        self.nodes[node]["sig"] = sig
-        self.nodes[node]["returns"] = returns
+        node_dict.update(
+            {"obj": obj, "sig": sig, "returns": returns, "modifiers": modifiers}
+        )
         self.update_graph()
 
     def add_node_objects_from(self, node_objects):
@@ -56,6 +62,36 @@ class ModelGraph(nx.DiGraph):
         for node_obj in node_objects:
             # unzipping works for input with or without modifiers
             self.add_node_object(*node_obj)
+
+    def view_node(self, node):
+        """view node information
+
+        The node information is kept consistent with the graph information
+        """
+
+        node_dict = self.nodes[node]
+        sig_list = [str(param) for param in node_dict["sig"].parameters.values()]
+        # if it is not a proper function just print the repr
+        # Model class instance has the attr __name__
+        base_name = getattr(node_dict["base_obj"], "__name__", repr(callable))
+        mod_str_list = [
+            getattr(mod, "info", mod.__name__) for mod in node_dict["modifiers"]
+        ]
+
+        if mod_str_list:
+            mod_str = ", ".join(mod_str_list)
+        else:
+            mod_str = "none"
+
+        return "\n".join(
+            [
+                f"{node} node",
+                f"  base callable: {base_name}",
+                f"  signature: {', '.join(sig_list)}",
+                f"  returns: {', '.join(node_dict['returns'])}",
+                f"  modifiers: {mod_str}",
+            ]
+        )
 
     def add_grouped_edge(self, u, v):
         """Add linked edge
@@ -119,3 +155,11 @@ class ModelGraph(nx.DiGraph):
         docstring = self.graph.get("doc", "")
 
         return f"{default_str}\n\n{docstring}"
+
+    def draw(self, method: callable = draw_graph):
+        """Draw the graph
+
+        A drawing is provided. Defaults to ``draw_graph``
+        """
+
+        return method(self, str(self))

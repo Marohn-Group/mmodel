@@ -48,12 +48,45 @@ def test_model_str(model_instance):
     assert str(model_instance) == MODEL_STR
 
 
-def test_execution(model_instance):
+def test_model_execution(model_instance):
     """Test if the default is correctly used"""
 
     assert model_instance(10, 15, 20) == (-720, math.log(12, 2))
     assert model_instance(a=1, d=2, f=3, b=4) == (45, math.log(5, 4))
 
+def test_get_node(model_instance, mmodel_G):
+    """Test get_node method of the model"""
+
+    assert model_instance.get_node('log') == mmodel_G.nodes['log']
+
+def test_get_node_object(model_instance, mmodel_G):
+    """Test get_node_object method"""
+    
+    assert model_instance.get_node_object('log') == mmodel_G.nodes['log']['obj']
+
+
+def test_model_draw(model_instance):
+    """Test if the draw method of the model instance
+
+    The draw methods are tested in test_draw module. Here we make sure
+    the label is correct.
+    """
+    dot_graph = model_instance.draw()
+
+    assert str(model_instance) in dot_graph.source
+
+
+NODE_STR = """log node
+  base callable: logarithm
+  signature: c, b
+  returns: m
+  modifiers: none"""
+
+
+def test_model_view_node(model_instance):
+    """Test if view node outputs node information correctly"""
+
+    assert model_instance.view_node('log') == NODE_STR
 
 MOD_MODEL_STR = """test model
   signature: a, d, f, b=2
@@ -76,6 +109,9 @@ def test_mod_model_str(mmodel_G):
 
     double_mod = Model(mmodel_G, PlainHandler, modifiers=[loop_mod, loop_mod])
     assert "modifiers: loop_modifier(a), loop_modifier(a)" in str(double_mod)
+
+
+
 
 
 @pytest.fixture
@@ -111,18 +147,19 @@ def test_model_with_handler_argument(mmodel_G, tmp_path):
     assert f"H5Handler({path})" in str(h5model)
 
 
+
 class TestModelValidation:
     """Test is_graph_valid method of Model"""
 
-    def test_is_graph_valid_digraph(self):
+    def test_is_valid_graph_digraph(self):
         """Test is_graph_valid that correctly identifies non directed graphs"""
 
         g = nx.complete_graph(4)
 
         with pytest.raises(AssertionError, match="invalid graph: undirected graph"):
-            Model.is_graph_valid(g)
+            Model.is_valid_graph(g)
 
-    def test_is_graph_valid_cycles(self):
+    def test_is_valid_graph_cycles(self):
         """Test is_graph_valid that correctly identifies cycles
 
         Check a self cycle and a non self cycle
@@ -135,7 +172,7 @@ class TestModelValidation:
         with pytest.raises(
             AssertionError, match="invalid graph: graph contains cycles"
         ):
-            Model.is_graph_valid(g)
+            Model.is_valid_graph(g)
 
         g = nx.DiGraph()
         g.add_edge(1, 1)
@@ -144,9 +181,9 @@ class TestModelValidation:
         with pytest.raises(
             AssertionError, match="invalid graph: graph contains cycles"
         ):
-            Model.is_graph_valid(g)
+            Model.is_valid_graph(g)
 
-    def test_is_graph_valid_isolates(self):
+    def test_is_valid_graph_isolates(self):
         """Test is_graph_valid that correctly identifies isolated nodes"""
 
         g = nx.DiGraph()
@@ -157,9 +194,9 @@ class TestModelValidation:
         with pytest.raises(
             AssertionError, match="invalid graph: graph contains isolated nodes"
         ):
-            Model.is_graph_valid(g)
+            Model.is_valid_graph(g)
 
-    def test_is_graph_valid_missing_attr(self, standard_G):
+    def test_is_valid_graph_missing_attr(self, standard_G):
         """Test is_graph_valid that correctly identifies isolated nodes
 
         Here we add nodes to mmodel_G
@@ -175,7 +212,7 @@ class TestModelValidation:
             AssertionError,
             match="invalid graph: graph contains nodes with undefined callables",
         ):
-            Model.is_graph_valid(g)
+            Model.is_valid_graph(g)
 
         g.nodes["test"]["obj"] = test
 
@@ -183,7 +220,7 @@ class TestModelValidation:
             AssertionError,
             match="invalid graph: graph contains nodes with undefined callables returns",
         ):
-            Model.is_graph_valid(g)
+            Model.is_valid_graph(g)
 
         g.nodes["test"]["returns"] = ["c"]
 
@@ -191,7 +228,7 @@ class TestModelValidation:
             AssertionError,
             match="invalid graph: graph contains nodes with undefined callables signatures",
         ):
-            Model.is_graph_valid(g)
+            Model.is_valid_graph(g)
 
         g.nodes["test"]["sig"] = inspect.signature(test)
 
@@ -199,14 +236,14 @@ class TestModelValidation:
             AssertionError,
             match="invalid graph: graph contains edges with undefined variable attributes",
         ):
-            Model.is_graph_valid(g)
+            Model.is_valid_graph(g)
 
         # the last one will pass even tho it is empty
 
         g.edges["log", "test"]["val"] = []
-        assert Model.is_graph_valid(g)
+        assert Model.is_valid_graph(g)
 
-    def test_is_graph_valid_passing(self, mmodel_G):
-        """Test is_graph_valid that correctly passing"""
+    def test_is_valid_graph_passing(self, mmodel_G):
+        """Test is_valid_graph that correctly passing"""
 
-        assert Model.is_graph_valid(mmodel_G)
+        assert Model.is_valid_graph(mmodel_G)

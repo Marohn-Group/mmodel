@@ -208,6 +208,34 @@ def test_copy(mmodel_G):
     assert_graphs_equal(mmodel_G.copy(), mmodel_G)
 
 
+NODE_STR = """log node
+  base callable: logarithm
+  signature: c, b
+  returns: m
+  modifiers: none"""
+
+
+def test_view_node_without_modifiers(mmodel_G):
+    """Test if view node outputs node information correctly"""
+
+    assert mmodel_G.view_node('log') == NODE_STR
+
+
+def test_view_node_with_modifiers(mmodel_G):
+    """Test if view node outputs node information correctly"""
+
+    def func(a, b):
+        return a + b
+
+    def mockmod(func):
+        return func
+    
+    mockmod.info = "test_modifier"
+    mmodel_G.add_node_object('test_node', func, ['c'], [mockmod, mockmod])
+
+    assert "modifiers: test_modifier, test_modifier" in mmodel_G.view_node('test_node')
+
+
 """The following tests are modified based on networkx.classes.tests"""
 
 
@@ -260,3 +288,23 @@ def test_subgraph_copy(mmodel_G):
     assert "poly" in G
     # not exactly sure how to test this
     assert not hasattr(H, "_graph")
+
+
+"""label with quotation mark escaped"""
+ESC_LABEL = '''label="ModelGraph named \'test\' with 5 nodes and 5 edges
+
+test object
+
+long description"'''
+
+
+def test_draw(mmodel_G):
+    """Test the draw method of ModelGraph instance
+
+    The draw methods are tested in test_draw module. Here we make sure
+    the label is correct. The repr escapes \n, therefore the string is used to compare
+    """
+    dot_graph = mmodel_G.draw()
+
+    assert ESC_LABEL in dot_graph.source
+    # assert f'label="{repr(str(mmodel_G))}"' in dot_graph.source

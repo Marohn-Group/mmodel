@@ -184,7 +184,6 @@ def modify_subgraph(
 
     graph.add_node_object(subgraph_name, obj=subgraph_obj, returns=subgraph_returns)
     # add the subgraph attribute to node
-    graph.nodes[subgraph_name]["subgraph"] = subgraph
 
     return graph
 
@@ -198,12 +197,7 @@ def modify_node(model_graph, node, modifiers, node_returns=None):
     graph = model_graph.copy()
     obj = graph.nodes[node]["obj"]
     returns = node_returns or graph.nodes[node]["returns"]
-
-    for mdf in modifiers:
-        obj = mdf(obj)
-
-    # update the loop value
-    graph.add_node_object(node, obj=obj, returns=returns)
+    graph.add_node_object(node, obj=obj, returns=returns, modifiers=modifiers)
 
     return graph
 

@@ -1,5 +1,6 @@
 import inspect
 from mmodel.utility import parse_input, is_node_attr_defined, is_edge_attr_defined
+from mmodel.draw import draw_graph
 import networkx as nx
 
 
@@ -22,7 +23,7 @@ class Model:
         self, graph, handler, modifiers: list = [], additional_returns: list = []
     ):
 
-        assert self.is_graph_valid(graph)
+        assert self.is_valid_graph(graph)
 
         self.__name__ = f"{graph.name} model"
 
@@ -73,7 +74,7 @@ class Model:
         )
 
     @staticmethod
-    def is_graph_valid(G):
+    def is_valid_graph(G):
         """Check if model_graph is valid to build a executable
 
         ``mmodel`` does not allow cycle graph, graph with isolated nodes,
@@ -105,3 +106,27 @@ class Model:
         )
 
         return True
+
+    def get_node(self, node):
+        """Quick access to node within the model"""
+
+        return self._graph.nodes[node]
+
+    def get_node_object(self, node):
+        """Quick access to node callable within the model"""
+
+        return self._graph.nodes[node]['obj']
+ 
+    def view_node(self, node):
+        """View a specific node"""
+        
+        return self._graph.view_node(node)
+
+
+    def draw(self, method: callable = draw_graph):
+        """Draw the graph of the model
+        
+        A drawing is provided. Defaults to ``draw_graph``
+        """
+
+        return method(self._graph, str(self))

@@ -105,7 +105,7 @@ def test_graph_topological_sort(mmodel_G):
 
     for node, attr in order:
         assert isinstance(attr, dict)
-        assert sorted(list(attr)) == ["obj", "returns", "sig"]
+        assert sorted(list(attr)) == ['base_obj', 'modifiers', 'obj', 'returns', 'sig']
         nodes.append(node)
 
     assert nodes == ["add", "subtract", "multiply", "log", "poly"]
@@ -144,11 +144,9 @@ def test_modify_subgraph_terminal(mmodel_G):
     assert graph != mmodel_G
     assert "test" in graph
 
-    # pop subgraph to test if they are the same
-    node_subgraph = graph.nodes["test"].pop("subgraph")
-    assert_graphs_equal(subgraph, node_subgraph)
-
     assert graph.nodes["test"] == {
+        "base_obj": mock_obj,
+        "modifiers": [],
         "obj": mock_obj,
         "returns": [],
         "sig": inspect.signature(mock_obj),
@@ -176,11 +174,9 @@ def test_modify_subgraph_middle(mmodel_G):
     assert graph != mmodel_G
     assert "test" in graph
 
-    # pop subgraph to test if they are the same
-    node_subgraph = graph.nodes["test"].pop("subgraph")
-    assert_graphs_equal(subgraph, node_subgraph)
-
     assert graph.nodes["test"] == {
+        "base_obj": mock_obj,
+        "modifiers": [],
         "obj": mock_obj,
         "returns": ["e"],
         "sig": inspect.signature(mock_obj),
@@ -206,9 +202,9 @@ def test_modify_subgraph_none_returns(mmodel_G):
 
     graph = util.modify_subgraph(mmodel_G, subgraph, "test", mock_obj)
 
-    # remove subgraph attribute see above for subgraph test
-    graph.nodes["test"].pop("subgraph")
     assert graph.nodes["test"] == {
+        "base_obj": mock_obj,
+        "modifiers": [],
         "obj": mock_obj,
         "returns": ["e"],
         "sig": inspect.signature(mock_obj),
