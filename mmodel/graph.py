@@ -1,6 +1,7 @@
 import inspect
 import networkx as nx
 from mmodel.draw import draw_graph
+from copy import deepcopy
 
 
 class ModelGraph(nx.DiGraph):
@@ -22,8 +23,15 @@ class ModelGraph(nx.DiGraph):
     graph_attr_dict = {"type": "ModelGraph"}
 
     def single_graph_attr_dict(self):
-        """Add type to graph"""
-        return self.graph_attr_dict
+        """Add type to graph
+        
+        As of networkx 2.8.3, there is a bug that when the graph is copied
+        The graph attribute retains the original dictionary due to shared
+        class dictionary attribute. I have submitted the issue #5703, the
+        behavior may change in the future.
+        `issue <https://github.com/networkx/networkx/issues/5703>`_
+        """
+        return self.graph_attr_dict.copy()
 
     graph_attr_dict_factory = single_graph_attr_dict
 
@@ -163,3 +171,29 @@ class ModelGraph(nx.DiGraph):
         """
 
         return method(self, str(self))
+
+    def deepcopy(self):
+        """Deepcopy graph
+
+        The graph.copy method is a shallow copy. Deepcopy creates copy for the
+        attributes dictionary.
+        `graph.copy<https://networkx.org/documentation/stable/reference/classes
+        /generated/networkx.Graph.copy.html>_`
+
+        However, for subgraph, deepcopy is incredibly inefficient because
+        subgraph contains '_graph' which stores the original graph.
+        An alternative method is copy the code from copy method, but use deepcopy
+        for the items. We also copy the graph attribute dictionary.
+        """
+        # return deepcopy(self)
+
+        G = self.__class__()
+        G.graph.update(deepcopy(self.graph))
+        G.add_nodes_from((n, deepcopy(d)) for n, d in self._node.items())
+        G.add_edges_from(
+            (u, v, deepcopy(datadict))
+            for u, nbrs in self._adj.items()
+            for v, datadict in nbrs.items()
+        )
+
+        return G

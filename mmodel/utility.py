@@ -48,6 +48,22 @@ def model_signature(graph):
     return inspect.Signature(sorted(parameters.values(), key=param_sorter))
 
 
+def model_returns(graph):
+    """Obtain the return parameter from the model graph
+
+    The assumption is that all return parameter names are unique
+    """
+
+    returns = []
+
+    for node in graph.nodes():
+        if graph.out_degree(node) == 0:
+            returns.extend(graph.nodes[node]["returns"])
+
+    returns.sort()
+    return returns
+
+
 def replace_signature(signature, replacement_dict):
     """Replace signature with a dictionary of (key, pair)
 
@@ -66,24 +82,8 @@ def replace_signature(signature, replacement_dict):
     return signature.replace(parameters=sorted(params.values(), key=param_sorter))
 
 
-def model_returns(graph):
-    """Obtain the return parameter from the model graph
-
-    The assumption is that all return parmaeter names are unique
-    """
-
-    returns = []
-
-    for node in graph.nodes():
-        if graph.out_degree(node) == 0:
-            returns.extend(graph.nodes[node]["returns"])
-
-    returns.sort()
-    return returns
-
-
 def graph_topological_sort(graph):
-    """Determine the toplogical order
+    """Determine the topological order
 
     `nx.topological_generations` outputs a generator with each generation
     of node list. However, it does not carry the node attributes. The method
@@ -112,8 +112,8 @@ def param_counter(graph, add_returns):
     :param list add_params: added intermediate parameter to return for
         output.
 
-    return: dictionary with parameter_name: count pair
-    rtype: dict
+    :return: dictionary with parameter_name: count pair
+    :rtype: dict
     """
 
     value_list = []
@@ -145,22 +145,28 @@ def param_counter(graph, add_returns):
 
 
 def modify_subgraph(
-    model_graph, subgraph, subgraph_name, subgraph_obj, subgraph_returns=None
+    graph, subgraph, subgraph_name, subgraph_obj, subgraph_returns=None
 ):
     """Redirect graph based on subgraph
 
     Find all parent node that is not in subgraph but have child node
     in subgraph. (All child node of subgraph nodes are in the subgraph).
-    The edge attribute is passed down to the new edge
+    The edge attribute is passed down to the new edge. Here a new graph is created
+    by deep copy the original graph
 
     :param graph model_graph: model_graph to modify
     :param graph subgraph: subgraph that is being replaced by a node
+        subgraph is a view of the original graph
     :param str subgraph_name: name of the subgraph
     """
 
-    graph = model_graph.copy()
-    subgraph = subgraph.copy()
-    subgraph.name = subgraph_name
+    graph = graph.deepcopy()
+
+    # since we are not storing subgraph information here
+    # and we are not modifying the subgraph, we do not need to copy
+    # the subgraph
+    # subgraph = subgraph.deepcopy()
+    # subgraph.graph = {'name': subgraph_name}
 
     new_edges = []
     for node in subgraph.nodes():
@@ -188,13 +194,13 @@ def modify_subgraph(
     return graph
 
 
-def modify_node(model_graph, node, modifiers, node_returns=None):
+def modify_node(graph, node, modifiers, node_returns=None):
     """Add modifiers to node
 
-    The result is a new graph with node object modified
+    The result is a new graph with node object modified.
     """
 
-    graph = model_graph.copy()
+    graph = graph.deepcopy()
     obj = graph.nodes[node]["obj"]
     returns = node_returns or graph.nodes[node]["returns"]
     graph.add_node_object(node, obj=obj, returns=returns, modifiers=modifiers)

@@ -2,6 +2,7 @@ from tests.conftest import assert_graphs_equal
 from mmodel import ModelGraph
 import pytest
 from functools import wraps
+import networkx as nx
 
 GRAPH_REPR = """ModelGraph named 'test' with 5 nodes and 5 edges
 
@@ -203,9 +204,26 @@ def test_add_grouped_edge_fails():
 
 
 def test_copy(mmodel_G):
-    """Test if copy works with MGraph"""
+    """Test if copy works with ModelGraph
+    
+    See networkx issue
+    """
 
     assert_graphs_equal(mmodel_G.copy(), mmodel_G)
+    assert mmodel_G.copy().graph is not mmodel_G.graph
+
+def test_deepcopy(mmodel_G):
+    """Test if copy creates a new graph attribute dictionary"""
+    G_deepcopy = mmodel_G.deepcopy()
+    G_copy =  mmodel_G.copy()
+
+    # check if graph is correctly duplicated
+    assert_graphs_equal(G_deepcopy, mmodel_G)
+    assert G_copy.graph == G_deepcopy.graph
+    # see test_copy that the two dictionaries are the same
+    assert G_deepcopy.graph is not mmodel_G.graph
+
+    assert G_copy.graph is not G_deepcopy.graph
 
 
 NODE_STR = """log node
@@ -276,18 +294,24 @@ def test_subgraph(mmodel_G):
     assert H._graph == G  # original graph
 
 
-def test_subgraph_copy(mmodel_G):
-    """Test the copy of subgraph is no longer a view of original"""
+def test_subgraph_deepcopy(mmodel_G):
+    """Test the subgraph is copied correctly and they no longer share graph
+    attributes.
 
-    G = mmodel_G
-    H = G.subgraph(["subtract", "poly"]).copy()
+    Subgraph view retains the graph attribute, and the copy method is only a
+    shallow copy. Modify a copied subgraph attribute changes the original graph    
+    """
+
+    H = mmodel_G.subgraph(["subtract", "poly"]).deepcopy()
 
     assert H.adj == {"subtract": {"poly": {"val": ["e"]}}, "poly": {}}
 
-    H.remove_node("poly")
-    assert "poly" in G
-    # not exactly sure how to test this
-    assert not hasattr(H, "_graph")
+    # check the graph attribute is no longer the same dictionary
+    assert H.graph == mmodel_G.graph
+    assert H.graph is not mmodel_G.graph
+
+    H.name = "subgraph_test"
+    assert mmodel_G.name != "subgraph_test"
 
 
 """label with quotation mark escaped"""

@@ -22,18 +22,18 @@ def partial_handler(cls, **kwargs):
     the properties of the original class. Therefore this is only recommend for modifying
     handler class.
 
-    The function is adopted from:
-    https://stackoverflow.com/a/58039373/7542501
+    The function is adopted from `stackoverflow
+    <https://stackoverflow.com/a/58039373/7542501>`_
 
-    The built in ``collection.namedtuple`` has similar implementation:
-    https://github.com/python/cpython/blob/
-    9081bbd036934ab435291db9d32d02fd42282951/Lib/collections/__init__.py#L501
+    The built in ``collection.namedtuple`` has similar `implementation
+    <https://github.com/python/cpython/blob/
+    9081bbd036934ab435291db9d32d02fd42282951/Lib/collections/__init__.py#L501`_
 
-    A similar implementation is discussed on python issue 77600:
-    https://github.com/python/cpython/issues/77600
+    A similar implementation is discussed on python `issue 77600
+    <https://github.com/python/cpython/issues/77600>`_
 
-    The tests for this function is adopted from
-    https://github.com/python/cpython/pull/6699
+    The tests for this function is adopted from `pull request
+    <https://github.com/python/cpython/pull/6699>`_
     """
 
     name = cls.__name__
@@ -57,7 +57,7 @@ class TopologicalHandler(metaclass=ABCMeta):
         self.__signature__ = model_signature(graph)
         self.returns = sorted(model_returns(graph) + additional_returns)
         self.order = graph_topological_sort(graph)
-        self.graph = graph.copy()
+        self.graph = graph
 
     def __call__(self, **kwargs):
         """Execute graph model by layer"""
@@ -214,7 +214,7 @@ class H5Handler(TopologicalHandler):
         super().__init__(graph, additional_returns)
 
     def initiate(self, **kwargs):
-        """Initate dictionary value"""
+        """Initiate dictionary value"""
         self.exe_count += 1
 
         f = h5py.File(self.h5_filename, "a")

@@ -5,12 +5,13 @@ from mmodel.handler import PlainHandler, H5Handler, partial_handler
 from mmodel.modifier import loop_modifier
 import math
 import networkx as nx
+from copy import deepcopy
 
 
 def test_invalid_model(mmodel_G):
     """Test if invalid model will raise an assertion error"""
 
-    g = mmodel_G.copy()
+    g = mmodel_G.deepcopy()
     g.add_edge("log", "test")
 
     with pytest.raises(AssertionError):
@@ -48,21 +49,29 @@ def test_model_str(model_instance):
     assert str(model_instance) == MODEL_STR
 
 
+def test_model_graph_freeze(model_instance):
+    """Test the graph is frozen"""
+
+    assert nx.is_frozen(model_instance._graph)
+
+
 def test_model_execution(model_instance):
     """Test if the default is correctly used"""
 
     assert model_instance(10, 15, 20) == (-720, math.log(12, 2))
     assert model_instance(a=1, d=2, f=3, b=4) == (45, math.log(5, 4))
 
+
 def test_get_node(model_instance, mmodel_G):
     """Test get_node method of the model"""
 
-    assert model_instance.get_node('log') == mmodel_G.nodes['log']
+    assert model_instance.get_node("log") == mmodel_G.nodes["log"]
+
 
 def test_get_node_object(model_instance, mmodel_G):
     """Test get_node_object method"""
-    
-    assert model_instance.get_node_object('log') == mmodel_G.nodes['log']['obj']
+
+    assert model_instance.get_node_object("log") == mmodel_G.nodes["log"]["obj"]
 
 
 def test_model_draw(model_instance):
@@ -86,7 +95,8 @@ NODE_STR = """log node
 def test_model_view_node(model_instance):
     """Test if view node outputs node information correctly"""
 
-    assert model_instance.view_node('log') == NODE_STR
+    assert model_instance.view_node("log") == NODE_STR
+
 
 MOD_MODEL_STR = """test model
   signature: a, d, f, b=2
@@ -109,9 +119,6 @@ def test_mod_model_str(mmodel_G):
 
     double_mod = Model(mmodel_G, PlainHandler, modifiers=[loop_mod, loop_mod])
     assert "modifiers: loop_modifier(a), loop_modifier(a)" in str(double_mod)
-
-
-
 
 
 @pytest.fixture
@@ -145,7 +152,6 @@ def test_model_with_handler_argument(mmodel_G, tmp_path):
     assert h5model.executor.h5_filename == path
     assert h5model(a=10, d=15, f=20, b=2) == (-720, math.log(12, 2))
     assert f"H5Handler({path})" in str(h5model)
-
 
 
 class TestModelValidation:
@@ -205,7 +211,7 @@ class TestModelValidation:
         def test(a, b):
             return
 
-        g = standard_G.copy()
+        g = deepcopy(standard_G)
         g.add_edge("log", "test")
 
         with pytest.raises(

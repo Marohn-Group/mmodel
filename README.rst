@@ -5,57 +5,81 @@ MModel
 
 ``MModel`` is a lightweight and modular model building framework
 for small-scale and non-linear models. The package aims to solve the
-difficulties in scientific code writing, making it easier to create
-a modular package that is fast, easy to test, and user-friendly.
+difficulties in scientific program prototyping and distribution, making
+it easier to create modular, fast, and user-friendly packages.
 
 Quickstart
 ----------
 
 To create a nonlinear model that has the end result of
-:math:`|x - y|(x - y + z)`:
+:math:`(x + y)log(x + y, z)`:
 
 .. code-block:: python
 
-    from mmodel import ModelGraph, ModelExecutor, MemHandler
+    from mmodel import ModelGraph, Model, MemHandler
+    import math
 
     def func_a(x, y):
-        return x + y, x - y
-    
-    def func_b(sum_xy, z):
-        return sum_xy + z
-    
-    def func_c(dif_xy):
-        return abs(dif_xy)
-    
-    def func_d(sum_xyz, abs_xy):
-        return sum_xyz * abs_xy
+        return x + y
+
+    def func_b(sum_xy, base):
+        return math.log(sum_xy, base)
+
+    def func_c(sum_xy, log_xy):
+        return sum_xy * log_xy
 
     # create graph links
-    
+
     grouped_edges = [
         ("func a", ["func b", "func c"]),
-        (["func b", "func"], "func d"),
+        ("func b", "func c"),
     ]
 
     node_objects = [
-        ("func a", func_a, ["sum_xy", "dif_xy"]),
-        ("func b", func_b, ["sum_xyz"]),
-        ("func c", func_c, ["abs_xy"]),
-        ("func d", func_d, ["result"]),
+        ("func a", func_a, ["sum_xy"]),
+        ("func b", func_b, ["log_xy"]),
+        ("func c", func_c, ["result"]),
     ]
 
-    model_graph = ModelGraph("Example")
-    model_graph.add_grouped_edges_from(grouped_edges)
-    model_graph.add_node_objects_from(node_objects)
+    graph = ModelGraph(name="Example")
+    graph.add_grouped_edges_from(grouped_edges)
+    graph.add_node_objects_from(node_objects)
 
-    example_func = Model(model_graph, handler=MemExecutor)
+    example_func = Model(graph, handler=MemHandler)
 
-    >>> example_func(1, 2, 3)
-    >>> 6
+    >>> print(example_func)
+    Example model
+      signature: base, x, y
+      returns: result
+      handler: MemHandler
+      modifiers: none
 
+    >>> example_func(2, 5, 3) # (5 + 3)log(5 + 3, 2)
+    24.0
 
-To loop a specific parameter. All modification occurs at the model graph
-level.
+The resulting `example_func` is a callable.
+
+One key feature of ``mmodel`` is modifiers, which modifies callables post
+definition. To loop the "base" parameter
+
+.. code-block:: python
+
+    from mmodel import subgraph_by_parameters, modify_subgraph, loop_modifier
+
+    subgraph = subgraph_by_parameters(graph, ["base"])
+    loop_node = Model(subgraph, MemHandler, [loop_modifier("base")])
+    looped_graph = modify_subgraph(graph, subgraph, "loop node", loop_node)
+    looped_func = Model(looped_graph, handler=MemHandler)
+
+    >>> print(looped_func)
+    Example model
+      signature: base, x, y
+      returns: result
+      handler: MemHandler
+      modifiers: none
+    
+    >>> looped_func([2, 4], 5, 3) # (5 + 3)log(5 + 3, 2)
+    [24.0, 12.0]
 
 .. note::
 
@@ -65,43 +89,14 @@ level.
     2. create subgraph model with ``Model`` and loop modifiers  
     3. update graph with the subgraph nodes with ``modify_subgraph``  
 
-.. code-block:: python
+Modifiers can also be added to the whole model or a single node.
 
-    from mmodel import subgraph_by_parameters, modify_subgraph, loop_modifier
-
-    subgraph = subgraph_by_parameters(["z"])
-    loop_mod = loop_modifier("z")
-    loop_node = Model(subgraph, handler=MemExecutor, modifiers=[loop_mod])
-    loop_model_graph = modify_subgraph(
-        graph, subgraph, "z loop node", loop_node, loop_node.returns
-        )
-
-    example_loop_func = Model(loop_model_graph, handler=MemHandler)
-
-    >>> example_loop_func(1, 2, [3, 4])
-    >>> [6, 7]
-
-To modify a single node (add loop to a single node):
+To draw the graph or the underlying graph of the model
 
 .. code-block:: python
-
-    loop_mod = loop_modifier("z")
-    modify_node(graph, 'func b', modifiers=[loop_mod])
-
-To draw the graph or the modified model with or without detail
-
-.. code-block:: python
-
-    from mmodel import draw_graph
     
-    draw_graph(model_graph, label="Example Figure")
-
-To view the descriptions of the graph and model
-
-.. code-block:: python
-
-    print(model_graph)
-    print(example_func)
+    graph.draw()
+    example_func.draw()
 
 Installation
 ------------

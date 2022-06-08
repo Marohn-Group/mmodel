@@ -30,11 +30,11 @@ class Model:
         # store only the copy of the graph, note this is not the same copy
         # used by the handler
         # modify self._graph does not change the model itself
-        self._graph = graph.copy()
+        self._graph = nx.freeze(graph.deepcopy())
         self._modifiers = modifiers
         self._handler = handler
 
-        executor = handler(graph, additional_returns)
+        executor = handler(self._graph, additional_returns)
         self._handler_info = getattr(executor, "info", self._handler.__name__)
 
         for mdf in modifiers:

@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
-[Unrealeased]
+[Unreleased]
 ------------------
 Added
 ^^^^^
@@ -15,6 +15,7 @@ Added
 - ``draw`` method to ``ModelGraph`` and ``Model`` classes
 - add ``get_node`` and ``get_node_object`` methods to ``Model`` class
 - add ``view_node``to ``ModelGraph`` and ``Model`` classes
+- add ``deepcopy`` method to ``ModelGraph`` because ``graph.copy`` method is a shallow copy
 
 Changed
 ^^^^^^^
@@ -26,6 +27,13 @@ Changed
   (the closure that takes func as a parameter). The "info" is used to show the modifier information
   in model instance
 - ``modify_subgraph`` no longer store the subgraph information as a node attribute
+- ``Model._graph`` is a copy of the original graph and is frozen. The same graph is used to create
+  handler object.
+
+Fixed
+^^^^^
+- ``modify_subgraph`` changes original graph attributes
+- ``ModelGraph`` shares the same class attribute across instances
 
 
 [0.2.2] - 2022-05-06
