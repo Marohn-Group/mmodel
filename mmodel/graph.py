@@ -11,29 +11,18 @@ class ModelGraph(nx.DiGraph):
     ModelGraph inherits from `networkx.DiGraph()`, which has all `DiGraph`
     methods.
 
-    The graph adds "type" attribute to the graph attribute. The additional
-    graph operations are added: add grouped edges and add node objects.
-    Method add grouped edges one of the node to be a list.
-    Method add node object update nodes with the node callable 'obj' and returns.
-    The method adds callable signature 'sig' to the node attribute
+    The graph adds "type" attribute to the graph attribute. The factory method
+    returns a copy of the dictionary. It is equivalent to 
+    ``{"type": "ModelGraph"}.copy()`` when called.
+
+    The additional graph operations are added: 
+    - add grouped edges and add node objects.
+    - Method add grouped edges one of the node to be a list.
+    - Method add node object update nodes with the node callable 'obj' and returns.
+    - The method adds callable signature 'sig' to the node attribute
     """
 
-    # add the graph attribute
-    # this is used for checking
-    graph_attr_dict = {"type": "ModelGraph"}
-
-    def single_graph_attr_dict(self):
-        """Add type to graph
-        
-        As of networkx 2.8.3, there is a bug that when the graph is copied
-        The graph attribute retains the original dictionary due to shared
-        class dictionary attribute. I have submitted the issue #5703, the
-        behavior may change in the future.
-        `issue <https://github.com/networkx/networkx/issues/5703>`_
-        """
-        return self.graph_attr_dict.copy()
-
-    graph_attr_dict_factory = single_graph_attr_dict
+    graph_attr_dict_factory = {"type": "ModelGraph"}.copy
 
     def add_node_object(self, node, obj, returns, modifiers=[]):
         """Add or update the functions of existing node
