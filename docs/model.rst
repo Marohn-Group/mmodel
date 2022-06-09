@@ -14,7 +14,7 @@ to the callable. The ``Model`` class instance is a callable itself.
 If the handler requires additional parameter input (e.g. ``H5Handler``),
 the input should be supplied to ``handler_args`` in (key, value) pairs.
 
-``add_returns`` allow model to output intermediate values of the graph.
+``additional_returns`` allow model to output intermediate values of the graph.
 
 ``Model`` class also provides parameter checking and default value
 filling functionality at the ``__call__`` level. Note that handlers

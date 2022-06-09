@@ -12,7 +12,7 @@ Quickstart
 ----------
 
 To create a nonlinear model that has the end result of
-:math:`(x + y)log(x + y, z)`:
+:math:`(x + y)log(x + y, base)`:
 
 .. code-block:: python
 
@@ -57,7 +57,7 @@ To create a nonlinear model that has the end result of
     >>> example_func(2, 5, 3) # (5 + 3)log(5 + 3, 2)
     24.0
 
-The resulting `example_func` is a callable.
+The resulting ``example_func`` is a callable.
 
 One key feature of ``mmodel`` is modifiers, which modifies callables post
 definition. To loop the "base" parameter
