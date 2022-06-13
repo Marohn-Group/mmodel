@@ -6,7 +6,8 @@ MModel
 ``MModel`` is a lightweight and modular model building framework
 for small-scale and non-linear models. The package aims to solve the
 difficulties in scientific program prototyping and distribution, making
-it easier to create modular, fast, and user-friendly packages.
+it easier to create modular, fast, and user-friendly packages. The package
+is well tested with 100 % coverage.
 
 Quickstart
 ----------
@@ -43,7 +44,7 @@ To create a nonlinear model that has the end result of
 
     graph = ModelGraph(name="Example")
     graph.add_grouped_edges_from(grouped_edges)
-    graph.add_node_objects_from(node_objects)
+    graph.set_node_objects_from(node_objects)
 
     example_func = Model(graph, handler=MemHandler)
 
@@ -69,25 +70,18 @@ definition. To loop the "base" parameter
     subgraph = subgraph_by_parameters(graph, ["base"])
     loop_node = Model(subgraph, MemHandler, [loop_modifier("base")])
     looped_graph = modify_subgraph(graph, subgraph, "loop node", loop_node)
-    looped_func = Model(looped_graph, handler=MemHandler)
+    looped_model = Model(looped_graph, handler=MemHandler)
 
-    >>> print(looped_func)
+    >>> print(looped_model)
     Example model
       signature: base, x, y
       returns: result
       handler: MemHandler
       modifiers: none
     
-    >>> looped_func([2, 4], 5, 3) # (5 + 3)log(5 + 3, 2)
+    >>> looped_model([2, 4], 5, 3) # (5 + 3)log(5 + 3, 2)
     [24.0, 12.0]
 
-.. note::
-
-    To create a loop for a subgraph requires three steps:  
-
-    1. locate the subgraph with ``subgraph_by_parameters``  
-    2. create subgraph model with ``Model`` and loop modifiers  
-    3. update graph with the subgraph nodes with ``modify_subgraph``  
 
 Modifiers can also be added to the whole model or a single node.
 

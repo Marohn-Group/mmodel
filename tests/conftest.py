@@ -5,8 +5,6 @@ and test functions
 
 1. `standard_G` - test graph generated using DiGraph, scope: function
 2. `mmodel_G` - test graph generated using ModelGraph. scope: function
-
-
 """
 
 
@@ -21,10 +19,10 @@ from networkx.utils import nodes_equal, edges_equal
 @pytest.fixture()
 def standard_G():
     """Standard test graph generated using DiGraph
-    
+
     The result is:
     k = (a + b - d)(a + b)f
-    m = log(a + b, b)    
+    m = log(a + b, b)
     """
 
     def addition(a, b=2):
@@ -43,22 +41,29 @@ def standard_G():
         return math.log(c, b)
 
     node_list = [
-        ("add", {"obj": addition, "returns": ["c"], "sig": signature(addition)}),
-        ("subtract", {"obj": subtraction, "returns": ["e"], "sig": signature(subtraction)}),
+        ("add", {"func": addition, "returns": ["c"], "sig": signature(addition)}),
+        (
+            "subtract",
+            {"func": subtraction, "returns": ["e"], "sig": signature(subtraction)},
+        ),
         (
             "multiply",
-            {"obj": multiplication, "returns": ["g"], "sig": signature(multiplication)},
+            {
+                "func": multiplication,
+                "returns": ["g"],
+                "sig": signature(multiplication),
+            },
         ),
-        ("poly", {"obj": polynomial, "returns": ["k"], "sig": signature(polynomial)}),
-        ("log", {"obj": logarithm, "returns": ["m"], "sig": signature(logarithm)}),
+        ("poly", {"func": polynomial, "returns": ["k"], "sig": signature(polynomial)}),
+        ("log", {"func": logarithm, "returns": ["m"], "sig": signature(logarithm)}),
     ]
 
     edge_list = [
-        ("add", "subtract", {'val': ['c']}),
-        ("subtract", "poly", {'val': ['e']}),
-        ("add", "multiply", {'val': ['c']}),
-        ("multiply", "poly", {'val': ['g']}),
-        ("add", "log", {'val': ['c']}),
+        ("add", "subtract", {"val": ["c"]}),
+        ("subtract", "poly", {"val": ["e"]}),
+        ("add", "multiply", {"val": ["c"]}),
+        ("multiply", "poly", {"val": ["g"]}),
+        ("add", "log", {"val": ["c"]}),
     ]
 
     G = nx.DiGraph(name="test", doc="test object\n\nlong description")
@@ -73,7 +78,7 @@ def standard_G():
 @pytest.fixture()
 def mmodel_G():
     """Mock test graph generated using ModelGraph
-    
+
     The result is:
     k = (a + b - d)(a + b)f
     m = log(a + b, b)
@@ -111,7 +116,7 @@ def mmodel_G():
 
     G = ModelGraph(name="test", doc=doc)
     G.add_grouped_edges_from(grouped_edges)
-    G.add_node_objects_from(node_objects)
+    G.set_node_objects_from(node_objects)
     return G
 
 
@@ -129,7 +134,7 @@ def mmodel_signature():
     return Signature(param_list)
 
 
-def assert_graphs_equal(G1, G2):
+def graph_equal(G1, G2):
     """Test if graphs have the same nodes, edges and attributes"""
 
     assert nodes_equal(G1._node, G2._node)
@@ -141,3 +146,5 @@ def assert_graphs_equal(G1, G2):
     # test graph attributes
     assert G1.graph == G2.graph
     assert G1.name == G2.name
+
+    return True

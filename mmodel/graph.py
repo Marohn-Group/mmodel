@@ -12,19 +12,19 @@ class ModelGraph(nx.DiGraph):
     methods.
 
     The graph adds "type" attribute to the graph attribute. The factory method
-    returns a copy of the dictionary. It is equivalent to 
+    returns a copy of the dictionary. It is equivalent to
     ``{"type": "ModelGraph"}.copy()`` when called.
 
-    The additional graph operations are added: 
+    The additional graph operations are added:
     - add grouped edges and add node objects.
     - Method add grouped edges one of the node to be a list.
-    - Method add node object update nodes with the node callable 'obj' and returns.
+    - Method add node object update nodes with the node callable "func" and returns.
     - The method adds callable signature 'sig' to the node attribute
     """
 
     graph_attr_dict_factory = {"type": "ModelGraph"}.copy
 
-    def add_node_object(self, node, obj, returns, modifiers=[]):
+    def set_node_object(self, node, func, returns, modifiers=[]):
         """Add or update the functions of existing node
 
         If the node does not exist, create the node.
@@ -33,24 +33,24 @@ class ModelGraph(nx.DiGraph):
         Modifiers is applied directly onto the node.
         """
 
-        if node not in self.nodes:
-            self.add_node(node)
+        # if node not in self.nodes:
+        #     self.add_node(node)
 
         node_dict = self.nodes[node]
 
         # store the base object
-        node_dict["base_obj"] = obj
+        node_dict["base_obj"] = func
 
         for mod in modifiers:
-            obj = mod(obj)
+            func = mod(func)
 
-        sig = inspect.signature(obj)
+        sig = inspect.signature(func)
         node_dict.update(
-            {"obj": obj, "sig": sig, "returns": returns, "modifiers": modifiers}
+            {"func": func, "sig": sig, "returns": returns, "modifiers": modifiers}
         )
         self.update_graph()
 
-    def add_node_objects_from(self, node_objects):
+    def set_node_objects_from(self, node_objects):
         """Update the functions of existing nodes
 
         The method is the same as add node object
@@ -58,7 +58,7 @@ class ModelGraph(nx.DiGraph):
 
         for node_obj in node_objects:
             # unzipping works for input with or without modifiers
-            self.add_node_object(*node_obj)
+            self.set_node_object(*node_obj)
 
     def view_node(self, node):
         """view node information
@@ -151,7 +151,7 @@ class ModelGraph(nx.DiGraph):
         )
         docstring = self.graph.get("doc", "")
 
-        return f"{default_str}\n\n{docstring}"
+        return f"{default_str.rstrip()}\n\n{docstring}".rstrip()
 
     def draw(self, method: callable = draw_graph):
         """Draw the graph

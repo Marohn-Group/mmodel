@@ -74,10 +74,10 @@ def replace_signature(signature, replacement_dict):
     """
 
     params = dict(signature.parameters)
-    for obj, target_list in replacement_dict.items():
+    for func, target_list in replacement_dict.items():
         for target in target_list:
             del params[target]
-        params[obj] = inspect.Parameter(obj, 1)
+        params[func] = inspect.Parameter(func, 1)
 
     return signature.replace(parameters=sorted(params.values(), key=param_sorter))
 
@@ -188,7 +188,7 @@ def modify_subgraph(
         except AttributeError:
             raise Exception("'subgraph_returns' not defined")
 
-    graph.add_node_object(subgraph_name, obj=subgraph_obj, returns=subgraph_returns)
+    graph.set_node_object(subgraph_name, func=subgraph_obj, returns=subgraph_returns)
     # add the subgraph attribute to node
 
     return graph
@@ -201,9 +201,9 @@ def modify_node(graph, node, modifiers, node_returns=None):
     """
 
     graph = graph.deepcopy()
-    obj = graph.nodes[node]["obj"]
+    func = graph.nodes[node]["func"]
     returns = node_returns or graph.nodes[node]["returns"]
-    graph.add_node_object(node, obj=obj, returns=returns, modifiers=modifiers)
+    graph.set_node_object(node, func=func, returns=returns, modifiers=modifiers)
 
     return graph
 

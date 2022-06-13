@@ -4,7 +4,7 @@ import random
 import mmodel.utility as util
 from collections import OrderedDict
 from inspect import Parameter
-from tests.conftest import assert_graphs_equal
+from tests.conftest import graph_equal
 import networkx as nx
 from functools import wraps
 
@@ -105,7 +105,7 @@ def test_graph_topological_sort(mmodel_G):
 
     for node, attr in order:
         assert isinstance(attr, dict)
-        assert sorted(list(attr)) == ['base_obj', 'modifiers', 'obj', 'returns', 'sig']
+        assert sorted(list(attr)) == ["base_obj", "func", "modifiers", "returns", "sig"]
         nodes.append(node)
 
     assert nodes == ["add", "subtract", "multiply", "log", "poly"]
@@ -147,7 +147,7 @@ def test_modify_subgraph_terminal(mmodel_G):
     assert graph.nodes["test"] == {
         "base_obj": mock_obj,
         "modifiers": [],
-        "obj": mock_obj,
+        "func": mock_obj,
         "returns": [],
         "sig": inspect.signature(mock_obj),
     }
@@ -177,7 +177,7 @@ def test_modify_subgraph_middle(mmodel_G):
     assert graph.nodes["test"] == {
         "base_obj": mock_obj,
         "modifiers": [],
-        "obj": mock_obj,
+        "func": mock_obj,
         "returns": ["e"],
         "sig": inspect.signature(mock_obj),
     }
@@ -205,7 +205,7 @@ def test_modify_subgraph_none_returns(mmodel_G):
     assert graph.nodes["test"] == {
         "base_obj": mock_obj,
         "modifiers": [],
-        "obj": mock_obj,
+        "func": mock_obj,
         "returns": ["e"],
         "sig": inspect.signature(mock_obj),
     }
@@ -246,7 +246,7 @@ def test_modify_node(mmodel_G):
     mod_G = util.modify_node(mmodel_G, "subtract", [mod], ["g"])
 
     # add one to the final value
-    assert mod_G.nodes["subtract"]["obj"](1, 2) == 0
+    assert mod_G.nodes["subtract"]["func"](1, 2) == 0
     # make sure the edge value is updated
     assert mod_G["subtract"]["poly"]["val"] == ["g"]
 

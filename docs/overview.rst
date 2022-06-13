@@ -58,6 +58,13 @@ Philosophy
 ``mmodel`` intends to be the framework that packages build upon, and we follow
 some of the fundamental philosophies:
 
+separation of graph model and model execution
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The graph model and execution steps are separated. This design allows for future
+modification and optimization of model execution albeit new software implementation
+(parallel) or hardware (GPU, cloud computing) without needing to modify existing
+graph.
+
 lightweight
 ^^^^^^^^^^^
 The graph node can be a simple function without any added syntax. All modifiers

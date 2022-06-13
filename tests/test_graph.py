@@ -1,4 +1,4 @@
-from tests.conftest import assert_graphs_equal
+from tests.conftest import graph_equal
 from mmodel import ModelGraph
 import pytest
 from functools import wraps
@@ -15,7 +15,7 @@ def test_default_mockgraph(mmodel_G, standard_G):
     """Test if default ModelGraph matches the ones created by DiGraph"""
 
     # assert graph equal
-    assert_graphs_equal(mmodel_G, standard_G)
+    assert graph_equal(mmodel_G, standard_G)
 
 
 def test_graph_name(mmodel_G):
@@ -29,7 +29,7 @@ def test_graph_str(mmodel_G):
     assert str(mmodel_G) == GRAPH_REPR
 
 
-def test_add_node_object():
+def test_set_node_object():
     """Test add node objects"""
 
     def func_a(a, b):
@@ -40,32 +40,32 @@ def test_add_node_object():
 
     G = ModelGraph()
     G.add_edge("node_a", "node_b")
-    G.add_node_object("node_a", func_a, ["c"])
+    G.set_node_object("node_a", func_a, ["c"])
     assert G.nodes["node_a"]["returns"] == ["c"]
     assert "sig" in G.nodes["node_a"]
 
     # test the edges are updated
     assert G.edges["node_a", "node_b"] == {}
-    G.add_node_object("node_b", func_b, ["e"])
+    G.set_node_object("node_b", func_b, ["e"])
     assert G.edges["node_a", "node_b"] == {"val": ["c"]}
 
 
-def test_add_undefined_node_object():
-    """Test behavior when the node is not yet defined
+# def test_add_undefined_node_object():
+#     """Test behavior when the node is not yet defined
 
-    Node should be added if it is not defined
-    """
+#     Node should be added if it is not defined
+#     """
 
-    def func_a(a, b):
-        return None
+#     def func_a(a, b):
+#         return None
 
-    G = ModelGraph()
-    G.add_node_object("node_a", func_a, ["c"])
+#     G = ModelGraph()
+#     G.set_node_object("node_a", func_a, ["c"])
 
-    assert "node_a" in G.nodes
+#     assert "node_a" in G.nodes
 
 
-def test_add_node_object_modifiers():
+def test_set_node_object_modifiers():
     """Test behavior when modifiers are added to node object
 
     Here we mock a wrapper that changes the node result
@@ -82,15 +82,16 @@ def test_add_node_object_modifiers():
         return wrapper
 
     G = ModelGraph()
-    G.add_node_object("node_a", func_a, ["c"], modifiers=[mod_method])
+    G.add_node("node_a")
+    G.set_node_object("node_a", func_a, ["c"], modifiers=[mod_method])
 
-    func = G.nodes["node_a"]["obj"]
+    func = G.nodes["node_a"]["func"]
 
     assert func(a=1, b=2) == 4
 
 
-def test_add_node_objects_from():
-    """Test add_node_objects_from method
+def test_set_node_objects_from():
+    """Test set_node_objects_from method
 
     Test if the edge attributes are updated
     """
@@ -103,13 +104,13 @@ def test_add_node_objects_from():
 
     G = ModelGraph()
     G.add_edge("node_a", "node_b")
-    G.add_node_objects_from([("node_a", func_a, ["c"]), ("node_b", func_b, ["e"])])
+    G.set_node_objects_from([("node_a", func_a, ["c"]), ("node_b", func_b, ["e"])])
 
     assert G.edges["node_a", "node_b"] == {"val": ["c"]}
 
 
-def test_add_node_objects_from_modifiers():
-    """Test add_node_objects_from method with modifiers added to some nodes
+def test_set_node_objects_from_modifiers():
+    """Test set_node_objects_from method with modifiers added to some nodes
 
     Test if the modifiers are properly implemented with the unzip method
     """
@@ -129,12 +130,12 @@ def test_add_node_objects_from_modifiers():
 
     G = ModelGraph()
     G.add_edge("node_a", "node_b")
-    G.add_node_objects_from(
+    G.set_node_objects_from(
         [("node_a", func_a, ["c"], [mod_method]), ("node_b", func_b, ["e"])]
     )
 
-    assert G.nodes["node_a"]["obj"](a=1, b=2) == 4
-    assert G.nodes["node_b"]["obj"](1, 2) == (1, 2)
+    assert G.nodes["node_a"]["func"](a=1, b=2) == 4
+    assert G.nodes["node_b"]["func"](1, 2) == (1, 2)
 
 
 def test_add_edge(mmodel_G):
@@ -143,7 +144,8 @@ def test_add_edge(mmodel_G):
     def func_a(m, b):
         return None
 
-    mmodel_G.add_node_object("func_a", func_a, ["n"])
+    mmodel_G.add_node("func_a")
+    mmodel_G.set_node_object("func_a", func_a, ["n"])
     mmodel_G.add_edge("log", "func_a")
 
     assert mmodel_G.edges["log", "func_a"]["val"] == ["m"]
@@ -155,7 +157,8 @@ def test_add_edges_from(mmodel_G):
     def func_a(c, m):
         return None
 
-    mmodel_G.add_node_object("func_a", func_a, ["n"])
+    mmodel_G.add_node("func_a")
+    mmodel_G.set_node_object("func_a", func_a, ["n"])
     mmodel_G.add_edges_from([["add", "func_a"], ["log", "func_a"]])
 
     assert mmodel_G.edges["add", "func_a"]["val"] == ["c"]
@@ -205,20 +208,21 @@ def test_add_grouped_edge_fails():
 
 def test_copy(mmodel_G):
     """Test if copy works with ModelGraph
-    
+
     See networkx issue
     """
 
-    assert_graphs_equal(mmodel_G.copy(), mmodel_G)
+    assert graph_equal(mmodel_G.copy(), mmodel_G)
     assert mmodel_G.copy().graph is not mmodel_G.graph
+
 
 def test_deepcopy(mmodel_G):
     """Test if copy creates a new graph attribute dictionary"""
     G_deepcopy = mmodel_G.deepcopy()
-    G_copy =  mmodel_G.copy()
+    G_copy = mmodel_G.copy()
 
     # check if graph is correctly duplicated
-    assert_graphs_equal(G_deepcopy, mmodel_G)
+    assert graph_equal(G_deepcopy, mmodel_G)
     assert G_copy.graph == G_deepcopy.graph
     # see test_copy that the two dictionaries are the same
     assert G_deepcopy.graph is not mmodel_G.graph
@@ -236,7 +240,7 @@ NODE_STR = """log node
 def test_view_node_without_modifiers(mmodel_G):
     """Test if view node outputs node information correctly"""
 
-    assert mmodel_G.view_node('log') == NODE_STR
+    assert mmodel_G.view_node("log") == NODE_STR
 
 
 def test_view_node_with_modifiers(mmodel_G):
@@ -247,11 +251,12 @@ def test_view_node_with_modifiers(mmodel_G):
 
     def mockmod(func):
         return func
-    
-    mockmod.info = "test_modifier"
-    mmodel_G.add_node_object('test_node', func, ['c'], [mockmod, mockmod])
 
-    assert "modifiers: test_modifier, test_modifier" in mmodel_G.view_node('test_node')
+    mockmod.info = "test_modifier"
+    mmodel_G.add_node("test_node")
+    mmodel_G.set_node_object("test_node", func, ["c"], [mockmod, mockmod])
+
+    assert "modifiers: test_modifier, test_modifier" in mmodel_G.view_node("test_node")
 
 
 """The following tests are modified based on networkx.classes.tests"""
@@ -275,7 +280,7 @@ def test_subgraph(mmodel_G):
 
     # full subgraph
     H = G.subgraph(["add", "multiply", "subtract", "poly", "log"])
-    assert_graphs_equal(H, G)  # check if they are the same
+    assert graph_equal(H, G)  # check if they are the same
 
     # partial subgraph
     H = G.subgraph(["subtract"])
@@ -299,7 +304,7 @@ def test_subgraph_deepcopy(mmodel_G):
     attributes.
 
     Subgraph view retains the graph attribute, and the copy method is only a
-    shallow copy. Modify a copied subgraph attribute changes the original graph    
+    shallow copy. Modify a copied subgraph attribute changes the original graph
     """
 
     H = mmodel_G.subgraph(["subtract", "poly"]).deepcopy()

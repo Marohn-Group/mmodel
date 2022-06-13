@@ -1,7 +1,7 @@
 import inspect
 import pytest
 from mmodel.model import Model
-from mmodel.handler import PlainHandler, H5Handler, partial_handler
+from mmodel.handler import PlainHandler, H5Handler
 from mmodel.modifier import loop_modifier
 import math
 import networkx as nx
@@ -71,7 +71,7 @@ def test_get_node(model_instance, mmodel_G):
 def test_get_node_object(model_instance, mmodel_G):
     """Test get_node_object method"""
 
-    assert model_instance.get_node_object("log") == mmodel_G.nodes["log"]["obj"]
+    assert model_instance.get_node_object("log") == mmodel_G.nodes["log"]["func"]
 
 
 def test_model_draw(model_instance):
@@ -143,11 +143,10 @@ def test_model_execution(mod_model_instance):
 
 
 def test_model_with_handler_argument(mmodel_G, tmp_path):
-    """Test if partial_handler works with the H5Handler"""
+    """Test if arguent works with the H5Handler"""
 
     path = tmp_path / "h5model_test.h5"
-    NewH5Handler = partial_handler(H5Handler, h5_filename=path)
-    h5model = Model(mmodel_G, NewH5Handler)
+    h5model = Model(mmodel_G, H5Handler, h5_filename=path)
 
     assert h5model.executor.h5_filename == path
     assert h5model(a=10, d=15, f=20, b=2) == (-720, math.log(12, 2))
@@ -163,7 +162,7 @@ class TestModelValidation:
         g = nx.complete_graph(4)
 
         with pytest.raises(AssertionError, match="invalid graph: undirected graph"):
-            Model.is_valid_graph(g)
+            Model._is_valid_graph(g)
 
     def test_is_valid_graph_cycles(self):
         """Test is_graph_valid that correctly identifies cycles
@@ -178,7 +177,7 @@ class TestModelValidation:
         with pytest.raises(
             AssertionError, match="invalid graph: graph contains cycles"
         ):
-            Model.is_valid_graph(g)
+            Model._is_valid_graph(g)
 
         g = nx.DiGraph()
         g.add_edge(1, 1)
@@ -187,7 +186,7 @@ class TestModelValidation:
         with pytest.raises(
             AssertionError, match="invalid graph: graph contains cycles"
         ):
-            Model.is_valid_graph(g)
+            Model._is_valid_graph(g)
 
     def test_is_valid_graph_isolates(self):
         """Test is_graph_valid that correctly identifies isolated nodes"""
@@ -200,7 +199,7 @@ class TestModelValidation:
         with pytest.raises(
             AssertionError, match="invalid graph: graph contains isolated nodes"
         ):
-            Model.is_valid_graph(g)
+            Model._is_valid_graph(g)
 
     def test_is_valid_graph_missing_attr(self, standard_G):
         """Test is_graph_valid that correctly identifies isolated nodes
@@ -218,15 +217,15 @@ class TestModelValidation:
             AssertionError,
             match="invalid graph: graph contains nodes with undefined callables",
         ):
-            Model.is_valid_graph(g)
+            Model._is_valid_graph(g)
 
-        g.nodes["test"]["obj"] = test
+        g.nodes["test"]["func"] = test
 
         with pytest.raises(
             AssertionError,
             match="invalid graph: graph contains nodes with undefined callables returns",
         ):
-            Model.is_valid_graph(g)
+            Model._is_valid_graph(g)
 
         g.nodes["test"]["returns"] = ["c"]
 
@@ -234,7 +233,7 @@ class TestModelValidation:
             AssertionError,
             match="invalid graph: graph contains nodes with undefined callables signatures",
         ):
-            Model.is_valid_graph(g)
+            Model._is_valid_graph(g)
 
         g.nodes["test"]["sig"] = inspect.signature(test)
 
@@ -242,14 +241,14 @@ class TestModelValidation:
             AssertionError,
             match="invalid graph: graph contains edges with undefined variable attributes",
         ):
-            Model.is_valid_graph(g)
+            Model._is_valid_graph(g)
 
         # the last one will pass even tho it is empty
 
         g.edges["log", "test"]["val"] = []
-        assert Model.is_valid_graph(g)
+        assert Model._is_valid_graph(g)
 
     def test_is_valid_graph_passing(self, mmodel_G):
         """Test is_valid_graph that correctly passing"""
 
-        assert Model.is_valid_graph(mmodel_G)
+        assert Model._is_valid_graph(mmodel_G)

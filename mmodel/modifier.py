@@ -8,7 +8,7 @@ from mmodel.utility import parse_input
 
 
 def loop_modifier(parameter: str):
-    """Basic loop wrapper, iterates the values from loop
+    """Basic loop wrapper iterates the parameter from loop
 
     :param list parameter: target parameter to loop
     """
@@ -83,7 +83,7 @@ def signature_modifier(signature_parameters):
         in the signature, but the default values are applied to function
         2. The additional parameters do not have default value - error is thrown
         for missing input
-        Currently we allow the first case senerio so no checking is performed.
+        Currently we allow the first case scenario so no checking is performed.
 
     """
     sig = inspect.Signature([inspect.Parameter(var, 1) for var in signature_parameters])

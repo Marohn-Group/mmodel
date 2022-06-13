@@ -1,43 +1,8 @@
 Handler
 =======
 
-Handlers in ``mmodel`` represent different execution methods for the provided
-graph. Currently, a handler executes the nodes in topological order, a linear
-ordering of the nodes for each directed edge u -> v, u is ordered ahead of v. 
-Since the edge represents the data flow. The topological order ensures the
-correct execution order.
-
-.. autosummary::
-
-    mmodel.handler.TopologicalHandler
-
-To crate and execute a model:
-
-.. code-block:: python
-
-    from mmodel import ModelGraph, Model, Handler
-
-    def func_a(a, b):
-        # returns "c"
-        return a + b
-
-    def func_b(c):
-        # returns "d"
-        return c*c
-
-    # model that represents (a + b)(a + b)
-    G = ModelGraph(name="example", doc="a example MGraph object")
-
-    G.add_edge("func_a", "func_b")
-    G.add_node_object("func_a", func_a, ["c"])
-    G.add_node_object("func_b", func_b, ["d"])
-
-    model = Model(G, handler=PlainHandler)
-
-    >>> model(a=1, b=1)
-    >>> 4
-
-The models provided are:
+Handler executing in topological order
+---------------------------------------
 
 .. autosummary::
 

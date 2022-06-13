@@ -66,9 +66,9 @@ def draw_graph(G, label=""):
 
     for node, ndict in G.nodes(data=True):
 
-        if "obj" in ndict:
+        if "func" in ndict:
             label = (
-                f"{node}\l\n{ndict['obj'].__name__}"
+                f"{node}\l\n{ndict['func'].__name__}"
                 f"{ndict['sig']}\lreturn {', '.join(ndict['returns'])}\l"
             )
         else:
@@ -83,13 +83,5 @@ def draw_graph(G, label=""):
             xlabel = ""
 
         dot_graph.edge(u, v, xlabel=xlabel)
-
-    # temporarily disable subgraph plotting
-    # subgraph plotting should be done by users
-    # for node, subgraph in nx.get_node_attributes(G, "subgraph").items():
-
-    #     # use short docstring for subgraph
-    #     dot_subgraph = draw_graph(subgraph, label=f"{node}", name=f"cluster {node}")
-    #     dot_graph.subgraph(dot_subgraph)
 
     return dot_graph

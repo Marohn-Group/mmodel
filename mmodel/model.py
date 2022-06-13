@@ -8,22 +8,16 @@ class Model:
     """Create model executable
 
     :param object graph: ModelGraph instance (digraph)
-    :param class handler: Handler class that handles model execution
-        Handler class can only take two parameter arguments, graph and
-        additional_returns. If additional parameters are required,
-        use partial_handler to define updated Handler class.
+    :param class handler: Handler class that handles model execution. By default
+        the handler takes graph as the first parameter. If additional parameters
+        are required, use keyword arguments directly.
     :param list modifiers: modifiers used for the whole graph model executable.
-        Optional, defaults to a empty list.
-    :param list add_returns: additional parameters to return. The parameter is
-        used for retrieving intermediate values of the graph model.
         Optional, defaults to a empty list.
     """
 
-    def __init__(
-        self, graph, handler, modifiers: list = [], additional_returns: list = []
-    ):
+    def __init__(self, graph, handler, modifiers: list = [], **handler_args):
 
-        assert self.is_valid_graph(graph)
+        assert self._is_valid_graph(graph)
 
         self.__name__ = f"{graph.name} model"
 
@@ -34,7 +28,7 @@ class Model:
         self._modifiers = modifiers
         self._handler = handler
 
-        executor = handler(self._graph, additional_returns)
+        executor = handler(self._graph, **handler_args)
         self._handler_info = getattr(executor, "info", self._handler.__name__)
 
         for mdf in modifiers:
@@ -71,10 +65,10 @@ class Model:
                 f"  modifiers: {mod_str}",
                 f"{self._graph.graph.get('doc', '')}",
             ]
-        )
+        ).rstrip()
 
     @staticmethod
-    def is_valid_graph(G):
+    def _is_valid_graph(G):
         """Check if model_graph is valid to build a executable
 
         ``mmodel`` does not allow cycle graph, graph with isolated nodes,
@@ -88,21 +82,21 @@ class Model:
         assert not list(nx.isolates(G)), "invalid graph: graph contains isolated nodes"
 
         assert is_node_attr_defined(
-            G, "obj"
+            G, "func"
         ), "invalid graph: graph contains nodes with undefined callables"
 
         # the following might occur when the node object is incorrectly constructed
         assert is_node_attr_defined(G, "returns"), (
             "invalid graph: graph contains nodes with undefined callables returns, "
-            "recommend using ModelGraph add_node_object method to add node object"
+            "recommend using ModelGraph set_node_object method to add node object"
         )
         assert is_node_attr_defined(G, "sig"), (
             "invalid graph: graph contains nodes with undefined callables signatures, "
-            "recommend using ModelGraph add_node_object method to add node object"
+            "recommend using ModelGraph set_node_object method to add node object"
         )
         assert is_edge_attr_defined(G, "val"), (
             "invalid graph: graph contains edges with undefined variable attributes, "
-            "recommend using ModelGraph add_node_object method to add node object"
+            "recommend using ModelGraph set_node_object method to add node object"
         )
 
         return True
@@ -115,17 +109,16 @@ class Model:
     def get_node_object(self, node):
         """Quick access to node callable within the model"""
 
-        return self._graph.nodes[node]['obj']
- 
+        return self._graph.nodes[node]["func"]
+
     def view_node(self, node):
         """View a specific node"""
-        
-        return self._graph.view_node(node)
 
+        return self._graph.view_node(node)
 
     def draw(self, method: callable = draw_graph):
         """Draw the graph of the model
-        
+
         A drawing is provided. Defaults to ``draw_graph``
         """
 

@@ -1,7 +1,7 @@
-"""Test Handler
+"""Test Handler classes
 
-Currently all models inherits from TopologicalHanlder, which is an abstract class.
-The test stredgy works as the following:
+Currently all models inherits from TopologicalHandler, which is an abstract class.
+The test strategy works as the following:
 
 - create a mock instance of the abstract class, and test the attributes
 - test individual method of child class methods
@@ -9,8 +9,8 @@ The test stredgy works as the following:
 
 """
 
+
 from mmodel.handler import (
-    partial_handler,
     TopologicalHandler,
     MemHandler,
     PlainHandler,
@@ -21,48 +21,8 @@ import pytest
 import h5py
 import numpy as np
 import math
-from tests.conftest import assert_graphs_equal
+from tests.conftest import graph_equal
 import re
-
-
-class TestPartialHandler:
-    @pytest.fixture
-    def parent_cls(self):
-        class Test:
-            ATTR = "class attr"
-
-            def __init__(self, a, b):
-                self.a = a
-                self.b = b
-
-            def test_method(self):
-                return self.a + self.b
-
-        return Test
-
-    def test_class(self, parent_cls):
-        """Test if partial_handler creates a new class correctly
-
-        Checks if the returned class has the same name, the instance retains all
-        attributes and is instance of the original class
-        """
-        new_cls = partial_handler(parent_cls, b=2)
-
-        assert new_cls.__name__ == parent_cls.__name__
-        assert issubclass(new_cls, parent_cls)
-
-    def test_instance(self, parent_cls):
-        """Test if partial_handler creates a new class correctly
-
-        Checks if the returned class has the same name, the instance retains all
-        attributes and is instance of the original class
-        """
-        new_cls = partial_handler(parent_cls, b=2)
-
-        test = new_cls(a=1)
-        # shares the same attributes
-        assert vars(test) == vars(parent_cls(1, 2))
-        assert test.test_method() == 3
 
 
 class TestTopologicalHandler:
@@ -86,7 +46,7 @@ class TestTopologicalHandler:
         # # make sure the graph is a copy
         # assert model.graph != mmodel_G
 
-        assert_graphs_equal(model.graph, mmodel_G)
+        assert graph_equal(model.graph, mmodel_G)
         assert model.returns == ["c", "k", "m"]
 
 
@@ -96,7 +56,7 @@ def node_a_attr():
         """Test function node for Model _run_node method"""
         return arg1 + arg2 + arg3
 
-    return {"obj": func_a, "sig": signature(func_a), "returns": ["arg4"]}
+    return {"func": func_a, "sig": signature(func_a), "returns": ["arg4"]}
 
 
 @pytest.fixture(scope="module")
@@ -105,7 +65,7 @@ def node_b_attr():
         """Test function node for Model _run_node method"""
         return arg1 + arg2, arg3
 
-    return {"obj": func_b, "sig": signature(func_b), "returns": ["arg4", "arg5"]}
+    return {"func": func_b, "sig": signature(func_b), "returns": ["arg4", "arg5"]}
 
 
 class TestMemHandler:
@@ -303,7 +263,7 @@ class TestH5Handler:
         The scope of the tmp_path is "function", the file
         object and model instance are destroyed after each test function
         """
-        return H5Handler(mmodel_G, [], h5_filename)
+        return H5Handler(mmodel_G, h5_filename)
 
     def test_handler_info(self, handler_instance, h5_filename):
         """Test the handler has the correct information"""

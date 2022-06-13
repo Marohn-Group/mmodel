@@ -10,39 +10,6 @@ from mmodel.utility import (
 )
 
 
-def partial_handler(cls, **kwargs):
-    """Partial Handler class given the keyword arguments
-
-    :param class cls: handler class
-    :return: class with partial __init__ parameter defined
-
-    The returned class retains the same class name but with modified __init__ method.
-    The function is used to modify Handler classes with additional parameter arguments.
-    Only keyword arguments are accepted. The resulting class does not complete share
-    the properties of the original class. Therefore this is only recommend for modifying
-    handler class.
-
-    The function is adopted from `stackoverflow
-    <https://stackoverflow.com/a/58039373/7542501>`_
-
-    The built in ``collection.namedtuple`` has similar `implementation
-    <https://github.com/python/cpython/blob/
-    9081bbd036934ab435291db9d32d02fd42282951/Lib/collections/__init__.py#L501`_
-
-    A similar implementation is discussed on python `issue 77600
-    <https://github.com/python/cpython/issues/77600>`_
-
-    The tests for this function is adopted from `pull request
-    <https://github.com/python/cpython/pull/6699>`_
-    """
-
-    name = cls.__name__
-    class_namespace = {"__init__": partialmethod(cls.__init__, **kwargs)}
-    new_cls = type(name, (cls,), class_namespace)
-
-    return new_cls
-
-
 class TopologicalHandler(metaclass=ABCMeta):
     """Base class for layered execution following topological generation
 
@@ -52,10 +19,10 @@ class TopologicalHandler(metaclass=ABCMeta):
     each execution or when exception occurs.
     """
 
-    def __init__(self, graph, additional_returns: list):
+    def __init__(self, graph, extra_returns: list = []):
 
         self.__signature__ = model_signature(graph)
-        self.returns = sorted(model_returns(graph) + additional_returns)
+        self.returns = sorted(model_returns(graph) + extra_returns)
         self.order = graph_topological_sort(graph)
         self.graph = graph
 
@@ -97,10 +64,10 @@ class MemHandler(TopologicalHandler):
     deleted if the counter reaches 0.
     """
 
-    def __init__(self, graph, additional_returns: list):
+    def __init__(self, graph, extra_returns: list = []):
         """Add counter to the object"""
-        super().__init__(graph, additional_returns)
-        self.counter = param_counter(graph, additional_returns)
+        super().__init__(graph, extra_returns)
+        self.counter = param_counter(graph, extra_returns)
 
     def initiate(self, **kwargs):
         """Initiate the value dictionary"""
@@ -117,7 +84,7 @@ class MemHandler(TopologicalHandler):
         value_dict, count = data_instance
         parameters = node_attr["sig"].parameters
         kwargs = {key: value_dict[key] for key in parameters}
-        func_output = node_attr["obj"](**kwargs)
+        func_output = node_attr["func"](**kwargs)
 
         returns = node_attr["returns"]
         if len(returns) == 1:
@@ -170,7 +137,7 @@ class PlainHandler(TopologicalHandler):
 
         parameters = node_attr["sig"].parameters
         kwargs = {key: value_dict[key] for key in parameters}
-        func_output = node_attr["obj"](**kwargs)
+        func_output = node_attr["func"](**kwargs)
 
         returns = node_attr["returns"]
         if len(returns) == 1:
@@ -203,7 +170,7 @@ class H5Handler(TopologicalHandler):
     and execution number
     """
 
-    def __init__(self, graph, additional_returns: list, h5_filename: str):
+    def __init__(self, graph, h5_filename: str, extra_returns: list = []):
 
         # check if file exist
         # write id attribute
@@ -211,7 +178,7 @@ class H5Handler(TopologicalHandler):
         self.exe_count = 0
         self.info = f"H5Handler({h5_filename})"
 
-        super().__init__(graph, additional_returns)
+        super().__init__(graph, extra_returns)
 
     def initiate(self, **kwargs):
         """Initiate dictionary value"""
@@ -235,7 +202,7 @@ class H5Handler(TopologicalHandler):
         parameters = node_attr["sig"].parameters
         kwargs = {key: self.read(key, exe_group) for key in parameters}
 
-        func_output = node_attr["obj"](**kwargs)
+        func_output = node_attr["func"](**kwargs)
 
         returns = node_attr["returns"]
         if len(returns) == 1:
