@@ -8,6 +8,7 @@ authors = ["Peter Sun <hs859@cornell.edu>"]
 maintainers = ["Peter Sun <hs859@cornell.edu>"]
 repository = "https://github.com/peterhs73/MModel"
 packages = [{ include = "mmodel" }]
+homepage = "https://peterhs73.github.io/mmodel-docs/"
 
 [build-system]
 requires = ["poetry_core>=1.0.0"]
