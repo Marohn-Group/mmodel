@@ -11,7 +11,7 @@ Quickstart
 ----------
 
 To create a nonlinear model that has the result of
-:math:`(x + y)log(x + y, base)`:
+`(x + y)log(x + y, base)`:
 
 .. code-block:: python
 
