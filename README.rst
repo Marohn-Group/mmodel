@@ -104,6 +104,8 @@ system PATH for all users/current users" during the setup.
 ``mmodel`` installation
 ^^^^^^^^^^^^^^^^^^^^^^^
 
+.. code-block::
+
     pip install mmodel
 
 Development installation
