@@ -7,12 +7,16 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
-[Unreleased]
+[0.3.1] - 2022-06-12
 --------------------
 Fixed
 ^^^^^
 - Python minimum requirement to 3.8
 - duplicated test name
+
+Added
+^^^^^
+- add circleci as the CI tool
 
 
 [0.3.0] - 2022-06-12

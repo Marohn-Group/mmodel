@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mmodel"
-version = "0.3.0"
+version = "0.3.1"
 description = "Modular modeling framework for nonlinear scientific models"
 readme = "README.rst"
 license = "BSD-3-Clause"
