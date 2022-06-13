@@ -1,6 +1,9 @@
 MModel
 ======
 
+|GitHub version| |PyPI version shields.io| |PyPI pyversions| |CircleCI|
+|Docs|
+
 MModel is a lightweight and modular model building framework
 for small-scale and nonlinear models. The package aims to solve
 scientific program prototyping and distribution difficulties, making
@@ -101,7 +104,7 @@ To view the graph, Graphviz needs to be installed:
 For windows installation, please choose "add Graphviz to the
 system PATH for all users/current users" during the setup.
 
-``mmodel`` installation
+MModel installation
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block::
@@ -110,7 +113,7 @@ system PATH for all users/current users" during the setup.
 
 Development installation
 ^^^^^^^^^^^^^^^^^^^^^^^^
-``mmodel`` uses `poetry <https://python-poetry.org/docs/>`_ as
+MModel uses `poetry <https://python-poetry.org/docs/>`_ as
 the build system. The package works with both pip and poetry
 installation. 
 
@@ -118,17 +121,26 @@ To install test and docs, despondencies run::
 
     pip install .[test] .[docs]
 
-(For ``zsh`` shell, run ``pip install ".[test]"``)
-
-To run the tests, run::
-
-    pytest
-
-To run the tests in different python environments (py38, py39,
-coverage and docs)::
+To run the tests in different python environments and cases 
+(py38, py39, coverage and docs)::
 
     tox
 
 To create the documentation, run under the "/docs" directory::
 
     make html
+
+
+.. |GitHub version| image:: https://badge.fury.io/gh/peterhs73%2FMModel.svg
+   :target: https://github.com/peterhs73/MModel
+
+.. |PyPI version shields.io| image:: https://img.shields.io/pypi/v/mmodel.svg
+   :target: https://pypi.python.org/pypi/mmodel/
+
+.. |PyPI pyversions| image:: https://img.shields.io/pypi/pyversions/mmodel.svg
+
+.. |CircleCI| image:: https://circleci.com/gh/peterhs73/MModel.svg?style=shield
+    :target: https://circleci.com/gh/peterhs73/MModel
+
+.. |Docs| image:: https://img.shields.io/badge/Documentation-0.3.0-blue.svg
+    :target: https://github.io/peterhs73/mmodel-docs

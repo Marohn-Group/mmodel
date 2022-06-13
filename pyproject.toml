@@ -9,6 +9,15 @@ maintainers = ["Peter Sun <hs859@cornell.edu>"]
 repository = "https://github.com/peterhs73/MModel"
 packages = [{ include = "mmodel" }]
 homepage = "https://peterhs73.github.io/mmodel-docs/"
+documentation = "https://peterhs73.github.io/mmodel-docs/"
+keywords = ["python", "scientific-modeling", "nonlinear-model"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+
 
 [build-system]
 requires = ["poetry_core>=1.0.0"]
@@ -56,7 +65,7 @@ filterwarnings = [
 # somehow poetry, tox and python3.10 don't work
 legacy_tox_ini = """
 [tox]
-envlist = py38, py39, py310, coverage, docs
+envlist = py38, py39, coverage, docs
 isolated_build = True
 
 [testenv:py38]
