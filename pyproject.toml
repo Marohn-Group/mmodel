@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "MModel"
+name = "mmodel"
 version = "0.3.0"
 description = "Modular modeling framework for nonlinear scientific models"
 readme = "README.rst"
