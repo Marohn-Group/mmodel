@@ -7,6 +7,14 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
+[Unreleased]
+--------------------
+Fixed
+^^^^^
+- Python minimum requirement to 3.8
+- duplicated test name
+
+
 [0.3.0] - 2022-06-12
 ---------------------
 Added

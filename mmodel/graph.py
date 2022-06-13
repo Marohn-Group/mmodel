@@ -99,7 +99,7 @@ class ModelGraph(nx.DiGraph):
         """
 
         if isinstance(u, list) and isinstance(v, list):
-            raise Exception(f"only one edge node can be a list")
+            raise Exception("only one edge node can be a list")
 
         # use add edges from to run less update graph
         # currently a compromise

@@ -136,7 +136,7 @@ def test_mod_model_attr(mod_model_instance):
     assert mod_model_instance.returns == ["k", "m"]
 
 
-def test_model_execution(mod_model_instance):
+def test_mod_model_execution(mod_model_instance):
     """Test if adding modifier changes the handler attribute (returns)"""
 
     assert mod_model_instance(a=[1, 2], b=2, d=3, f=4) == [(0, math.log(3, 2)), (16, 2)]
