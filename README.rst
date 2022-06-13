@@ -142,5 +142,5 @@ To create the documentation, run under the "/docs" directory::
 .. |CircleCI| image:: https://circleci.com/gh/peterhs73/MModel.svg?style=shield
     :target: https://circleci.com/gh/peterhs73/MModel
 
-.. |Docs| image:: https://img.shields.io/badge/Documentation-0.3.0-blue.svg
-    :target: https://github.io/peterhs73/mmodel-docs
+.. |Docs| image:: https://img.shields.io/badge/Documentation--brightgreen.svg
+    :target: https://peterhs73.github.io/mmodel-docs/
