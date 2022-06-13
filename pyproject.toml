@@ -6,7 +6,7 @@ readme = "README.rst"
 license = "BSD-3-Clause"
 authors = ["Peter Sun <hs859@cornell.edu>"]
 maintainers = ["Peter Sun <hs859@cornell.edu>"]
-repository = "github.coecis.cornell.edu/Marohn-Group/MModel"
+repository = "https://github.com/peterhs73/MModel"
 packages = [{ include = "mmodel" }]
 
 [build-system]
