@@ -6,31 +6,31 @@ from copy import deepcopy
 
 class ModelGraph(nx.DiGraph):
 
-    """Base class for mmodel Graph
+    """Create model graphs
 
     ModelGraph inherits from `networkx.DiGraph()`, which has all `DiGraph`
     methods.
 
-    The graph adds "type" attribute to the graph attribute. The factory method
+    The class adds the "type" attribute to the graph attribute. The factory method
     returns a copy of the dictionary. It is equivalent to
     ``{"type": "ModelGraph"}.copy()`` when called.
 
     The additional graph operations are added:
-    - add grouped edges and add node objects.
-    - Method add grouped edges one of the node to be a list.
-    - Method add node object update nodes with the node callable "func" and returns.
+    - add_grouped_edges and set_node_objects.
+    - Method add_grouped_edges, cannot have both edges to be a list.
+    - Method set_node_object update nodes with the node callable "func" and returns.
     - The method adds callable signature 'sig' to the node attribute
     """
 
     graph_attr_dict_factory = {"type": "ModelGraph"}.copy
 
-    def set_node_object(self, node, func, returns, modifiers=[]):
+    def set_node_object(self, node, func, returns, modifiers: list = []):
         """Add or update the functions of existing node
 
         If the node does not exist, create the node.
         In the end, the edge attributes are re-determined
 
-        Modifiers is applied directly onto the node.
+        Modifiers are applied directly onto the node.
         """
 
         # if node not in self.nodes:
@@ -50,7 +50,7 @@ class ModelGraph(nx.DiGraph):
         )
         self.update_graph()
 
-    def set_node_objects_from(self, node_objects):
+    def set_node_objects_from(self, node_objects: list):
         """Update the functions of existing nodes
 
         The method is the same as add node object
@@ -60,10 +60,10 @@ class ModelGraph(nx.DiGraph):
             # unzipping works for input with or without modifiers
             self.set_node_object(*node_obj)
 
-    def view_node(self, node):
+    def view_node(self, node: str):
         """view node information
 
-        The node information is kept consistent with the graph information
+        The node information is kept consistent with the graph information.
         """
 
         node_dict = self.nodes[node]
@@ -110,7 +110,7 @@ class ModelGraph(nx.DiGraph):
         else:  # neither is a list
             self.add_edge(u, v)
 
-    def add_grouped_edges_from(self, group_edges):
+    def add_grouped_edges_from(self, group_edges: list):
         """Add edges from grouped values"""
 
         for u, v in group_edges:
@@ -169,10 +169,10 @@ class ModelGraph(nx.DiGraph):
         `graph.copy<https://networkx.org/documentation/stable/reference/classes
         /generated/networkx.Graph.copy.html>_`
 
-        However, for subgraph, deepcopy is incredibly inefficient because
-        subgraph contains '_graph' which stores the original graph.
-        An alternative method is copy the code from copy method, but use deepcopy
-        for the items. We also copy the graph attribute dictionary.
+        However, for subgraphs, deepcopy is incredibly inefficient because
+        subgraph contains '_graph', which stores the original graph.
+        An alternative method is to copy the code from the copy method,
+        but use deepcopy for the items.
         """
         # return deepcopy(self)
 

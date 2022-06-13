@@ -13,10 +13,11 @@ from mmodel.utility import (
 class TopologicalHandler(metaclass=ABCMeta):
     """Base class for layered execution following topological generation
 
-    Data instance is used for the execution instead of attributes. This makes
-    the pipeline cleaner and better testing. A data instance can be a dictionary,
-    tuple of dictionaries, or file instance. The Data instance is discarded after
-    each execution or when exception occurs.
+    Data instance is used for the execution instead of attributes.
+    This makes the pipeline cleaner and better for testing. A data
+    instance can be a dictionary, tuple of dictionaries, or file instance.
+    The Data instance is discarded after each execution or when an exception
+    occurs.
     """
 
     def __init__(self, graph, extra_returns: list = []):
@@ -78,8 +79,8 @@ class MemHandler(TopologicalHandler):
     def run_node(self, data_instance, node, node_attr):
         """Run node
 
-        At end of each node calculation, the counter is updated. If counter is
-        zero, the value is deleted.
+        At the end of each node calculation, the counter is updated.
+        If the counter value is zero, the value is deleted.
         """
         value_dict, count = data_instance
         parameters = node_attr["sig"].parameters
@@ -119,7 +120,7 @@ class MemHandler(TopologicalHandler):
 class PlainHandler(TopologicalHandler):
     """A fast and bare-bone model
 
-    The method simply store all intermediate values in memory. The calculation steps
+    The method stores all intermediate values in memory. The calculation steps
     are very similar to Model.
     """
 
@@ -130,9 +131,8 @@ class PlainHandler(TopologicalHandler):
 
     def run_node(self, value_dict, node, node_attr):
         """Run node
-
-        At end of each node calculation, the counter is updated. If counter is
-        zero, the value is deleted.
+        
+        Store all values in a dictionary.
         """
 
         parameters = node_attr["sig"].parameters
@@ -227,7 +227,7 @@ class H5Handler(TopologicalHandler):
     def raise_node_exception(self, data_instance, node, node_attr, e):
         """Raise exception when exception occurred for a specific node
 
-        The error message is written as a "_node" attribute to the current group
+        The error message is written as a "_node" attribute to the current group.
         """
         f, exe_group = data_instance
         msg = f"{type(e).__name__} occurred for node {node, node_attr}: {e}"

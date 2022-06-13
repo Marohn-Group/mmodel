@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "MModel"
 version = "0.3.0"
-description = "Modular Model Building System"
+description = "Modular modeling framework for nonlinear scientific models"
 readme = "README.rst"
 license = "BSD-3-Clause"
 authors = ["Peter Sun <hs859@cornell.edu>"]
@@ -15,13 +15,13 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
 python = ">=3.6"
-networkx = ">=2.7.1"
+networkx = ">=2.8.3"
 h5py = ">=3.6.0"
 graphviz = ">=0.16"
 tox = { version = ">=3.24.5", optional = true }
 pytest = { version = ">=7.1.1", optional = true }
 pytest-cov = { version = ">=3.0.0", optional = true }
-sphinx = { version = "^4.4.0", optional = true }
+sphinx = { version = "^4.5.0", optional = true }
 sphinx-book-theme = { version = "^0.3.2", optional = true }
 nbsphinx = { version = "^0.8.8", optional = true }
 
@@ -55,7 +55,7 @@ filterwarnings = [
 # somehow poetry, tox and python3.10 don't work
 legacy_tox_ini = """
 [tox]
-envlist = py38, py39, coverage, docs
+envlist = py38, py39, py310, coverage, docs
 isolated_build = True
 
 [testenv:py38]
@@ -77,7 +77,7 @@ commands =
 
 [testenv:docs]
 deps = 
-    sphinx == 4.4.0
+    sphinx == 4.5.0
     sphinx-book-theme == 0.3.2
     nbsphinx == 0.8.8
 commands =

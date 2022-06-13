@@ -8,11 +8,11 @@ class Model:
     """Create model executable
 
     :param object graph: ModelGraph instance (digraph)
-    :param class handler: Handler class that handles model execution. By default
-        the handler takes graph as the first parameter. If additional parameters
+    :param class handler: Handler class that handles model execution. By default,
+        the handler takes the graph as the first parameter. If additional parameters
         are required, use keyword arguments directly.
     :param list modifiers: modifiers used for the whole graph model executable.
-        Optional, defaults to a empty list.
+        Optional, defaults to an empty list.
     """
 
     def __init__(self, graph, handler, modifiers: list = [], **handler_args):
@@ -69,12 +69,12 @@ class Model:
 
     @staticmethod
     def _is_valid_graph(G):
-        """Check if model_graph is valid to build a executable
+        """Check if model graph is valid to build an executable
 
-        ``mmodel`` does not allow cycle graph, graph with isolated nodes,
+        ``mmodel`` does not allow cycle graphs, graphs with isolated nodes,
         and all nodes have callable attributes defined.
-        The method is bind to Model class because the following features
-        are specific for ``Model`` class
+        The method is bound to Model class because the features
+        are specific to ``Model`` class.
         """
 
         assert nx.is_directed(G), "invalid graph: undirected graph"

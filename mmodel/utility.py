@@ -23,10 +23,6 @@ def param_sorter(parameter):
 def model_signature(graph):
     """Obtain the signature from the model graph
 
-    TODO
-        add parameter checking method
-        check returns and also the edge parameter
-
     :param DiGraph graph: networkx.Digraph() object,
         with 'func_signature', 'returns' defined for nodes
         and "parameters" for edges.
@@ -51,7 +47,7 @@ def model_signature(graph):
 def model_returns(graph):
     """Obtain the return parameter from the model graph
 
-    The assumption is that all return parameter names are unique
+    The assumption is that all return parameter names are unique.
     """
 
     returns = []
@@ -67,9 +63,9 @@ def model_returns(graph):
 def replace_signature(signature, replacement_dict):
     """Replace signature with a dictionary of (key, pair)
 
-    The function is used to replace several input parameters with a object.
+    The function is used to replace several input parameters with an object.
     The signature is the original signature.
-    The dictionary key should be the replacement object, the values
+    The dictionary key should be the replacement object, and the values
     should be a list of the target parameters to be replaced.
     """
 
@@ -85,11 +81,11 @@ def replace_signature(signature, replacement_dict):
 def graph_topological_sort(graph):
     """Determine the topological order
 
-    `nx.topological_generations` outputs a generator with each generation
-    of node list. However, it does not carry the node attributes. The method
-    outputs a list of node lists for each generation.
+    `nx.topological_generations` outputs a generator with each node list generation.
+    However, it does not carry the node attributes. The method
+    outputs a list of nodes for each generation.
 
-    :return: topological order of the graph, returns a list of nodes and its
+    :return: topological order of the graph. Returns a list of nodes and its
         attribute
     :rtype: list
 
@@ -103,13 +99,13 @@ def graph_topological_sort(graph):
     return topological_order
 
 
-def param_counter(graph, add_returns):
+def param_counter(graph, extra_returns):
     """Count the number of times a parameter is used for graph execution
 
-    This is done by counting the all function signature parameters. For
-    additional parameters (returns), simply add one to each count values.
+    Count all function signature parameters. For extra returns,
+    add one to each count value.
 
-    :param list add_params: added intermediate parameter to return for
+    :param list extra_returns: the intermediate parameter to return for
         output.
 
     :return: dictionary with parameter_name: count pair
@@ -121,7 +117,7 @@ def param_counter(graph, add_returns):
         value_list.extend(sig.parameters.keys())
 
     # add the additional parameter to list
-    value_list += add_returns
+    value_list += extra_returns
 
     count = {}
     for value in value_list:
@@ -149,10 +145,10 @@ def modify_subgraph(
 ):
     """Redirect graph based on subgraph
 
-    Find all parent node that is not in subgraph but have child node
-    in subgraph. (All child node of subgraph nodes are in the subgraph).
-    The edge attribute is passed down to the new edge. Here a new graph is created
-    by deep copy the original graph
+    Find all parent nodes, not in the subgraph but child nodes in the
+    subgraph. (All child nodes of subgraph nodes are in the subgraph).
+    The edge attribute is passed down to the new edge. Here a new graph is
+    created by deep copy the original graph
 
     :param graph model_graph: model_graph to modify
     :param graph subgraph: subgraph that is being replaced by a node
@@ -222,7 +218,7 @@ def parse_input(signature, *args, **kwargs):
 def is_node_attr_defined(graph, attr: str):
     """Check if all graph nodes have the target attribute defined
 
-    Use ``set`` to ignore order. Returns true if all nodes have the target
+    Use ``set`` to ignore the order. Returns true if all nodes have the target
     attribute
     """
 
@@ -232,7 +228,7 @@ def is_node_attr_defined(graph, attr: str):
 def is_edge_attr_defined(graph, attr: str):
     """Check if all graph edges have the target attribute defined
 
-    Use ``set`` to ignore order. Returns true if all nodes have the target
+    Use ``set`` to ignore the order. Returns true if all nodes have the target
     attribute
     """
 

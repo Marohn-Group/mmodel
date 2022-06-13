@@ -12,11 +12,11 @@ DEFAULT_SETTINGS = {
 }
 
 
-def update_settings(label):
+def update_settings(label: str):
     """Update graphviz settings
 
     Creates a copy of the default dictionary
-    and update the graph label in graph attribute
+    and update the graph label in the graph attribute.
     """
 
     # copy() is shallow, does not copy the nested dict
@@ -48,16 +48,13 @@ def draw_plain_graph(G, label=""):
     return dot_graph
 
 
-def draw_graph(G, label=""):
+def draw_graph(G, label: str = ""):
     """Draw detailed graph
 
     :param str name: name of the graph
     :param str label: title of the graph
 
-    Plain graph contains the graph label (name + doc + input + output)
     Each node shows node label (name + signature + returns)
-
-    Subgraph node shows the label and subgraph doc.
     """
 
     settings = update_settings(label)

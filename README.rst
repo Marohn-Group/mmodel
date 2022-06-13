@@ -1,18 +1,16 @@
-:author: Peter Sun
-
 MModel
 ======
 
 ``MModel`` is a lightweight and modular model building framework
-for small-scale and non-linear models. The package aims to solve the
-difficulties in scientific program prototyping and distribution, making
+for small-scale and nonlinear models. The package aims to solve
+scientific program prototyping and distribution difficulties, making
 it easier to create modular, fast, and user-friendly packages. The package
 is well tested with 100 % coverage.
 
 Quickstart
 ----------
 
-To create a nonlinear model that has the end result of
+To create a nonlinear model that has the result of
 :math:`(x + y)log(x + y, base)`:
 
 .. code-block:: python
@@ -58,12 +56,12 @@ To create a nonlinear model that has the end result of
     >>> example_func(2, 5, 3) # (5 + 3)log(5 + 3, 2)
     24.0
 
-The resulting ``example_func`` is a callable.
+The resulting ``example_func`` is callable.
 
-One key feature of ``mmodel`` is modifiers, which modifies callables post
-definition. To loop the "base" parameter
+One key feature of ``mmodel`` is modifiers, which modify callables post
+definition. To loop the "base" parameter.
 
-.. code-block:: python
+.. code-block:: python 
 
     from mmodel import subgraph_by_parameters, modify_subgraph, loop_modifier
 
@@ -85,7 +83,7 @@ definition. To loop the "base" parameter
 
 Modifiers can also be added to the whole model or a single node.
 
-To draw the graph or the underlying graph of the model
+To draw the graph or the underlying graph of the model:
 
 .. code-block:: python
     
@@ -101,7 +99,12 @@ Graphviz installation
 To view the graph, Graphviz needs to be installed:
 `Graphviz Installation <https://graphviz.org/download/>`_
 For windows installation, please choose "add Graphviz to the
-system PATH for all users/current user" during the setup.
+system PATH for all users/current users" during the setup.
+
+``mmodel`` installation
+^^^^^^^^^^^^^^^^^^^^^^^
+
+    pip install mmodel
 
 Development installation
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -109,9 +112,9 @@ Development installation
 the build system. The package works with both pip and poetry
 installation. 
 
-To install test despondencies run::
+To install test and docs, despondencies run::
 
-    pip install .[test]
+    pip install .[test] .[docs]
 
 (For ``zsh`` shell, run ``pip install ".[test]"``)
 
@@ -119,20 +122,11 @@ To run the tests, run::
 
     pytest
 
-To run the tests in different python environments (py38 and py39)::
+To run the tests in different python environments (py38, py39,
+coverage and docs)::
 
     tox
 
-To install docs despondencies run::
+To create the documentation, run under the "/docs" directory::
 
-    pip install .[docs]
-
-To make the documentation, run under the "/docs" directory::
-
-    make html 
-
-.. Note::
-
-    To install both test and docs despondencies::
-        
-        pip install .[test] .[docs]
+    make html

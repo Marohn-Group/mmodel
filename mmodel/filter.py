@@ -34,8 +34,10 @@ def subgraph_by_nodes(graph, nodes: list):
 def subgraph_by_returns(graph, returns: list):
     """Construct subgraph based on node returns
 
+    :return: subgraph view of the filtered graph
+
     For mmodel graphs, returns from all the internal nodes are unique.
-    Therefore the function only checks if function nodes overlaps with
+    Therefore the function only checks if function nodes overlap with
     the target return list. If a child node is included, so are the
     parent nodes.
     """
