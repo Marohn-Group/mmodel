@@ -7,6 +7,13 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
+[Unreleased]
+------------------------
+Fixed
+^^^^^
+- object str label aligns to the left for graph and model
+
+
 [0.3.1] - 2022-06-12
 --------------------
 Fixed

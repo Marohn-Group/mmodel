@@ -119,7 +119,8 @@ class Model:
     def draw(self, method: callable = draw_graph):
         """Draw the graph of the model
 
-        A drawing is provided. Defaults to ``draw_graph``
+        A drawing is provided. Defaults to ``draw_graph``.
+        '\l' forces the label to align left when it is defined after the line.
         """
 
-        return method(self._graph, str(self))
+        return method(self._graph, str(self).replace('\n', '\l') + '\l')

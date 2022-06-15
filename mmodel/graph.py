@@ -157,9 +157,10 @@ class ModelGraph(nx.DiGraph):
         """Draw the graph
 
         A drawing is provided. Defaults to ``draw_graph``
+        '\l' forces the label to align left when it is defined after the line.
         """
 
-        return method(self, str(self))
+        return method(self, str(self).replace('\n', '\l') + '\l')
 
     def deepcopy(self):
         """Deepcopy graph

@@ -50,21 +50,6 @@ def test_set_node_object():
     assert G.edges["node_a", "node_b"] == {"val": ["c"]}
 
 
-# def test_add_undefined_node_object():
-#     """Test behavior when the node is not yet defined
-
-#     Node should be added if it is not defined
-#     """
-
-#     def func_a(a, b):
-#         return None
-
-#     G = ModelGraph()
-#     G.set_node_object("node_a", func_a, ["c"])
-
-#     assert "node_a" in G.nodes
-
-
 def test_set_node_object_modifiers():
     """Test behavior when modifiers are added to node object
 
@@ -320,11 +305,10 @@ def test_subgraph_deepcopy(mmodel_G):
 
 
 """label with quotation mark escaped"""
-ESC_LABEL = '''label="ModelGraph named \'test\' with 5 nodes and 5 edges
-
-test object
-
-long description"'''
+ESC_LABEL = (
+    """label="ModelGraph named \'test\' with 5 nodes and 5 edges\l\l"""
+    """test object\l\llong description\l"""
+)
 
 
 def test_draw(mmodel_G):

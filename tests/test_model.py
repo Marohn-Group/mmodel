@@ -82,7 +82,7 @@ def test_model_draw(model_instance):
     """
     dot_graph = model_instance.draw()
 
-    assert str(model_instance) in dot_graph.source
+    assert str(model_instance).replace("\n", "\l") in dot_graph.source
 
 
 NODE_STR = """log node
