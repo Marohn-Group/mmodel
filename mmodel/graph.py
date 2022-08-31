@@ -44,7 +44,7 @@ class ModelGraph(nx.DiGraph):
 
         if inputs:
             # if inputs are
-            modifiers.insert(0, (signature_modifier, {"parameters": inputs}))
+            modifiers = [(signature_modifier, {"parameters": inputs})] + modifiers
 
         for mdf, kwargs in modifiers:
             func = mdf(func, **kwargs)
@@ -77,7 +77,7 @@ class ModelGraph(nx.DiGraph):
         # Model class instance has the attr __name__
         base_name = getattr(node_dict["base_obj"], "__name__", repr(callable))
         modifier_str_list = [
-            f"{func.__name__}, {kwargs}" for func, kwargs in node_dict['modifiers']
+            f"{func.__name__}, {kwargs}" for func, kwargs in node_dict["modifiers"]
         ]
         modifier_str = f"[{', '.join(modifier_str_list)}]"
 
