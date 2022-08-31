@@ -2,6 +2,7 @@ import inspect
 import networkx as nx
 from mmodel.draw import draw_graph
 from copy import deepcopy
+from mmodel.modifier import signature_modifier
 
 
 class ModelGraph(nx.DiGraph):
@@ -24,12 +25,12 @@ class ModelGraph(nx.DiGraph):
 
     graph_attr_dict_factory = {"type": "ModelGraph"}.copy
 
-    def set_node_object(self, node, func, returns, modifiers: list = []):
+    def set_node_object(
+        self, node, func, returns, inputs: list = None, modifiers: list = []
+    ):
         """Add or update the functions of existing node
 
-        If the node does not exist, create the node.
         In the end, the edge attributes are re-determined
-
         Modifiers are applied directly onto the node.
         """
 
@@ -41,8 +42,12 @@ class ModelGraph(nx.DiGraph):
         # store the base object
         node_dict["base_obj"] = func
 
-        for mod in modifiers:
-            func = mod(func)
+        if inputs:
+            # if inputs are
+            modifiers.insert(0, (signature_modifier, {"parameters": inputs}))
+
+        for mdf, kwargs in modifiers:
+            func = mdf(func, **kwargs)
 
         sig = inspect.signature(func)
         node_dict.update(
@@ -71,14 +76,10 @@ class ModelGraph(nx.DiGraph):
         # if it is not a proper function just print the repr
         # Model class instance has the attr __name__
         base_name = getattr(node_dict["base_obj"], "__name__", repr(callable))
-        mod_str_list = [
-            getattr(mod, "info", mod.__name__) for mod in node_dict["modifiers"]
+        modifier_str_list = [
+            f"{func.__name__}, {kwargs}" for func, kwargs in node_dict['modifiers']
         ]
-
-        if mod_str_list:
-            mod_str = ", ".join(mod_str_list)
-        else:
-            mod_str = "none"
+        modifier_str = f"[{', '.join(modifier_str_list)}]"
 
         return "\n".join(
             [
@@ -86,7 +87,7 @@ class ModelGraph(nx.DiGraph):
                 f"  base callable: {base_name}",
                 f"  signature: {', '.join(sig_list)}",
                 f"  returns: {', '.join(node_dict['returns'])}",
-                f"  modifiers: {mod_str}",
+                f"  modifiers: {modifier_str}",
             ]
         )
 
@@ -139,28 +140,28 @@ class ModelGraph(nx.DiGraph):
                 v_params = set(v_sig.parameters.keys())
                 self.edges[u, v]["val"] = list(u_rts.intersection(v_params))
 
-    def __str__(self):
-        """Output graph information"""
-        # default string is the string output of networkx.Graph
-        default_str = "".join(
-            [
-                type(self).__name__,
-                f" named {self.name!r}" if self.name else "",
-                f" with {self.number_of_nodes()} nodes and {self.number_of_edges()} edges",
-            ]
-        )
-        docstring = self.graph.get("doc", "")
+    # def __str__(self):
+    #     """Output graph information"""
+    #     # default string is the string output of networkx.Graph
+    #     default_str = "".join(
+    #         [
+    #             type(self).__name__,
+    #             f" named {self.name!r}" if self.name else "",
+    #             f" with {self.number_of_nodes()} nodes and {self.number_of_edges()} edges",
+    #         ]
+    #     )
+    #     docstring = self.graph.get("doc", "")
 
-        return f"{default_str.rstrip()}\n\n{docstring}".rstrip()
+    #     return f"{default_str.rstrip()}\n\n{docstring}".rstrip()
 
-    def draw(self, method: callable = draw_graph):
+    def draw(self, draw_method):
         """Draw the graph
 
         A drawing is provided. Defaults to ``draw_graph``
         '\l' forces the label to align left when it is defined after the line.
         """
 
-        return method(self, str(self).replace('\n', '\l') + '\l')
+        return draw_method(self, str(self).replace("\n", "\l") + "\l")
 
     def deepcopy(self):
         """Deepcopy graph

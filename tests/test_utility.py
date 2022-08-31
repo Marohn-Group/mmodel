@@ -243,7 +243,7 @@ def test_modify_node(mmodel_G):
 
         return wrapped
 
-    mod_G = util.modify_node(mmodel_G, "subtract", [mod], ["g"])
+    mod_G = util.modify_node(mmodel_G, "subtract", [(mod, {})], ["g"])
 
     # add one to the final value
     assert mod_G.nodes["subtract"]["func"](1, 2) == 0

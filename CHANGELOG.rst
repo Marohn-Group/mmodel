@@ -13,6 +13,17 @@ Fixed
 ^^^^^
 - object str label aligns to the left for graph and model
 
+Changed
+^^^^^^^
+- ``set_node_object()`` allows for "inputs" parameter for adjusting node
+  function input parameters.
+- modifier functions from decorator to closure (both works)
+- modifier list contains the arguments when supplied
+- handler arguments are supplied with the handler class
+- draw graph method no longer has a default value
+- model docstring is tied to model instead of graph, graph 'doc' attribute
+  is no longer forced.
+
 
 [0.3.1] - 2022-06-12
 --------------------

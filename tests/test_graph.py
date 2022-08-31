@@ -1,14 +1,16 @@
 from tests.conftest import graph_equal
-from mmodel import ModelGraph
+from mmodel import ModelGraph, draw_graph
 import pytest
 from functools import wraps
-import networkx as nx
 
-GRAPH_REPR = """ModelGraph named 'test' with 5 nodes and 5 edges
 
-test object
+# GRAPH_REPR = """ModelGraph named 'test' with 5 nodes and 5 edges
 
-long description"""
+# test object
+
+# long description"""
+
+GRAPH_REPR = "ModelGraph named 'test' with 5 nodes and 5 edges"
 
 
 def test_default_mockgraph(mmodel_G, standard_G):
@@ -68,7 +70,7 @@ def test_set_node_object_modifiers():
 
     G = ModelGraph()
     G.add_node("node_a")
-    G.set_node_object("node_a", func_a, ["c"], modifiers=[mod_method])
+    G.set_node_object("node_a", func_a, ["c"], [], modifiers=[(mod_method, {})])
 
     func = G.nodes["node_a"]["func"]
 
@@ -116,7 +118,7 @@ def test_set_node_objects_from_modifiers():
     G = ModelGraph()
     G.add_edge("node_a", "node_b")
     G.set_node_objects_from(
-        [("node_a", func_a, ["c"], [mod_method]), ("node_b", func_b, ["e"])]
+        [("node_a", func_a, ["c"], [], [(mod_method, {})]), ("node_b", func_b, ["e"])]
     )
 
     assert G.nodes["node_a"]["func"](a=1, b=2) == 4
@@ -219,7 +221,7 @@ NODE_STR = """log node
   base callable: logarithm
   signature: c, b
   returns: m
-  modifiers: none"""
+  modifiers: []"""
 
 
 def test_view_node_without_modifiers(mmodel_G):
@@ -237,11 +239,12 @@ def test_view_node_with_modifiers(mmodel_G):
     def mockmod(func):
         return func
 
-    mockmod.info = "test_modifier"
     mmodel_G.add_node("test_node")
-    mmodel_G.set_node_object("test_node", func, ["c"], [mockmod, mockmod])
+    mmodel_G.set_node_object(
+        "test_node", func, ["c"], [], [(mockmod, {}), (mockmod, {})]
+    )
 
-    assert "modifiers: test_modifier, test_modifier" in mmodel_G.view_node("test_node")
+    assert "modifiers: [mockmod, {}, mockmod, {}]" in mmodel_G.view_node("test_node")
 
 
 """The following tests are modified based on networkx.classes.tests"""
@@ -305,10 +308,12 @@ def test_subgraph_deepcopy(mmodel_G):
 
 
 """label with quotation mark escaped"""
-ESC_LABEL = (
-    """label="ModelGraph named \'test\' with 5 nodes and 5 edges\l\l"""
-    """test object\l\llong description\l"""
-)
+# ESC_LABEL = (
+#     """label="ModelGraph named \'test\' with 5 nodes and 5 edges\l\l"""
+#     """test object\l\llong description\l"""
+# )
+
+ESC_LABEL = """label="ModelGraph named \'test\' with 5 nodes and 5 edges"""
 
 
 def test_draw(mmodel_G):
@@ -317,7 +322,6 @@ def test_draw(mmodel_G):
     The draw methods are tested in test_draw module. Here we make sure
     the label is correct. The repr escapes \n, therefore the string is used to compare
     """
-    dot_graph = mmodel_G.draw()
+    dot_graph = mmodel_G.draw(draw_graph)
 
     assert ESC_LABEL in dot_graph.source
-    # assert f'label="{repr(str(mmodel_G))}"' in dot_graph.source

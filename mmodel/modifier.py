@@ -3,70 +3,50 @@ import inspect
 from mmodel.utility import parse_input
 
 
-def loop_modifier(parameter: str):
+def loop_modifier(func, parameter: str):
     """Loop - iterates one given parameter
 
     :param list parameter: target parameter to loop
     """
 
-    def wrapper(func):
-        @wraps(func)
-        def loop_wrapped(**kwargs):
+    @wraps(func)
+    def loop_wrapped(**kwargs):
 
-            loop_values = kwargs.pop(parameter)
-            return [func(**kwargs, **{parameter: value}) for value in loop_values]
+        loop_values = kwargs.pop(parameter)
+        return [func(**kwargs, **{parameter: value}) for value in loop_values]
 
-        # signature = inspect.signature(func)
-        # loop_sig = loop_signature(signature, [parameter])
-        # loop_wrapped.__signature__ = loop_sig
-
-        return loop_wrapped
-
-    wrapper.info = f"loop_modifier({parameter})"
-
-    return wrapper
+    return loop_wrapped
 
 
-def zip_loop_modifier(parameters: list or str):
+def zip_loop_modifier(func, parameters: list):
     """Pairwise loop - iterates the values from loop
 
-    :param list or string parameters: list of the parameter to loop
+    :param list parameters: list of the parameter to loop
         only one parameter is allowed. If string of parameters are
         provided, the parameters should be delimited by ", ".
     """
 
-    if isinstance(parameters, str):
-        parameters = parameters.split(", ")
+    @wraps(func)
+    def loop_wrapped(**kwargs):
 
-    def wrapper(func):
-        @wraps(func)
-        def loop_wrapped(**kwargs):
+        loop_values = [kwargs.pop(param) for param in parameters]
 
-            loop_values = [kwargs.pop(param) for param in parameters]
+        result = []
+        for value in zip(*loop_values):  # unzip the values
 
-            result = []
-            for value in zip(*loop_values):  # unzip the values
+            loop_value_dict = dict(zip(parameters, value))
+            rv = func(**kwargs, **loop_value_dict)
+            result.append(rv)
 
-                loop_value_dict = dict(zip(parameters, value))
-                rv = func(**kwargs, **loop_value_dict)
-                result.append(rv)
+        return result
 
-            return result
-
-        # signature = inspect.signature(func)
-        # loop_sig = loop_signature(signature, parameters)
-        # loop_wrapped.__signature__ = loop_sig
-
-        return loop_wrapped
-
-    wrapper.info = f"zip_loop_modifier({', '.join(parameters)})"
-    return wrapper
+    return loop_wrapped
 
 
-def signature_modifier(signature_parameters):
+def signature_modifier(func, parameters):
     """Replace node object signature
 
-    :param list signature_parameters: signature parameters to replace the original
+    :param list parameters: signature parameters to replace the original
         signature. The parameters are assumed to be "POSITIONAL_OR_KEYWORD", and no
         default values are allowed. The signature will replace the original signature
         in order.
@@ -84,36 +64,30 @@ def signature_modifier(signature_parameters):
         ``mmodel`` allows the first case scenario, no checking is performed.
 
     """
-    sig = inspect.Signature([inspect.Parameter(var, 1) for var in signature_parameters])
+    sig = inspect.Signature([inspect.Parameter(var, 1) for var in parameters])
 
-    def wrapper(func):
+    old_parameters = list(inspect.signature(func).parameters.keys())
 
-        old_parameters = list(inspect.signature(func).parameters.keys())
+    if len(parameters) > len(old_parameters):
+        raise Exception(
+            "The number of signature modifier parameters "
+            "exceeds that of function's parameters"
+        )
 
-        if len(signature_parameters) > len(old_parameters):
-            raise Exception(
-                "The number of signature modifier parameters "
-                "exceeds that of function's parameters"
-            )
+    # once unzipped to return iterators, the original variable returns none
+    param_pair = list(zip(old_parameters, parameters))
 
-        # once unzipped to return iterators, the original variable returns none
-        param_pair = list(zip(old_parameters, signature_parameters))
+    @wraps(func)
+    def wrapped(**kwargs):
+        # replace keys
+        replace_kwargs = {old: kwargs[new] for old, new in param_pair}
+        return func(**replace_kwargs)
 
-        @wraps(func)
-        def wrapped(**kwargs):
-            # replace keys
-            replace_kwargs = {old: kwargs[new] for old, new in param_pair}
-            return func(**replace_kwargs)
-
-        wrapped.__signature__ = sig
-
-        return wrapped
-
-    wrapper.info = f"signature_modifier{sig}"
-    return wrapper
+    wrapped.__signature__ = sig
+    return wrapped
 
 
-def signature_binding_modifier():
+def signature_binding_modifier(func):
     """Add parameter binding and checking for function
 
     The additional wrapper is unnecessary, but to keep a consistent
@@ -126,18 +100,13 @@ def signature_binding_modifier():
     same as a python function.
     """
 
-    def wrapper(func):
+    sig = inspect.signature(func)
 
-        sig = inspect.signature(func)
+    @wraps(func)
+    def wrapped(*args, **kwargs):
 
-        @wraps(func)
-        def wrapped(*args, **kwargs):
+        parsed_kwargs = parse_input(sig, *args, **kwargs)
 
-            parsed_kwargs = parse_input(sig, *args, **kwargs)
+        return func(**parsed_kwargs)
 
-            return func(**parsed_kwargs)
-
-        return wrapped
-
-    wrapper.info = "signature_binding_modifier"
-    return wrapper
+    return wrapped

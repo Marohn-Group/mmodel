@@ -8,14 +8,16 @@ class Model:
     """Create model executable
 
     :param object graph: ModelGraph instance (digraph)
-    :param class handler: Handler class that handles model execution. By default,
-        the handler takes the graph as the first parameter. If additional parameters
-        are required, use keyword arguments directly.
+    :param class handler: Handler class that handles model execution and the keyword
+        arguments. The parameter format is (HandlerClass, {})
+        By default, the handler takes the graph as the first parameter.
+        For additional arguments, add argument to dictionary afterwards.
     :param list modifiers: modifiers used for the whole graph model executable.
-        Optional, defaults to an empty list.
+        Optional, defaults to an empty list. For each modifier, the format is
+        (modifier, {}). All modifiers should have function as the first argument
     """
 
-    def __init__(self, graph, handler, modifiers: list = [], **handler_args):
+    def __init__(self, graph, handler, description: str = "", modifiers: list = []):
 
         assert self._is_valid_graph(graph)
 
@@ -27,12 +29,13 @@ class Model:
         self._graph = nx.freeze(graph.deepcopy())
         self._modifiers = modifiers
         self._handler = handler
+        self.description = description
 
-        executor = handler(self._graph, **handler_args)
-        self._handler_info = getattr(executor, "info", self._handler.__name__)
+        handler_class, handler_kwargs = handler
+        executor = handler_class(self._graph, **handler_kwargs)
 
-        for mdf in modifiers:
-            executor = mdf(executor)
+        for mdf, kwargs in modifiers:
+            executor = mdf(executor, **kwargs)
 
         self.__signature__ = executor.__signature__
         self.returns = executor.returns
@@ -49,21 +52,21 @@ class Model:
         """Output callable information"""
 
         sig_list = [str(param) for param in self.__signature__.parameters.values()]
+        handler_str = f"{self._handler[0].__name__}, {self._handler[1]}"
 
-        mod_str_list = [getattr(mod, "info", mod.__name__) for mod in self._modifiers]
-        if mod_str_list:
-            mod_str = ", ".join(mod_str_list)
-        else:
-            mod_str = "none"
+        modifier_str_list = [
+            f"{func.__name__}, {kwargs}" for func, kwargs in self._modifiers
+        ]
+        modifier_str = f"[{', '.join(modifier_str_list)}]"
 
         return "\n".join(
             [
                 f"{self.__name__}",
                 f"  signature: {', '.join(sig_list)}",
                 f"  returns: {', '.join(self.returns)}",
-                f"  handler: {self._handler_info}",
-                f"  modifiers: {mod_str}",
-                f"{self._graph.graph.get('doc', '')}",
+                f"  handler: {handler_str}",
+                f"  modifiers: {modifier_str}",
+                f"{self.description}",
             ]
         ).rstrip()
 
@@ -123,4 +126,4 @@ class Model:
         '\l' forces the label to align left when it is defined after the line.
         """
 
-        return method(self._graph, str(self).replace('\n', '\l') + '\l')
+        return method(self._graph, str(self).replace("\n", "\l") + "\l")

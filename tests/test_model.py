@@ -15,14 +15,14 @@ def test_invalid_model(mmodel_G):
     g.add_edge("log", "test")
 
     with pytest.raises(AssertionError):
-        Model(g, PlainHandler)
+        Model(g, (PlainHandler, {}))
 
 
 MODEL_STR = """test model
   signature: a, d, f, b=2
   returns: k, m
-  handler: PlainHandler
-  modifiers: none
+  handler: PlainHandler, {}
+  modifiers: []
 test object
 
 long description"""
@@ -31,8 +31,8 @@ long description"""
 @pytest.fixture
 def model_instance(mmodel_G):
     """Construct a model instance"""
-
-    return Model(mmodel_G, PlainHandler)
+    description = "test object\n\nlong description"
+    return Model(mmodel_G, (PlainHandler, {}), description)
 
 
 def test_model_attr(model_instance, mmodel_signature):
@@ -89,7 +89,7 @@ NODE_STR = """log node
   base callable: logarithm
   signature: c, b
   returns: m
-  modifiers: none"""
+  modifiers: []"""
 
 
 def test_model_view_node(model_instance):
@@ -101,8 +101,8 @@ def test_model_view_node(model_instance):
 MOD_MODEL_STR = """test model
   signature: a, d, f, b=2
   returns: k, m
-  handler: PlainHandler
-  modifiers: loop_modifier(a)
+  handler: PlainHandler, {}
+  modifiers: [loop_modifier, {'parameter': 'a'}]
 test object
 
 long description"""
@@ -113,21 +113,37 @@ def test_mod_model_str(mmodel_G):
 
     with multiple modifiers, the modifiers are delimited by ", "
     """
-    loop_mod = loop_modifier("a")
-    single_mod = Model(mmodel_G, PlainHandler, modifiers=[loop_mod])
+    description = "test object\n\nlong description"
+    single_mod = Model(
+        mmodel_G,
+        (PlainHandler, {}),
+        description,
+        modifiers=[(loop_modifier, {"parameter": "a"})],
+    )
     assert str(single_mod) == MOD_MODEL_STR
 
-    double_mod = Model(mmodel_G, PlainHandler, modifiers=[loop_mod, loop_mod])
-    assert "modifiers: loop_modifier(a), loop_modifier(a)" in str(double_mod)
+    double_mod = Model(
+        mmodel_G,
+        (PlainHandler, {}),
+        description,
+        modifiers=[
+            (loop_modifier, {"parameter": "a"}),
+            (loop_modifier, {"parameter": "b"}),
+        ],
+    )
+    assert (
+        "modifiers: [loop_modifier, {'parameter': 'a'}, loop_modifier, {'parameter': 'b'}]"
+        in str(double_mod)
+    )
 
 
 @pytest.fixture
 def mod_model_instance(mmodel_G):
     """Construct a model instance with loop modifier"""
 
-    loop_mod = loop_modifier("a")
+    loop_mod = (loop_modifier, {"parameter": "a"})
 
-    return Model(mmodel_G, PlainHandler, modifiers=[loop_mod])
+    return Model(mmodel_G, (PlainHandler, {}), modifiers=[loop_mod])
 
 
 def test_mod_model_attr(mod_model_instance):
@@ -143,14 +159,16 @@ def test_mod_model_execution(mod_model_instance):
 
 
 def test_model_with_handler_argument(mmodel_G, tmp_path):
-    """Test if arguent works with the H5Handler"""
+    """Test if argument works with the H5Handler"""
 
     path = tmp_path / "h5model_test.h5"
-    h5model = Model(mmodel_G, H5Handler, h5_filename=path)
+    h5model = Model(mmodel_G, (H5Handler, {"h5_filename": path}))
 
     assert h5model.executor.h5_filename == path
     assert h5model(a=10, d=15, f=20, b=2) == (-720, math.log(12, 2))
-    assert f"H5Handler({path})" in str(h5model)
+
+    # the output of path is the repr instead of string
+    assert f"handler: H5Handler, {{'h5_filename': {repr(path)}}}" in str(h5model)
 
 
 class TestModelValidation:

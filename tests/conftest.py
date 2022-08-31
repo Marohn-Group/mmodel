@@ -105,7 +105,7 @@ def mmodel_G():
         ("add", ["subtract", "multiply", "log"]),
         (["subtract", "multiply"], "poly"),
     ]
-    # class MockGraph(ModelGraph):
+
     node_objects = [
         ("add", addition, ["c"]),
         ("subtract", subtraction, ["e"]),
