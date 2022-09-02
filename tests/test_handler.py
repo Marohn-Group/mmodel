@@ -13,6 +13,7 @@ The test strategy works as the following:
 from mmodel.handler import (
     TopologicalHandler,
     MemHandler,
+    MemDict,
     PlainHandler,
     H5Handler,
 )
@@ -23,6 +24,48 @@ import numpy as np
 import math
 from tests.conftest import graph_equal
 import re
+
+
+class TestMemDict:
+    """Test the behavior of the customized dictionary"""
+
+    @pytest.fixture
+    def memdict(self):
+        return MemDict({"a": 1, "b": 2, "c": 1}, {"a": "hello", "b": "world"})
+
+    def test_key_deletion(self, memdict):
+        """Test if 'a' is deleted after a single extraction"""
+        memdict["a"]
+        assert "a" not in memdict
+
+        memdict["b"]
+        assert "b" in memdict
+        memdict["b"]
+        assert "b" not in memdict
+
+    def test_key_update(self, memdict):
+        """Test update of the dictionary"""
+
+        memdict["c"] = "hello world"
+        assert memdict["c"] == "hello world"
+        assert "c" not in memdict
+
+    def test_counter_value(self, memdict):
+        """Test counter value after parameters are extracted"""
+
+        memdict["a"] = "hello world"
+        assert memdict.counter["a"] == 1
+        memdict["a"]
+        assert memdict.counter["a"] == 0
+        memdict["b"]
+        assert memdict.counter["b"] == 1
+
+    def test_deletion_during_iteration(self, memdict):
+        """Test the deletion method during iteration"""
+
+        with pytest.raises(RuntimeError, match="MemDict is not iterable"):
+            for key in memdict:
+                pass
 
 
 class TestTopologicalHandler:
@@ -42,9 +85,6 @@ class TestTopologicalHandler:
         model = TopologicalHandler(mmodel_G, ["c"])
 
         assert signature(model) == mmodel_signature
-
-        # # make sure the graph is a copy
-        # assert model.graph != mmodel_G
 
         assert graph_equal(model.graph, mmodel_G)
         assert model.returns == ["c", "k", "m"]
@@ -78,7 +118,7 @@ class TestMemHandler:
 
     def test_instance_attrs(self, handler_instance):
         """Test the memhandler count attribute"""
-        count = {"a": 1, "b": 2, "c": 3, "d": 1, "e": 1, "f": 1, "g": 1}
+        count = {"a": 1, "b": 2, "c": 3, "d": 1, "e": 1, "f": 1, "g": 1, "m": 1, "k": 1}
         assert handler_instance.counter == count
 
     def test_initiate(self, handler_instance):
@@ -91,9 +131,20 @@ class TestMemHandler:
         The signature is a, b, f, b = 2
         b however, is not automatically filled
         """
-        value_dict, count = handler_instance.initiate(a=1, d=2, f=5, b=2)
-        assert value_dict == {"a": 1, "d": 2, "f": 5, "b": 2}
-        assert count == {"a": 1, "b": 2, "c": 3, "d": 1, "e": 1, "f": 1, "g": 1}
+        value_dict = handler_instance.initiate(a=1, d=2, f=5, b=2)
+        # MemDict is not iterable
+        assert value_dict.data == {"a": 1, "d": 2, "f": 5, "b": 2}
+        assert value_dict.counter == {
+            "a": 1,
+            "b": 2,
+            "c": 3,
+            "d": 1,
+            "e": 1,
+            "f": 1,
+            "g": 1,
+            "m": 1,
+            "k": 1,
+        }
 
     def test_run_node(self, handler_instance, node_a_attr, node_b_attr):
         """Test run_node method
@@ -110,33 +161,42 @@ class TestMemHandler:
         """
 
         value_dict_a = {"arg1": np.arange(5), "arg2": 4.5, "arg3": 2.2}
-        count_a = {"arg1": 1, "arg2": 1, "arg3": 1}
-        data_instance_a = (value_dict_a, count_a)
+        count_a = {"arg1": 1, "arg2": 1, "arg3": 1, "arg4": 1}
+        data_instance_a = MemDict(count_a, value_dict_a)
 
-        value_dict_b = {"arg1": 10, "arg2": 14, "arg3": 2}
-        count_b = {"arg1": 1, "arg2": 2, "arg3": 1}
-        data_instance_b = (value_dict_b, count_b)
+        value_dict_b = {"arg1": 10, "arg2": 14, "arg3": 2, "arg4": 1}
+        count_b = {"arg1": 1, "arg2": 2, "arg3": 1, "args4": 1}
+        data_instance_b = MemDict(count_b, value_dict_b)
 
         handler_instance.run_node(data_instance_a, "node_a", node_a_attr)
         handler_instance.run_node(data_instance_b, "node_b", node_b_attr)
 
-        assert list(value_dict_a.keys()) == ["arg4"]
-        assert np.array_equal(value_dict_a["arg4"], np.arange(6.7, 11.7))
-        assert count_a == {"arg1": 0, "arg2": 0, "arg3": 0}
+        assert list(data_instance_a.data.keys()) == ["arg4"]
+        assert np.array_equal(data_instance_a["arg4"], np.arange(6.7, 11.7))
+        assert data_instance_a.counter == {"arg1": 0, "arg2": 0, "arg3": 0, "arg4": 0}
 
-        assert value_dict_b == {"arg2": 14, "arg4": 24, "arg5": 2}
-        assert count_b == {"arg1": 0, "arg2": 1, "arg3": 0}
+        assert data_instance_b.data == {"arg2": 14, "arg4": 24, "arg5": 2}
+        # no args4 are extracted therefore there is no return
+        assert data_instance_b.counter == {"arg1": 0, "arg2": 1, "arg3": 0, "args4": 1}
 
-    def test_finish(self, handler_instance):
+    def test_finish_single_return(self, handler_instance):
         """Test _finish method
 
-        Finish method should output the value directly if there is only
-        one output parameter. A tuple if there are multiple output parameter
+        The method should output the value directly if there is only
+        one output parameter.
         """
 
-        value_dict = {"arg4": 1, "arg5": 4.5}
-        assert handler_instance.finish((value_dict, {}), ["arg4"]) == 1
-        assert handler_instance.finish((value_dict, {}), ["arg4", "arg5"]) == (1, 4.5)
+        value_dict = MemDict({"arg4": 1, "arg5": 1}, {"arg4": 1, "arg5": 4.5})
+        assert handler_instance.finish(value_dict, ["arg4"]) == 1
+
+    def test_finish_multiple_return(self, handler_instance):
+        """Test _finish method
+
+        The method should return a tuple with multiple return variable
+        """
+
+        value_dict = MemDict({"arg4": 1, "arg5": 1}, {"arg4": 1, "arg5": 4.5})
+        assert handler_instance.finish(value_dict, ["arg4", "arg5"]) == (1, 4.5)
 
     def test_raise_exception(self, handler_instance):
         """Test _raise_exception"""
@@ -264,11 +324,6 @@ class TestH5Handler:
         object and model instance are destroyed after each test function
         """
         return H5Handler(mmodel_G, h5_filename)
-
-    def test_handler_info(self, handler_instance, h5_filename):
-        """Test the handler has the correct information"""
-
-        assert handler_instance.info == f"H5Handler({h5_filename})"
 
     @pytest.mark.parametrize("scalar, value", [("float", 1.14), ("str", b"test")])
     def test_read_scalar(self, scalar, value, handler_instance, h5_filename):

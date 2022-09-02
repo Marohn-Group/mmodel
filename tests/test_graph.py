@@ -3,13 +3,6 @@ from mmodel import ModelGraph, draw_graph
 import pytest
 from functools import wraps
 
-
-# GRAPH_REPR = """ModelGraph named 'test' with 5 nodes and 5 edges
-
-# test object
-
-# long description"""
-
 GRAPH_REPR = "ModelGraph named 'test' with 5 nodes and 5 edges"
 
 
@@ -75,6 +68,32 @@ def test_set_node_object_modifiers():
     func = G.nodes["node_a"]["func"]
 
     assert func(a=1, b=2) == 4
+
+
+def test_set_node_object_input():
+    """Test behavior when inputs are added along with the modifiers
+
+    The signature modifier should always be the first modifier
+    """
+
+    def func_a(a, b):
+        return a + b
+
+    def mod_method(func):
+        @wraps(func)
+        def wrapper(**kwargs):
+            return func(**kwargs) + 1
+
+        return wrapper
+
+    G = ModelGraph()
+    G.add_node("node_a")
+    G.set_node_object("node_a", func_a, ["c"], ["d", "e"], modifiers=[(mod_method, {})])
+
+    func = G.nodes["node_a"]["func"]
+
+    assert G.nodes["node_a"]["modifiers"][0][0].__name__ == "signature_modifier"
+    assert func(d=1, e=2) == 4
 
 
 def test_set_node_objects_from():

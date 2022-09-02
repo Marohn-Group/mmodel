@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 import h5py
 from functools import partialmethod
+from collections import UserDict
 
 from mmodel.utility import (
     model_signature,
@@ -56,6 +57,36 @@ class TopologicalHandler(metaclass=ABCMeta):
     def finish(self, data_instance, returns):
         """Finish execution"""
 
+class MemDict(UserDict):
+    """Modify dictionary that checks the counter everytime a value is accessed
+    
+    The iteration method is 
+    """
+
+    def __init__(self, counter, dict=None):
+        self.counter = counter.copy()
+        super().__init__(dict)
+    
+    def __getitem__(self, key):
+        """When a key is accessed, reduce the counter
+        
+        If counter has reached the zero, pop the value (key is deleted)
+        elsewise return the key.
+        """
+
+        self.counter[key] -= 1
+
+        if self.counter[key] == 0:
+            # return the value and delete the key in dictionary
+            value = super().__getitem__(key)
+            del self[key]
+            return value
+
+        else:
+            return super().__getitem__(key)
+    
+    def __iter__(self):
+        raise RuntimeError("MemDict is not iterable")
 
 class MemHandler(TopologicalHandler):
     """Default model of mmodel module
@@ -68,13 +99,13 @@ class MemHandler(TopologicalHandler):
     def __init__(self, graph, extra_returns: list = []):
         """Add counter to the object"""
         super().__init__(graph, extra_returns)
-        self.counter = param_counter(graph, extra_returns)
+        self.counter = param_counter(graph, self.returns)
 
     def initiate(self, **kwargs):
         """Initiate the value dictionary"""
 
-        count = self.counter.copy()
-        return kwargs, count
+        return MemDict(self.counter, kwargs)
+
 
     def run_node(self, data_instance, node, node_attr):
         """Run node
@@ -82,21 +113,17 @@ class MemHandler(TopologicalHandler):
         At the end of each node calculation, the counter is updated.
         If the counter value is zero, the value is deleted.
         """
-        value_dict, count = data_instance
-        parameters = node_attr["sig"].parameters
-        kwargs = {key: value_dict[key] for key in parameters}
-        func_output = node_attr["func"](**kwargs)
 
+        parameters = node_attr["sig"].parameters
+        kwargs = {key: data_instance[key] for key in parameters}
+        # execute 
+        func_output = node_attr["func"](**kwargs)
         returns = node_attr["returns"]
         if len(returns) == 1:
-            value_dict[returns[0]] = func_output
+            data_instance[returns[0]] = func_output
         else:
-            value_dict.update(dict(zip(returns, func_output)))
+            data_instance.update(dict(zip(returns, func_output)))
 
-        for key in parameters:
-            count[key] -= 1
-            if count[key] == 0:
-                del value_dict[key]
 
     def raise_node_exception(self, data_instance, node, node_attr, e):
         """Raise exception
@@ -108,11 +135,11 @@ class MemHandler(TopologicalHandler):
 
     def finish(self, data_instance, returns):
         """Finish and return values"""
-        value_dict = data_instance[0]
+
         if len(returns) == 1:
-            return_val = value_dict[returns[0]]
+            return_val = data_instance[returns[0]]
         else:
-            return_val = tuple(value_dict[rt] for rt in returns)
+            return_val = tuple(data_instance[rt] for rt in returns)
 
         return return_val
 
@@ -176,7 +203,6 @@ class H5Handler(TopologicalHandler):
         # write id attribute
         self.h5_filename = h5_filename
         self.exe_count = 0
-        self.info = f"H5Handler({h5_filename})"
 
         super().__init__(graph, extra_returns)
 

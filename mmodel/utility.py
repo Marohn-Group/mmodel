@@ -99,15 +99,13 @@ def graph_topological_sort(graph):
     return topological_order
 
 
-def param_counter(graph, extra_returns):
+def param_counter(graph, returns):
     """Count the number of times a parameter is used for graph execution
 
     Count all function signature parameters. For extra returns,
     add one to each count value.
 
-    :param list extra_returns: the intermediate parameter to return for
-        output.
-
+    :param list returns: method returns (include extra returns)
     :return: dictionary with parameter_name: count pair
     :rtype: dict
     """
@@ -117,7 +115,7 @@ def param_counter(graph, extra_returns):
         value_list.extend(sig.parameters.keys())
 
     # add the additional parameter to list
-    value_list += extra_returns
+    value_list += returns
 
     count = {}
     for value in value_list:

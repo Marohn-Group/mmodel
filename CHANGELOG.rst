@@ -23,6 +23,12 @@ Changed
 - draw graph method no longer has a default value
 - model docstring is tied to model instead of graph, graph 'doc' attribute
   is no longer forced.
+- 'info' attribute no longer used in modifier and handlers
+
+Added
+^^^^^
+
+- custom dictionary MemDict as MemHandler's data instance
 
 
 [0.3.1] - 2022-06-12
