@@ -86,7 +86,7 @@ def test_replace_signature(mmodel_signature):
 def test_model_returns(mmodel_G):
     """Test graph_returns"""
 
-    assert util.model_returns(mmodel_G) == ["k", "m"]
+    assert util.model_returns(mmodel_G) == ["k", "m", "p"]
 
 
 def test_graph_topological_sort(mmodel_G):
@@ -108,7 +108,7 @@ def test_graph_topological_sort(mmodel_G):
         assert sorted(list(attr)) == ["base_obj", "func", "modifiers", "returns", "sig"]
         nodes.append(node)
 
-    assert nodes == ["add", "subtract", "multiply", "log", "poly"]
+    assert nodes == ["add", "subtract", "poly", "log", "multiply"]
 
 
 def test_param_counter(mmodel_G):
@@ -163,11 +163,12 @@ def test_modify_subgraph_middle(mmodel_G):
     This test specifically the middle node
     """
 
-    subgraph = mmodel_G.subgraph(["multiply", "subtract"])
+    subgraph = mmodel_G.subgraph(["subtract", "poly"])
 
     def mock_obj(c, x, y):
         return x + y
 
+    # combine the nodes subtract and poly to a "test" node
     graph = util.modify_subgraph(mmodel_G, subgraph, "test", mock_obj, ["e"])
 
     # a copy is created
@@ -184,7 +185,8 @@ def test_modify_subgraph_middle(mmodel_G):
 
     # Test the edge attributes
     assert graph.edges["add", "test"]["val"] == ["c"]
-    assert graph.edges["test", "poly"]["val"] == ["e"]
+    # test node is connected to multiply node
+    assert graph.edges["test", "multiply"]["val"] == ["e"]
 
 
 def test_modify_subgraph_none_returns(mmodel_G):
@@ -193,7 +195,7 @@ def test_modify_subgraph_none_returns(mmodel_G):
     This test specifically the middle node
     """
 
-    subgraph = mmodel_G.subgraph(["multiply", "poly"])
+    subgraph = mmodel_G.subgraph(["poly", "multiply"])
 
     def mock_obj(c, x, y):
         return
@@ -218,7 +220,7 @@ def test_modify_subgraph_none_returns_fails(mmodel_G):
     return attribute
     """
 
-    subgraph = mmodel_G.subgraph(["multiply", "poly"])
+    subgraph = mmodel_G.subgraph(["poly", "multiply"])
 
     def mock_obj(c, x, y):
         return
@@ -248,7 +250,7 @@ def test_modify_node(mmodel_G):
     # add one to the final value
     assert mod_G.nodes["subtract"]["func"](1, 2) == 0
     # make sure the edge value is updated
-    assert mod_G["subtract"]["poly"]["val"] == ["g"]
+    assert mod_G["subtract"]["multiply"]["val"] == ["g"]
 
 
 def test_is_node_attr_defined():

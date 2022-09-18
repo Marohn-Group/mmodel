@@ -17,6 +17,7 @@ import h5py
 import numpy as np
 import re
 
+
 class TestMemData:
     """Test MemData class"""
 
@@ -78,7 +79,7 @@ class Test_H5Data:
     @pytest.fixture
     def data(self, h5_filename):
         """Create H5Data instance
-        
+
         yield so the file is closed afterwards
         """
         data = H5Data({"a": "hello", "b": "world"}, fname=h5_filename, gname="test")
@@ -88,8 +89,9 @@ class Test_H5Data:
     def test_gname(self, data):
         """Test the group name"""
 
-        assert re.match(r"test \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6}$", data.gname)
-
+        assert re.match(
+            r"test \d{2}\d{2}\d{2}-\d{2}\d{2}\d{2}-[a-z0-9]{6}$", data.gname
+        )
 
     @pytest.mark.parametrize("scalar, value", [("float", 1.14), ("str", b"test")])
     def test_write_scalar(self, scalar, value, data, h5_filename):
@@ -99,29 +101,26 @@ class Test_H5Data:
         data[scalar] = value
         assert f[data.gname][scalar][()] == value
 
-
     @pytest.mark.parametrize(
         "dataset, value",
         [("list", [1.11, 2.22, 3.33]), ("array", np.array([1.11, 2.22, 3.33]))],
     )
     def test_write_dataset(self, dataset, value, data, h5_filename):
         """Test writing dataset to h5 file"""
-        
+
         f = h5py.File(h5_filename)
         data[dataset] = value
         assert all(f[data.gname][dataset][()] == value)
-
 
     def test_write_object(self, data, h5_filename):
         """Test writing unsupported object is written as attributes"""
 
         def func(a, b):
             return a + b
-        
+
         f = h5py.File(h5_filename)
         data["object"] = func
         assert f[data.gname].attrs["object"] == str(func)
-
 
     @pytest.mark.parametrize("scalar, value", [("float", 1.14), ("str", b"test")])
     def test_read_scalar(self, scalar, value, data, h5_filename):
@@ -143,7 +142,7 @@ class Test_H5Data:
         f[data.gname][dataset] = value
 
         assert all(data[dataset] == value)
-    
+
     def test_close(self, data):
         """Test that the h5 file is closed"""
 
@@ -151,141 +150,6 @@ class Test_H5Data:
 
         # not sure if there is another way to check this
         assert str(data.f) == "<Closed HDF5 file>"
-
-
-
-
-
-
-# def test_initiate_group_name(self, handler_instance):
-#     """Test if initiate method creates experiment group
-
-#     The file should have the group {id}_{name}{exp_num}
-#     we close the file and check if the group is saved
-#     """
-
-#     # f, exe_group = handler_instance.initiate(a=1, d=2, f=5, b=2)
-#     # exe_str = f"{id(handler_instance)}_1"
-#     # assert exe_str in f
-#     # f.close()
-
-#     data = handler_instance.initiate(a=1, d=2, f=5, b=2)
-#     exe_str = f"1_{id(data)}"
-#     assert exe_str in data._f
-
-# def test_run_node(self, handler_instance, h5_filename, node_a_attr, node_b_attr):
-#     """Test _run_node method
-
-#     Separate data instance and nodes are provided for the tests.
-#     The test tests if the output is correct and is correctly zipped.
-
-#     The func_a has 1 output, and the output is a numpy array.
-#     The func_b has 2 outputs.
-
-#     There is a precision issue in the read write with h5 file.
-#     The test assertion is that they are close with relative tolerance of
-#     1e-8 and absolute tolerance of 1e-10
-#     """
-
-#     f = h5py.File(h5_filename, "w")
-#     func_a_group = f.create_group("func_a")
-#     func_a_group["arg1"] = np.array([1, 2, 3])
-#     func_a_group["arg2"] = np.array([0.1, 0.2, 0.3])
-#     func_a_group["arg3"] = np.array([0.01, 0.02, 0.03])
-
-#     func_b_group = f.create_group("func_b")
-#     func_b_group["arg1"] = 10
-#     func_b_group["arg2"] = 14
-#     func_b_group["arg3"] = 2
-
-#     handler_instance.run_node((f, func_a_group), "node_a", node_a_attr)
-#     handler_instance.run_node((f, func_b_group), "node_b", node_b_attr)
-
-#     assert np.allclose(
-#         func_a_group["arg4"][()],
-#         np.array([1.11, 2.22, 3.33]),
-#         rtol=1e-8,
-#         atol=1e-10,
-#     )
-#     assert func_b_group["arg4"][()] == 24
-#     assert func_b_group["arg5"][()] == 2
-
-# def test_finish(self, handler_instance, h5_filename):
-#     """Test _finish method
-
-#     Finish method should output the value directly if there is only
-#     one output parameter. A tuple if there are multiple output parameter.
-#     The _finish method closes file at the end, therefore for testing
-#     a new file is opened each time.
-#     """
-
-#     with h5py.File(h5_filename, "w") as f:
-#         exe_group = f.create_group("exe_test")
-#         exe_group["arg4"] = 1.14
-#         exe_group["arg5"] = 10
-#         exe_group["arg6"] = np.array([1.11, 2.22, 3.33])
-
-#     f = h5py.File(h5_filename, "r")
-#     exe_group = f["exe_test"]
-#     assert handler_instance.finish((f, exe_group), ["arg4"]) == 1.14
-#     assert not f  # check if it still open
-
-#     f = h5py.File(h5_filename, "r")
-#     exe_group = f["exe_test"]
-#     assert handler_instance.finish((f, exe_group), ["arg4", "arg5"]) == (1.14, 10)
-#     assert not f  # check if it still open
-
-#     f = h5py.File(h5_filename, "r")
-#     exe_group = f["exe_test"]
-#     assert np.array_equal(
-#         handler_instance.finish((f, exe_group), ["arg6"]),
-#         np.array([1.11, 2.22, 3.33]),
-#     )
-#     assert not f  # check if it still open
-
-# def test_raise_exception(self, handler_instance, h5_filename):
-#     """Test _raise_exception"""
-
-#     f = h5py.File(h5_filename, "w")
-#     exe_group = f.create_group("exe_test")
-
-#     with pytest.raises(Exception):
-#         handler_instance.raise_node_exception(
-#             (f, exe_group), "node", {"node_obj": None}, Exception("Test Error")
-#         )
-
-#     assert not f  # check if it still open
-
-#     with h5py.File(h5_filename, "r") as f:
-#         assert (
-#             f["exe_test"].attrs["note"]
-#             == "Exception occurred for node ('node', {'node_obj': None}): Test Error"
-#         )
-
-# def test_node_exception(self, handler_instance, h5_filename):
-#     """Test exception is raise when there are issue with a node execution"""
-
-#     with pytest.raises(
-#         Exception, match=r"Exception occurred for node \('subtract', .+\)"
-#     ):
-#         handler_instance(a=1, d="2", f=3, b=2)
-
-#     with h5py.File(h5_filename, "r") as f:
-
-#         assert bool(
-#             re.match(
-#                 r".+ occurred for node \('subtract', .+\)",
-#                 f[f"{id(handler_instance)}_1"].attrs["note"],
-#             )
-#         )
-
-# def test_execution(self, handler_instance):
-#     """Test running the model as a function"""
-#     import time
-
-#     assert handler_instance(a=10, d=15, f=20, b=2) == (-720, math.log(12, 2))
-#     time.sleep(0.0005)
-#     assert handler_instance(a=1, d=2, f=3, b=4) == (45, math.log(5, 4))
 
 
 exception_pattern = """\
@@ -302,16 +166,17 @@ log node
 
 class HandlerTester:
     def test_execution(self, handler_instance):
-        """Test running the model as a function"""
+        """Test running the model as a function
+        """
 
-        assert handler_instance(a=10, d=15, f=20, b=2) == (-720, math.log(12, 2))
-        assert handler_instance(a=1, d=2, f=3, b=4) == (45, math.log(5, 4))
+        assert handler_instance(a=10, d=15, f=0, b=2) == (-3, math.log(12, 2), 0)
+        assert handler_instance(a=1, d=2, f=1, b=4) == (15, math.log(5, 4), 1)
 
     def test_node_exception(self, handler_instance):
         """Test when node exception a custom exception is outputted"""
 
         with pytest.raises(Exception, match=exception_pattern):
-            handler_instance(a=-2, d=15, f=20, b=2)
+            handler_instance(a=-2, d=15, f=1, b=2)
 
     def test_intermediate_returns(self, handler_instance_mod):
         """Test if the handler returns the intermediate values
@@ -319,7 +184,7 @@ class HandlerTester:
         The returned value should be a scalar not a tuple
         """
 
-        assert handler_instance_mod(a=10, d=15, f=20, b=2) == 12
+        assert handler_instance_mod(a=10, d=15, f=1, b=2) == 12
 
 
 class TestBasicHandler(HandlerTester):
@@ -328,7 +193,7 @@ class TestBasicHandler(HandlerTester):
     @pytest.fixture
     def handler_instance(self, mmodel_G):
         """Create handler instance for the test"""
-        return BasicHandler(mmodel_G, ["k", "m"])
+        return BasicHandler(mmodel_G, ["k", "m", "p"])
 
     @pytest.fixture
     def handler_instance_mod(self, mmodel_G):
@@ -342,7 +207,7 @@ class TestMemHandler(HandlerTester):
     @pytest.fixture
     def handler_instance(self, mmodel_G):
         """Create Model object for the test"""
-        return MemHandler(mmodel_G, ["k", "m"])
+        return MemHandler(mmodel_G, ["k", "m", "p"])
 
     @pytest.fixture
     def handler_instance_mod(self, mmodel_G):
@@ -351,7 +216,11 @@ class TestMemHandler(HandlerTester):
 
 
 class TestH5Handler(HandlerTester):
-    """Test class Model"""
+    """Test class Model
+    
+    In test_execution, two models are run consecutively, which tests the uniqueness of the
+    h5 group entry.
+    """
 
     @pytest.fixture
     def h5_filename(self, tmp_path):
@@ -369,7 +238,7 @@ class TestH5Handler(HandlerTester):
         The scope of the tmp_path is "function", the file
         object and model instance are destroyed after each test function
         """
-        return H5Handler(mmodel_G, ["k", "m"], fname=h5_filename, gname="test run")
+        return H5Handler(mmodel_G, ["k", "m", "p"], fname=h5_filename, gname="test run")
 
     @pytest.fixture
     def handler_instance_mod(self, mmodel_G, h5_filename):

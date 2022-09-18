@@ -7,14 +7,14 @@ graph [label="test label" labeljust=l labelloc=t ordering=out splines=ortho]
 node [shape=box]
 add
 subtract
-multiply
-log
 poly
+log
+multiply
 add -> subtract
-add -> multiply
+add -> poly
 add -> log
-subtract -> poly
-multiply -> poly
+subtract -> multiply
+poly -> multiply
 }"""
 
 plain_dot_source = """digraph "test graph" {

@@ -20,9 +20,10 @@ from networkx.utils import nodes_equal, edges_equal
 def standard_G():
     """Standard test graph generated using DiGraph
 
-    The result is:
-    k = (a + b - d)(a + b)f
+    The results are:
+    k = (a + b - d)(a + b)^f
     m = log(a + b, b)
+    p = f^(a + b)
     """
 
     def addition(a, b=2):
@@ -31,10 +32,10 @@ def standard_G():
     def subtraction(c, d):
         return c - d
 
-    def multiplication(c, f):
-        return c * f
+    def polynomial(c, f):
+        return c**f, f**c
 
-    def polynomial(e, g):
+    def multiplication(e, g):
         return e * g
 
     def logarithm(c, b):
@@ -47,22 +48,25 @@ def standard_G():
             {"func": subtraction, "returns": ["e"], "sig": signature(subtraction)},
         ),
         (
+            "poly",
+            {"func": polynomial, "returns": ["g", "p"], "sig": signature(polynomial)},
+        ),
+        (
             "multiply",
             {
                 "func": multiplication,
-                "returns": ["g"],
+                "returns": ["k"],
                 "sig": signature(multiplication),
             },
         ),
-        ("poly", {"func": polynomial, "returns": ["k"], "sig": signature(polynomial)}),
         ("log", {"func": logarithm, "returns": ["m"], "sig": signature(logarithm)}),
     ]
 
     edge_list = [
         ("add", "subtract", {"val": ["c"]}),
-        ("subtract", "poly", {"val": ["e"]}),
-        ("add", "multiply", {"val": ["c"]}),
-        ("multiply", "poly", {"val": ["g"]}),
+        ("subtract", "multiply", {"val": ["e"]}),
+        ("add", "poly", {"val": ["c"]}),
+        ("poly", "multiply", {"val": ["g"]}),
         ("add", "log", {"val": ["c"]}),
     ]
 
@@ -79,9 +83,10 @@ def standard_G():
 def mmodel_G():
     """Mock test graph generated using ModelGraph
 
-    The result is:
-    k = (a + b - d)(a + b)f
+    The results are:
+    k = (a + b - d)(a + b)^f
     m = log(a + b, b)
+    p = f^(a + b)
     """
 
     def addition(a, b=2):
@@ -90,25 +95,25 @@ def mmodel_G():
     def subtraction(c, d):
         return c - d
 
-    def multiplication(c, f):
-        return c * f
+    def polynomial(c, f):
+        return c**f, f**c
 
-    def polynomial(e, g):
+    def multiplication(e, g):
         return e * g
 
     def logarithm(c, b):
         return math.log(c, b)
 
     grouped_edges = [
-        ("add", ["subtract", "multiply", "log"]),
-        (["subtract", "multiply"], "poly"),
+        ("add", ["subtract", "poly", "log"]),
+        (["subtract", "poly"], "multiply"),
     ]
 
     node_objects = [
         ("add", addition, ["c"]),
         ("subtract", subtraction, ["e"]),
-        ("multiply", multiplication, ["g"]),
-        ("poly", polynomial, ["k"]),
+        ("poly", polynomial, ["g", "p"]),
+        ("multiply", multiplication, ["k"]),
         ("log", logarithm, ["m"]),
     ]
 

@@ -294,8 +294,8 @@ def test_subgraph(mmodel_G):
     assert H._graph == G  # original graph
 
     # partial subgraph
-    H = G.subgraph(["subtract", "poly"])
-    assert H.adj == {"subtract": {"poly": {"val": ["e"]}}, "poly": {}}
+    H = G.subgraph(["subtract", "multiply"])
+    assert H.adj == {"subtract": {"multiply": {"val": ["e"]}}, "multiply": {}}
     assert H._graph == G  # original graph
 
     # empty subgraph
@@ -313,9 +313,9 @@ def test_subgraph_deepcopy(mmodel_G):
     shallow copy. Modify a copied subgraph attribute changes the original graph
     """
 
-    H = mmodel_G.subgraph(["subtract", "poly"]).deepcopy()
+    H = mmodel_G.subgraph(["subtract", "multiply"]).deepcopy()
 
-    assert H.adj == {"subtract": {"poly": {"val": ["e"]}}, "poly": {}}
+    assert H.adj == {"subtract": {"multiply": {"val": ["e"]}}, "multiply": {}}
 
     # check the graph attribute is no longer the same dictionary
     assert H.graph == mmodel_G.graph

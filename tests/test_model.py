@@ -28,7 +28,7 @@ def test_default_modifier(mmodel_G):
 
 MODEL_STR = """\
 model_instance(a, d, f, b=2)
-  returns: k, m
+  returns: k, m, p
   handler: BasicHandler, {}
   modifiers: []
 test model description"""
@@ -46,7 +46,7 @@ def test_model_attr(model_instance, mmodel_signature):
 
     assert model_instance.__name__ == "model_instance"
     assert model_instance.__signature__ == mmodel_signature
-    assert model_instance.returns == ["k", "m"]
+    assert model_instance.returns == ["k", "m", "p"]
 
 
 def test_model_str(model_instance):
@@ -64,8 +64,8 @@ def test_model_graph_freeze(model_instance):
 def test_model_execution(model_instance):
     """Test if the default is correctly used"""
 
-    assert model_instance(10, 15, 20) == (-720, math.log(12, 2))
-    assert model_instance(a=1, d=2, f=3, b=4) == (45, math.log(5, 4))
+    assert model_instance(10, 15, 1) == (-36, math.log(12, 2), 1)
+    assert model_instance(a=1, d=2, f=3, b=4) == (375, math.log(5, 4), 243)
 
 
 def test_get_node(model_instance, mmodel_G):
@@ -106,7 +106,7 @@ def test_model_view_node(model_instance):
 
 MOD_MODEL_STR = """\
 model_instance(a, d, f, b=2)
-  returns: k, m
+  returns: k, m, p
   handler: BasicHandler, {}
   modifiers: [loop_modifier, {'parameter': 'a'}]
 test model description"""
@@ -156,13 +156,13 @@ def mod_model_instance(mmodel_G):
 def test_mod_model_attr(mod_model_instance):
     """Test if adding modifier changes the handler attribute (returns)"""
 
-    assert mod_model_instance.returns == ["k", "m"]
+    assert mod_model_instance.returns == ["k", "m", "p"]
 
 
 def test_mod_model_execution(mod_model_instance):
     """Test if adding modifier changes the handler attribute (returns)"""
 
-    assert mod_model_instance(a=[1, 2], b=2, d=3, f=4) == [(0, math.log(3, 2)), (16, 2)]
+    assert mod_model_instance(a=[1, 2], b=2, d=3, f=1) == [(0, math.log(3, 2), 1), (4, 2, 1)]
 
 
 def test_model_with_handler_argument(mmodel_G, tmp_path):
@@ -171,7 +171,7 @@ def test_model_with_handler_argument(mmodel_G, tmp_path):
     path = tmp_path / "h5model_test.h5"
     h5model = Model("h5 model", mmodel_G, (H5Handler, {"fname": path}))
 
-    assert h5model(a=10, d=15, f=20, b=2) == (-720, math.log(12, 2))
+    assert h5model(a=10, d=15, f=1, b=2) == (-36, math.log(12, 2), 1)
 
     # the output of path is the repr instead of string
     assert f"handler: H5Handler, {{'fname': {repr(path)}}}" in str(h5model)

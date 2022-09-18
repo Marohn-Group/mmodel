@@ -48,16 +48,20 @@ def model_returns(graph):
     """Obtain the return parameter from the model graph
 
     The assumption is that all return parameter names are unique.
+    The function checks all returns value and all intermediate value (edge values)
     """
 
     returns = []
+    intermediate = []
 
     for node in graph.nodes():
-        if graph.out_degree(node) == 0:
-            returns.extend(graph.nodes[node]["returns"])
+        returns.extend(graph.nodes[node]["returns"])
+    for edge in graph.edges():
+        intermediate.extend(graph.edges[edge]['val'])
 
-    returns.sort()
-    return returns
+    final_returns = list(set(returns) - set(intermediate))
+    final_returns.sort()
+    return final_returns
 
 
 def replace_signature(signature, replacement_dict):

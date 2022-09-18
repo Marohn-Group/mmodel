@@ -15,7 +15,8 @@ Handler API is rewritten.
 Fixed
 ^^^^^
 - object str label aligns to the left for graph and model
-- H5Handler writes object into attribute
+- H5Handler can write objects to file
+- fix bug middle nodes output not included in the final output
 
 Changed
 ^^^^^^^
