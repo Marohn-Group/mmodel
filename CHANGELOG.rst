@@ -9,9 +9,13 @@ and this project adheres to
 
 [Unreleased]
 ------------------------
+
+Handler API is rewritten.
+
 Fixed
 ^^^^^
 - object str label aligns to the left for graph and model
+- H5Handler writes object into attribute
 
 Changed
 ^^^^^^^
@@ -21,15 +25,21 @@ Changed
 - modifier list contains the arguments when supplied
 - handler arguments are supplied with the handler class
 - draw graph method no longer has a default value
-- model docstring is tied to model instead of graph, graph 'doc' attribute
-  is no longer forced.
-- 'info' attribute no longer used in modifier and handlers
+- model docstring is tied to model instead of graph, use 'description' for
+  long docstring.
+- 'name' attribute required for Model instances
+- Node execute exception message now includes node information
 
 Added
 ^^^^^
 
-- custom dictionary MemDict as MemHandler's data instance
+- custom dictionary `MemData`` as MemHandler's data instance
+- custom class `H5Data` as H5Handler's data instance
 
+Removed
+^^^^^^^
+
+- 'info' attribute no longer used in modifier and handlers
 
 [0.3.1] - 2022-06-12
 --------------------
@@ -42,6 +52,9 @@ Added
 ^^^^^
 - add circleci as the CI tool
 
+Changed
+^^^^^^^
+- node and model string output
 
 [0.3.0] - 2022-06-12
 ---------------------

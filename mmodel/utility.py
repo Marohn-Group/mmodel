@@ -124,20 +124,6 @@ def param_counter(graph, returns):
     return count
 
 
-# def loop_signature(signature, parameters):
-#     """Change parameter default from scalar to list"""
-
-#     # reset the default to a list
-#     sig_param = dict(signature.parameters)
-#     for parameter in parameters:
-#         _param = sig_param[parameter]
-#         if _param.default != inspect.Parameter.empty:
-#             sig_param[parameter] = inspect.Parameter(
-#                 _param.name, _param.kind, default=[_param.default]
-#             )
-#     return inspect.Signature(sig_param.values())
-
-
 def modify_subgraph(
     graph, subgraph, subgraph_name, subgraph_obj, subgraph_returns=None
 ):

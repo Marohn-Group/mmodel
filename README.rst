@@ -43,20 +43,20 @@ To create a nonlinear model that has the result of
         ("func c", func_c, ["result"]),
     ]
 
-    graph = ModelGraph(name="Example")
+    graph = ModelGraph(name="example_graph")
     graph.add_grouped_edges_from(grouped_edges)
     graph.set_node_objects_from(node_objects)
 
-    example_func = Model(graph, handler=MemHandler)
+    example_model = Model("example_model", graph, handler=(MemHandler, {}))
 
-    >>> print(example_func)
-    Example model
-      signature: base, x, y
+    >>> print(example_model)
+    example_model(base, x, y)
+      signature: 
       returns: result
-      handler: MemHandler
+      handler: MemHandler, {}
       modifiers: none
 
-    >>> example_func(2, 5, 3) # (5 + 3)log(5 + 3, 2)
+    >>> example_model(2, 5, 3) # (5 + 3)log(5 + 3, 2)
     24.0
 
 The resulting ``example_func`` is callable.

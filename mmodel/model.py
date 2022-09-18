@@ -1,5 +1,5 @@
 import inspect
-from mmodel.utility import parse_input, is_node_attr_defined, is_edge_attr_defined
+from mmodel.utility import parse_input, is_node_attr_defined, is_edge_attr_defined, model_returns
 from mmodel.draw import draw_graph
 import networkx as nx
 
@@ -7,6 +7,8 @@ import networkx as nx
 class Model:
     """Create model executable
 
+    :param str name: Model name
+    :param str description: Model description
     :param object graph: ModelGraph instance (digraph)
     :param class handler: Handler class that handles model execution and the keyword
         arguments. The parameter format is (HandlerClass, {})
@@ -17,52 +19,53 @@ class Model:
         (modifier, {}). All modifiers should have function as the first argument
     """
 
-    def __init__(self, graph, handler, description: str = "", modifiers: list = []):
+    def __init__(self, name, graph, handler, modifiers=None, description: str = ""):
 
         assert self._is_valid_graph(graph)
 
-        self.__name__ = f"{graph.name} model"
+        self.__name__ = name
 
         # store only the copy of the graph, note this is not the same copy
         # used by the handler
-        # modify self._graph does not change the model itself
-        self._graph = nx.freeze(graph.deepcopy())
-        self._modifiers = modifiers
-        self._handler = handler
+        # modify self.graph does not change the model itself
+        # self.graph = nx.freeze(graph.deepcopy())
+        self.graph = nx.freeze(graph)
+        self.modifiers = modifiers or list()
+        self.handler = handler
         self.description = description
 
         handler_class, handler_kwargs = handler
-        executor = handler_class(self._graph, **handler_kwargs)
+        returns = model_returns(graph)
+        executor = handler_class(self.graph, returns, **handler_kwargs)
 
-        for mdf, kwargs in modifiers:
+        for mdf, kwargs in self.modifiers:
             executor = mdf(executor, **kwargs)
 
         self.__signature__ = executor.__signature__
         self.returns = executor.returns
+        # final callable
         self.executor = executor
 
     def __call__(self, *args, **kwargs):
 
-        # process input
-        data_input = parse_input(self.__signature__, *args, **kwargs)
+        # process inputs
+        inputs = parse_input(self.__signature__, *args, **kwargs)
 
-        return self.executor(**data_input)
+        return self.executor(**inputs)
 
     def __str__(self):
         """Output callable information"""
 
-        sig_list = [str(param) for param in self.__signature__.parameters.values()]
-        handler_str = f"{self._handler[0].__name__}, {self._handler[1]}"
+        handler_str = f"{self.handler[0].__name__}, {self.handler[1]}"
 
         modifier_str_list = [
-            f"{func.__name__}, {kwargs}" for func, kwargs in self._modifiers
+            f"{func.__name__}, {kwargs}" for func, kwargs in self.modifiers
         ]
         modifier_str = f"[{', '.join(modifier_str_list)}]"
 
         return "\n".join(
             [
-                f"{self.__name__}",
-                f"  signature: {', '.join(sig_list)}",
+                f"{self.__name__}{self.__signature__}",
                 f"  returns: {', '.join(self.returns)}",
                 f"  handler: {handler_str}",
                 f"  modifiers: {modifier_str}",
@@ -107,17 +110,17 @@ class Model:
     def get_node(self, node):
         """Quick access to node within the model"""
 
-        return self._graph.nodes[node]
+        return self.graph.nodes[node]
 
     def get_node_object(self, node):
         """Quick access to node callable within the model"""
 
-        return self._graph.nodes[node]["func"]
+        return self.graph.nodes[node]["func"]
 
     def view_node(self, node):
         """View a specific node"""
 
-        return self._graph.view_node(node)
+        return self.graph.view_node(node)
 
     def draw(self, method: callable = draw_graph):
         """Draw the graph of the model
@@ -126,4 +129,4 @@ class Model:
         '\l' forces the label to align left when it is defined after the line.
         """
 
-        return method(self._graph, str(self).replace("\n", "\l") + "\l")
+        return method(self.graph, label=str(self).replace("\n", "\l") + "\l")

@@ -84,8 +84,8 @@ class ModelGraph(nx.DiGraph):
         return "\n".join(
             [
                 f"{node} node",
-                f"  base callable: {base_name}",
-                f"  signature: {', '.join(sig_list)}",
+                f"  callable: {base_name}{node_dict['sig']}",
+                # f"  signature: {', '.join(sig_list)}",
                 f"  returns: {', '.join(node_dict['returns'])}",
                 f"  modifiers: {modifier_str}",
             ]

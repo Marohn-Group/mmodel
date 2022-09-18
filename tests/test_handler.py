@@ -10,301 +10,347 @@ The test strategy works as the following:
 """
 
 
-from mmodel.handler import (
-    TopologicalHandler,
-    MemHandler,
-    MemDict,
-    PlainHandler,
-    H5Handler,
-)
-from inspect import signature
+from mmodel.handler import MemData, H5Data, MemHandler, BasicHandler, H5Handler
 import pytest
+import math
 import h5py
 import numpy as np
-import math
-from tests.conftest import graph_equal
 import re
 
-
-class TestMemDict:
-    """Test the behavior of the customized dictionary"""
+class TestMemData:
+    """Test MemData class"""
 
     @pytest.fixture
-    def memdict(self):
-        return MemDict({"a": 1, "b": 2, "c": 1}, {"a": "hello", "b": "world"})
+    def data(self):
+        """Create data instance"""
+        return MemData({"a": "hello", "b": "world"}, counter={"a": 1, "b": 2, "c": 1})
 
-    def test_key_deletion(self, memdict):
+    def test_key_deletion(self, data):
         """Test if 'a' is deleted after a single extraction"""
-        memdict["a"]
-        assert "a" not in memdict
+        data["a"]
+        assert "a" not in data
 
-        memdict["b"]
-        assert "b" in memdict
-        memdict["b"]
-        assert "b" not in memdict
+        data["b"]
+        assert "b" in data
+        data["b"]
+        assert "b" not in data
 
-    def test_key_update(self, memdict):
+    def test_key_update(self, data):
         """Test update of the dictionary"""
 
-        memdict["c"] = "hello world"
-        assert memdict["c"] == "hello world"
-        assert "c" not in memdict
+        data["c"] = "hello world"
+        assert data["c"] == "hello world"
 
-    def test_counter_value(self, memdict):
+    def test_counter_value(self, data):
         """Test counter value after parameters are extracted"""
 
-        memdict["a"] = "hello world"
-        assert memdict.counter["a"] == 1
-        memdict["a"]
-        assert memdict.counter["a"] == 0
-        memdict["b"]
-        assert memdict.counter["b"] == 1
+        data["a"] = "hello world"
+        assert data.counter["a"] == 1
+        data["a"]
+        assert data.counter["a"] == 0
+        data["b"]
+        assert data.counter["b"] == 1
 
-    def test_deletion_during_iteration(self, memdict):
-        """Test the deletion method during iteration"""
+    def test_counter_copy(self):
+        """Test that the counter is a copy"""
 
-        with pytest.raises(RuntimeError, match="MemDict is not iterable"):
-            for key in memdict:
-                pass
+        counter = {"a": 1, "b": 2, "c": 1}
 
+        data = MemData({"a": "hello", "b": "world"}, counter=counter)
+        assert data.counter is not counter  # not the same object
 
-class TestTopologicalHandler:
-    """Test class TopologicalModel"""
-
-    def test_TopologicalModel(self, monkeypatch, mmodel_G, mmodel_signature):
-        """Test TopologicalModel
-
-        TopologicalModel contains abstract method, therefore it cannot instantiate
-        itself. Here we monkeypatch to empty the __abstractmethods__ attribute
-        and test the basic init and method behaviors.
-        """
-        # monkeypatch the abstractmethod to empty to TopologicalModel
-        # so that it can instantiate
-        monkeypatch.setattr(TopologicalHandler, "__abstractmethods__", set())
-
-        model = TopologicalHandler(mmodel_G, ["c"])
-
-        assert signature(model) == mmodel_signature
-
-        assert graph_equal(model.graph, mmodel_G)
-        assert model.returns == ["c", "k", "m"]
+        # data.counter['a'] = 2
+        # assert counter['a'] == 1
 
 
-@pytest.fixture(scope="module")
-def node_a_attr():
-    def func_a(arg1, arg2, arg3):
-        """Test function node for Model _run_node method"""
-        return arg1 + arg2 + arg3
-
-    return {"func": func_a, "sig": signature(func_a), "returns": ["arg4"]}
-
-
-@pytest.fixture(scope="module")
-def node_b_attr():
-    def func_b(arg1, arg2, arg3):
-        """Test function node for Model _run_node method"""
-        return arg1 + arg2, arg3
-
-    return {"func": func_b, "sig": signature(func_b), "returns": ["arg4", "arg5"]}
-
-
-class TestMemHandler:
-    """Test class Model"""
+class Test_H5Data:
+    """Test H5Data class"""
 
     @pytest.fixture
-    def handler_instance(self, mmodel_G):
-        """Create Model object for the test"""
-        return MemHandler(mmodel_G, [])
+    def h5_filename(self, tmp_path):
 
-    def test_instance_attrs(self, handler_instance):
-        """Test the memhandler count attribute"""
-        count = {"a": 1, "b": 2, "c": 3, "d": 1, "e": 1, "f": 1, "g": 1, "m": 1, "k": 1}
-        assert handler_instance.counter == count
+        # "/" is basically join, tmp_path is pathlib.Path object
+        # the file does not exist at this point
+        # the tmpdir only saves the three most recent runs
+        # there is no need to delete them
+        return tmp_path / "h5model_test.h5"
 
-    def test_initiate(self, handler_instance):
-        """Test initiate method
-
-        The data instance should return two dictionaries
-        one ordered dictionary with the correct arguments
-        one dictionary with number of value counts in the graph
-
-        The signature is a, b, f, b = 2
-        b however, is not automatically filled
+    @pytest.fixture
+    def data(self, h5_filename):
+        """Create H5Data instance
+        
+        yield so the file is closed afterwards
         """
-        value_dict = handler_instance.initiate(a=1, d=2, f=5, b=2)
-        # MemDict is not iterable
-        assert value_dict.data == {"a": 1, "d": 2, "f": 5, "b": 2}
-        assert value_dict.counter == {
-            "a": 1,
-            "b": 2,
-            "c": 3,
-            "d": 1,
-            "e": 1,
-            "f": 1,
-            "g": 1,
-            "m": 1,
-            "k": 1,
-        }
+        data = H5Data({"a": "hello", "b": "world"}, fname=h5_filename, gname="test")
+        yield data
+        data.f.close()
 
-    def test_run_node(self, handler_instance, node_a_attr, node_b_attr):
-        """Test run_node method
+    def test_gname(self, data):
+        """Test the group name"""
 
-        Separate data instance and nodes are provided for the tests.
-        The test tests if the output is correct and is correctly zipped.
+        assert re.match(r"test \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6}$", data.gname)
 
-        The func_a has 1 output, and the output is a numpy array.
-        All input parameters have count of 1, they should be 0 after
-        the execution and the value_dict should only contain "arg4"
 
-        The func_b has 2 outputs. The "arg2" has count of 2, its value
-        is perserved after the execution.
-        """
+    @pytest.mark.parametrize("scalar, value", [("float", 1.14), ("str", b"test")])
+    def test_write_scalar(self, scalar, value, data, h5_filename):
+        """Test writing scalar data to h5 file"""
 
-        value_dict_a = {"arg1": np.arange(5), "arg2": 4.5, "arg3": 2.2}
-        count_a = {"arg1": 1, "arg2": 1, "arg3": 1, "arg4": 1}
-        data_instance_a = MemDict(count_a, value_dict_a)
+        f = h5py.File(h5_filename)
+        data[scalar] = value
+        assert f[data.gname][scalar][()] == value
 
-        value_dict_b = {"arg1": 10, "arg2": 14, "arg3": 2, "arg4": 1}
-        count_b = {"arg1": 1, "arg2": 2, "arg3": 1, "args4": 1}
-        data_instance_b = MemDict(count_b, value_dict_b)
 
-        handler_instance.run_node(data_instance_a, "node_a", node_a_attr)
-        handler_instance.run_node(data_instance_b, "node_b", node_b_attr)
+    @pytest.mark.parametrize(
+        "dataset, value",
+        [("list", [1.11, 2.22, 3.33]), ("array", np.array([1.11, 2.22, 3.33]))],
+    )
+    def test_write_dataset(self, dataset, value, data, h5_filename):
+        """Test writing dataset to h5 file"""
+        
+        f = h5py.File(h5_filename)
+        data[dataset] = value
+        assert all(f[data.gname][dataset][()] == value)
 
-        assert list(data_instance_a.data.keys()) == ["arg4"]
-        assert np.array_equal(data_instance_a["arg4"], np.arange(6.7, 11.7))
-        assert data_instance_a.counter == {"arg1": 0, "arg2": 0, "arg3": 0, "arg4": 0}
 
-        assert data_instance_b.data == {"arg2": 14, "arg4": 24, "arg5": 2}
-        # no args4 are extracted therefore there is no return
-        assert data_instance_b.counter == {"arg1": 0, "arg2": 1, "arg3": 0, "args4": 1}
+    def test_write_object(self, data, h5_filename):
+        """Test writing unsupported object is written as attributes"""
 
-    def test_finish_single_return(self, handler_instance):
-        """Test _finish method
+        def func(a, b):
+            return a + b
+        
+        f = h5py.File(h5_filename)
+        data["object"] = func
+        assert f[data.gname].attrs["object"] == str(func)
 
-        The method should output the value directly if there is only
-        one output parameter.
-        """
 
-        value_dict = MemDict({"arg4": 1, "arg5": 1}, {"arg4": 1, "arg5": 4.5})
-        assert handler_instance.finish(value_dict, ["arg4"]) == 1
+    @pytest.mark.parametrize("scalar, value", [("float", 1.14), ("str", b"test")])
+    def test_read_scalar(self, scalar, value, data, h5_filename):
+        """Test _read method reading attr data from h5 file"""
 
-    def test_finish_multiple_return(self, handler_instance):
-        """Test _finish method
+        f = h5py.File(h5_filename)
+        f[data.gname][scalar] = value
 
-        The method should return a tuple with multiple return variable
-        """
+        assert data[scalar] == value
 
-        value_dict = MemDict({"arg4": 1, "arg5": 1}, {"arg4": 1, "arg5": 4.5})
-        assert handler_instance.finish(value_dict, ["arg4", "arg5"]) == (1, 4.5)
+    @pytest.mark.parametrize(
+        "dataset, value",
+        [("list", [1.11, 2.22, 3.33]), ("array", np.array([1.11, 2.22, 3.33]))],
+    )
+    def test_read_dataset(self, dataset, value, data, h5_filename):
+        """Test _read method reading dataset from h5 file"""
 
-    def test_raise_exception(self, handler_instance):
-        """Test _raise_exception"""
+        f = h5py.File(h5_filename)
+        f[data.gname][dataset] = value
 
-        with pytest.raises(Exception):
-            handler_instance.raise_node_exception(None, "node", {}, Exception("Test"))
+        assert all(data[dataset] == value)
+    
+    def test_close(self, data):
+        """Test that the h5 file is closed"""
 
-    def test_node_exception(self, handler_instance):
-        """Test exception is raise when there are issue with a node execution"""
+        data.close()
 
-        with pytest.raises(
-            Exception, match=r"Exception occurred for node \('subtract', .+\)"
-        ):
-            handler_instance(a=1, d="2", f=3, b=2)
+        # not sure if there is another way to check this
+        assert str(data.f) == "<Closed HDF5 file>"
 
+
+
+
+
+
+# def test_initiate_group_name(self, handler_instance):
+#     """Test if initiate method creates experiment group
+
+#     The file should have the group {id}_{name}{exp_num}
+#     we close the file and check if the group is saved
+#     """
+
+#     # f, exe_group = handler_instance.initiate(a=1, d=2, f=5, b=2)
+#     # exe_str = f"{id(handler_instance)}_1"
+#     # assert exe_str in f
+#     # f.close()
+
+#     data = handler_instance.initiate(a=1, d=2, f=5, b=2)
+#     exe_str = f"1_{id(data)}"
+#     assert exe_str in data._f
+
+# def test_run_node(self, handler_instance, h5_filename, node_a_attr, node_b_attr):
+#     """Test _run_node method
+
+#     Separate data instance and nodes are provided for the tests.
+#     The test tests if the output is correct and is correctly zipped.
+
+#     The func_a has 1 output, and the output is a numpy array.
+#     The func_b has 2 outputs.
+
+#     There is a precision issue in the read write with h5 file.
+#     The test assertion is that they are close with relative tolerance of
+#     1e-8 and absolute tolerance of 1e-10
+#     """
+
+#     f = h5py.File(h5_filename, "w")
+#     func_a_group = f.create_group("func_a")
+#     func_a_group["arg1"] = np.array([1, 2, 3])
+#     func_a_group["arg2"] = np.array([0.1, 0.2, 0.3])
+#     func_a_group["arg3"] = np.array([0.01, 0.02, 0.03])
+
+#     func_b_group = f.create_group("func_b")
+#     func_b_group["arg1"] = 10
+#     func_b_group["arg2"] = 14
+#     func_b_group["arg3"] = 2
+
+#     handler_instance.run_node((f, func_a_group), "node_a", node_a_attr)
+#     handler_instance.run_node((f, func_b_group), "node_b", node_b_attr)
+
+#     assert np.allclose(
+#         func_a_group["arg4"][()],
+#         np.array([1.11, 2.22, 3.33]),
+#         rtol=1e-8,
+#         atol=1e-10,
+#     )
+#     assert func_b_group["arg4"][()] == 24
+#     assert func_b_group["arg5"][()] == 2
+
+# def test_finish(self, handler_instance, h5_filename):
+#     """Test _finish method
+
+#     Finish method should output the value directly if there is only
+#     one output parameter. A tuple if there are multiple output parameter.
+#     The _finish method closes file at the end, therefore for testing
+#     a new file is opened each time.
+#     """
+
+#     with h5py.File(h5_filename, "w") as f:
+#         exe_group = f.create_group("exe_test")
+#         exe_group["arg4"] = 1.14
+#         exe_group["arg5"] = 10
+#         exe_group["arg6"] = np.array([1.11, 2.22, 3.33])
+
+#     f = h5py.File(h5_filename, "r")
+#     exe_group = f["exe_test"]
+#     assert handler_instance.finish((f, exe_group), ["arg4"]) == 1.14
+#     assert not f  # check if it still open
+
+#     f = h5py.File(h5_filename, "r")
+#     exe_group = f["exe_test"]
+#     assert handler_instance.finish((f, exe_group), ["arg4", "arg5"]) == (1.14, 10)
+#     assert not f  # check if it still open
+
+#     f = h5py.File(h5_filename, "r")
+#     exe_group = f["exe_test"]
+#     assert np.array_equal(
+#         handler_instance.finish((f, exe_group), ["arg6"]),
+#         np.array([1.11, 2.22, 3.33]),
+#     )
+#     assert not f  # check if it still open
+
+# def test_raise_exception(self, handler_instance, h5_filename):
+#     """Test _raise_exception"""
+
+#     f = h5py.File(h5_filename, "w")
+#     exe_group = f.create_group("exe_test")
+
+#     with pytest.raises(Exception):
+#         handler_instance.raise_node_exception(
+#             (f, exe_group), "node", {"node_obj": None}, Exception("Test Error")
+#         )
+
+#     assert not f  # check if it still open
+
+#     with h5py.File(h5_filename, "r") as f:
+#         assert (
+#             f["exe_test"].attrs["note"]
+#             == "Exception occurred for node ('node', {'node_obj': None}): Test Error"
+#         )
+
+# def test_node_exception(self, handler_instance, h5_filename):
+#     """Test exception is raise when there are issue with a node execution"""
+
+#     with pytest.raises(
+#         Exception, match=r"Exception occurred for node \('subtract', .+\)"
+#     ):
+#         handler_instance(a=1, d="2", f=3, b=2)
+
+#     with h5py.File(h5_filename, "r") as f:
+
+#         assert bool(
+#             re.match(
+#                 r".+ occurred for node \('subtract', .+\)",
+#                 f[f"{id(handler_instance)}_1"].attrs["note"],
+#             )
+#         )
+
+# def test_execution(self, handler_instance):
+#     """Test running the model as a function"""
+#     import time
+
+#     assert handler_instance(a=10, d=15, f=20, b=2) == (-720, math.log(12, 2))
+#     time.sleep(0.0005)
+#     assert handler_instance(a=1, d=2, f=3, b=4) == (45, math.log(5, 4))
+
+
+exception_pattern = """\
+Exception occurred for node 'log':
+--- node info ---
+log node
+  callable: logarithm\\(c, b\\)
+  returns: m
+  modifiers: \\[\\]
+--- input info ---
+  c = 0
+  b = 2"""
+
+
+class HandlerTester:
     def test_execution(self, handler_instance):
         """Test running the model as a function"""
 
         assert handler_instance(a=10, d=15, f=20, b=2) == (-720, math.log(12, 2))
         assert handler_instance(a=1, d=2, f=3, b=4) == (45, math.log(5, 4))
 
-    def test_add_returns(self, mmodel_G):
-        """Test if the handler returns the proper parameters add_returns specified"""
+    def test_node_exception(self, handler_instance):
+        """Test when node exception a custom exception is outputted"""
 
-        handler_instance = MemHandler(mmodel_G, ["c"])
-        assert handler_instance(a=10, d=15, f=20, b=2) == (12, -720, math.log(12, 2))
+        with pytest.raises(Exception, match=exception_pattern):
+            handler_instance(a=-2, d=15, f=20, b=2)
+
+    def test_intermediate_returns(self, handler_instance_mod):
+        """Test if the handler returns the intermediate values
+
+        The returned value should be a scalar not a tuple
+        """
+
+        assert handler_instance_mod(a=10, d=15, f=20, b=2) == 12
 
 
-class TestPlainHandler:
+class TestBasicHandler(HandlerTester):
+    """Test class Model"""
+
+    @pytest.fixture
+    def handler_instance(self, mmodel_G):
+        """Create handler instance for the test"""
+        return BasicHandler(mmodel_G, ["k", "m"])
+
+    @pytest.fixture
+    def handler_instance_mod(self, mmodel_G):
+        """Create handler instance for the test with the intermediate value for returns"""
+        return BasicHandler(mmodel_G, ["c"])
+
+
+class TestMemHandler(HandlerTester):
     """Test class Model"""
 
     @pytest.fixture
     def handler_instance(self, mmodel_G):
         """Create Model object for the test"""
-        return PlainHandler(mmodel_G, [])
+        return MemHandler(mmodel_G, ["k", "m"])
 
-    def test_initiate(self, handler_instance):
-        """Test _initiate method
-
-        The signature is a, d, f, b = 2
-        """
-        data_instance = handler_instance.initiate(a=1, d=2, f=5, b=2)
-        assert data_instance == {"a": 1, "d": 2, "f": 5, "b": 2}
-
-    def test_run_node(self, handler_instance, node_a_attr, node_b_attr):
-        """Test _run_node method
-
-        Separate data instance and nodes are provided for the tests.
-        The test tests if the output is correct and is correctly zipped.
-
-        The func_a has 1 output, and the output is a numpy array.
-        The func_b has 2 outputs.
-        """
-
-        value_dict_a = {"arg1": np.arange(5), "arg2": 4.5, "arg3": 2.2}
-        value_dict_b = {"arg1": 10, "arg2": 14, "arg3": 2}
-
-        handler_instance.run_node(value_dict_a, "node_a", node_a_attr)
-        handler_instance.run_node(value_dict_b, "node_b", node_b_attr)
-
-        assert list(value_dict_a.keys()) == ["arg1", "arg2", "arg3", "arg4"]
-        assert np.array_equal(value_dict_a["arg4"], np.arange(6.7, 11.7))
-
-        assert value_dict_b == {
-            "arg1": 10,
-            "arg2": 14,
-            "arg3": 2,
-            "arg4": 24,
-            "arg5": 2,
-        }
-
-    def test_finish(self, handler_instance):
-        """Test _finish method
-
-        Finish method should output the value directly if there is only
-        one output parameter. A tuple if there are multiple output parameter
-        """
-
-        value_dict = {"arg4": 1, "arg5": 4.5}
-        assert handler_instance.finish(value_dict, ["arg4"]) == 1
-        assert handler_instance.finish(value_dict, ["arg4", "arg5"]) == (1, 4.5)
-
-    def test_raise_exception(self, handler_instance):
-        """Test _raise_exception"""
-
-        with pytest.raises(
-            Exception, match=r"Exception occurred for node \('node', {'key': 'value'}\)"
-        ):
-            handler_instance.raise_node_exception(
-                None, "node", {"key": "value"}, Exception("Test")
-            )
-
-    def test_node_exception(self, handler_instance):
-        """Test exception is raise when there are issue with a node execution"""
-
-        with pytest.raises(
-            Exception, match=r"Exception occurred for node \('subtract', .+\)"
-        ):
-            handler_instance(a=1, d="2", f=3, b=2)
-
-    def test_execution(self, handler_instance):
-        """Test running the model as a function"""
-
-        assert handler_instance(a=10, d=15, f=20, b=2) == (-720, math.log(12, 2))
-        assert handler_instance(a=1, d=2, f=3, b=4) == (45, math.log(5, 4))
+    @pytest.fixture
+    def handler_instance_mod(self, mmodel_G):
+        """Create handler instance for the test with the intermediate value for returns"""
+        return MemHandler(mmodel_G, ["c"])
 
 
-class TestH5Handler:
+class TestH5Handler(HandlerTester):
     """Test class Model"""
 
     @pytest.fixture
@@ -323,174 +369,9 @@ class TestH5Handler:
         The scope of the tmp_path is "function", the file
         object and model instance are destroyed after each test function
         """
-        return H5Handler(mmodel_G, h5_filename)
+        return H5Handler(mmodel_G, ["k", "m"], fname=h5_filename, gname="test run")
 
-    @pytest.mark.parametrize("scalar, value", [("float", 1.14), ("str", b"test")])
-    def test_read_scalar(self, scalar, value, handler_instance, h5_filename):
-        """Test _read method reading attr data from h5 file"""
-
-        f = h5py.File(h5_filename, "w")
-        f[scalar] = value
-
-        assert handler_instance.read(scalar, f) == value
-        f.close()
-
-    @pytest.mark.parametrize(
-        "dataset, value",
-        [("list", [1.11, 2.22, 3.33]), ("array", np.array([1.11, 2.22, 3.33]))],
-    )
-    def test_read_dataset(self, dataset, value, handler_instance, h5_filename):
-        """Test _read method reading dataset from h5 file"""
-
-        f = h5py.File(h5_filename, "w")
-        f[dataset] = value
-
-        assert all(handler_instance.read(dataset, f) == value)
-        f.close()
-
-    @pytest.mark.parametrize("scalar, value", [("float", 1.14), ("str", b"test")])
-    def test_write_scalar(self, scalar, value, handler_instance, h5_filename):
-        """Test writing scalar data to h5 file"""
-
-        f = h5py.File(h5_filename, "w")
-        handler_instance.write({scalar: value}, f)
-
-        assert f[scalar][()] == value
-        f.close()
-
-    @pytest.mark.parametrize(
-        "dataset, value",
-        [("list", [1.11, 2.22, 3.33]), ("array", np.array([1.11, 2.22, 3.33]))],
-    )
-    def test_write_dataset(self, dataset, value, handler_instance, h5_filename):
-        """Test writing dataset to h5 file"""
-
-        f = h5py.File(h5_filename, "w")
-        handler_instance.write({dataset: value}, f)
-
-        assert all(f[dataset][()] == value)
-        f.close()
-
-    def test_initiate_group_name(self, handler_instance):
-        """Test if initiate method creates experiment group
-
-        The file should have the group {id}_{name}{exp_num}
-        we close the file and check if the group is saved
-        """
-
-        f, exe_group = handler_instance.initiate(a=1, d=2, f=5, b=2)
-        exe_str = f"{id(handler_instance)}_1"
-        assert exe_str in f
-        f.close()
-
-    def test_run_node(self, handler_instance, h5_filename, node_a_attr, node_b_attr):
-        """Test _run_node method
-
-        Separate data instance and nodes are provided for the tests.
-        The test tests if the output is correct and is correctly zipped.
-
-        The func_a has 1 output, and the output is a numpy array.
-        The func_b has 2 outputs.
-
-        There is a precision issue in the read write with h5 file.
-        The test assertion is that they are close with relative tolerance of
-        1e-8 and absolute tolerance of 1e-10
-        """
-
-        f = h5py.File(h5_filename, "w")
-        func_a_group = f.create_group("func_a")
-        func_a_group["arg1"] = np.array([1, 2, 3])
-        func_a_group["arg2"] = np.array([0.1, 0.2, 0.3])
-        func_a_group["arg3"] = np.array([0.01, 0.02, 0.03])
-
-        func_b_group = f.create_group("func_b")
-        func_b_group["arg1"] = 10
-        func_b_group["arg2"] = 14
-        func_b_group["arg3"] = 2
-
-        handler_instance.run_node((f, func_a_group), "node_a", node_a_attr)
-        handler_instance.run_node((f, func_b_group), "node_b", node_b_attr)
-
-        assert np.allclose(
-            func_a_group["arg4"][()],
-            np.array([1.11, 2.22, 3.33]),
-            rtol=1e-8,
-            atol=1e-10,
-        )
-        assert func_b_group["arg4"][()] == 24
-        assert func_b_group["arg5"][()] == 2
-
-    def test_finish(self, handler_instance, h5_filename):
-        """Test _finish method
-
-        Finish method should output the value directly if there is only
-        one output parameter. A tuple if there are multiple output parameter.
-        The _finish method closes file at the end, therefore for testing
-        a new file is opened each time.
-        """
-
-        with h5py.File(h5_filename, "w") as f:
-            exe_group = f.create_group("exe_test")
-            exe_group["arg4"] = 1.14
-            exe_group["arg5"] = 10
-            exe_group["arg6"] = np.array([1.11, 2.22, 3.33])
-
-        f = h5py.File(h5_filename, "r")
-        exe_group = f["exe_test"]
-        assert handler_instance.finish((f, exe_group), ["arg4"]) == 1.14
-        assert not f  # check if it still open
-
-        f = h5py.File(h5_filename, "r")
-        exe_group = f["exe_test"]
-        assert handler_instance.finish((f, exe_group), ["arg4", "arg5"]) == (1.14, 10)
-        assert not f  # check if it still open
-
-        f = h5py.File(h5_filename, "r")
-        exe_group = f["exe_test"]
-        assert np.array_equal(
-            handler_instance.finish((f, exe_group), ["arg6"]),
-            np.array([1.11, 2.22, 3.33]),
-        )
-        assert not f  # check if it still open
-
-    def test_raise_exception(self, handler_instance, h5_filename):
-        """Test _raise_exception"""
-
-        f = h5py.File(h5_filename, "w")
-        exe_group = f.create_group("exe_test")
-
-        with pytest.raises(Exception):
-            handler_instance.raise_node_exception(
-                (f, exe_group), "node", {"node_obj": None}, Exception("Test Error")
-            )
-
-        assert not f  # check if it still open
-
-        with h5py.File(h5_filename, "r") as f:
-            assert (
-                f["exe_test"].attrs["note"]
-                == "Exception occurred for node ('node', {'node_obj': None}): Test Error"
-            )
-
-    def test_node_exception(self, handler_instance, h5_filename):
-        """Test exception is raise when there are issue with a node execution"""
-
-        with pytest.raises(
-            Exception, match=r"Exception occurred for node \('subtract', .+\)"
-        ):
-            handler_instance(a=1, d="2", f=3, b=2)
-
-        with h5py.File(h5_filename, "r") as f:
-
-            assert bool(
-                re.match(
-                    r".+ occurred for node \('subtract', .+\)",
-                    f[f"{id(handler_instance)}_1"].attrs["note"],
-                )
-            )
-
-    def test_execution(self, handler_instance):
-        """Test running the model as a function"""
-
-        assert handler_instance(a=10, d=15, f=20, b=2) == (-720, math.log(12, 2))
-        assert handler_instance(a=1, d=2, f=3, b=4) == (45, math.log(5, 4))
+    @pytest.fixture
+    def handler_instance_mod(self, mmodel_G, h5_filename):
+        """Create handler instance for the test with the intermediate value for returns"""
+        return H5Handler(mmodel_G, ["c"], fname=h5_filename, gname="test run")

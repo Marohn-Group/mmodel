@@ -3,7 +3,7 @@ from mmodel import ModelGraph, draw_graph
 import pytest
 from functools import wraps
 
-GRAPH_REPR = "ModelGraph named 'test' with 5 nodes and 5 edges"
+GRAPH_REPR = "ModelGraph named 'test graph' with 5 nodes and 5 edges"
 
 
 def test_default_mockgraph(mmodel_G, standard_G):
@@ -15,7 +15,7 @@ def test_default_mockgraph(mmodel_G, standard_G):
 
 def test_graph_name(mmodel_G):
     """Test naming and docs of the graph"""
-    assert mmodel_G.name == "test"
+    assert mmodel_G.name == "test graph"
 
 
 def test_graph_str(mmodel_G):
@@ -237,8 +237,7 @@ def test_deepcopy(mmodel_G):
 
 
 NODE_STR = """log node
-  base callable: logarithm
-  signature: c, b
+  callable: logarithm(c, b)
   returns: m
   modifiers: []"""
 
@@ -327,12 +326,8 @@ def test_subgraph_deepcopy(mmodel_G):
 
 
 """label with quotation mark escaped"""
-# ESC_LABEL = (
-#     """label="ModelGraph named \'test\' with 5 nodes and 5 edges\l\l"""
-#     """test object\l\llong description\l"""
-# )
 
-ESC_LABEL = """label="ModelGraph named \'test\' with 5 nodes and 5 edges"""
+ESC_LABEL = """label="ModelGraph named \'test graph\' with 5 nodes and 5 edges"""
 
 
 def test_draw(mmodel_G):

@@ -16,7 +16,7 @@ little overhead and reduces peak memory usage.
 
 .. autosummary::
 
-    mmodel.handler.PlainHandler
+    mmodel.handler.BasicHandler
 
 ``PlainHandler`` executes each node and stores the result in a dictionary. All
 intermediate values are preserved in the dictionary.
@@ -43,7 +43,7 @@ the h5 subgroup entries are unique for each instance run.
     :members:
     :show-inheritance:
 
-.. autoclass:: mmodel.handler.PlainHandler
+.. autoclass:: mmodel.handler.BasicHandler
     :members:
     :show-inheritance:
     
