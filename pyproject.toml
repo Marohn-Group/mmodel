@@ -37,6 +37,7 @@ nbsphinx = { version = "^0.8.8", optional = true }
 
 [tool.poetry.dev-dependencies]
 tox = ">=3.24.5"
+tox-conda = ">=0.9.2"
 pytest = ">=7.1.1"
 pytest-cov = ">=3.0.0"
 sphinx = "^4.4.0"
@@ -65,7 +66,7 @@ filterwarnings = [
 # somehow poetry, tox and python3.10 don't work
 legacy_tox_ini = """
 [tox]
-envlist = py38, py39, coverage, docs
+envlist = py38, py39, py310, coverage, docs
 isolated_build = True
 
 [testenv:py38]
@@ -73,6 +74,10 @@ deps = pytest >= 7.1.1
 commands = pytest
 
 [testenv:py39]
+deps = pytest >= 7.1.1
+commands = pytest
+
+[testenv:py310]
 deps = pytest >= 7.1.1
 commands = pytest
 
