@@ -1,5 +1,10 @@
 import inspect
-from mmodel.utility import parse_input, is_node_attr_defined, is_edge_attr_defined, model_returns
+from mmodel.utility import (
+    parse_input,
+    is_node_attr_defined,
+    is_edge_attr_defined,
+    model_returns,
+)
 from mmodel.draw import draw_graph
 import networkx as nx
 
@@ -19,7 +24,9 @@ class Model:
         (modifier, {}). All modifiers should have function as the first argument
     """
 
-    def __init__(self, name, graph, handler, modifiers=None, description: str = ""):
+    def __init__(
+        self, name, graph, handler, modifiers=None, description: str = "", returns=None
+    ):
 
         assert self._is_valid_graph(graph)
 
@@ -35,7 +42,7 @@ class Model:
         self.description = description
 
         handler_class, handler_kwargs = handler
-        returns = model_returns(graph)
+        returns = returns or model_returns(graph)
         executor = handler_class(self.graph, returns, **handler_kwargs)
 
         for mdf, kwargs in self.modifiers:

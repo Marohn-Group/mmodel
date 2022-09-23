@@ -30,6 +30,7 @@ Changed
   long docstring.
 - 'name' attribute required for Model instances
 - Node execute exception message now includes node information
+- add "returns" parameter to Model
 
 Added
 ^^^^^

@@ -162,7 +162,10 @@ def test_mod_model_attr(mod_model_instance):
 def test_mod_model_execution(mod_model_instance):
     """Test if adding modifier changes the handler attribute (returns)"""
 
-    assert mod_model_instance(a=[1, 2], b=2, d=3, f=1) == [(0, math.log(3, 2), 1), (4, 2, 1)]
+    assert mod_model_instance(a=[1, 2], b=2, d=3, f=1) == [
+        (0, math.log(3, 2), 1),
+        (4, 2, 1),
+    ]
 
 
 def test_model_with_handler_argument(mmodel_G, tmp_path):
@@ -175,6 +178,25 @@ def test_model_with_handler_argument(mmodel_G, tmp_path):
 
     # the output of path is the repr instead of string
     assert f"handler: H5Handler, {{'fname': {repr(path)}}}" in str(h5model)
+
+
+def test_model_returns(mmodel_G):
+    """Test model with custom returns
+
+    The return order should be the same as the returns list
+    """
+
+    # less returns
+    model = Model("model_instance", mmodel_G, (BasicHandler, {}), returns=["m", "k"])
+    assert model.returns == ["m", "k"]
+    assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36)
+
+    # more returns
+    model = Model(
+        "model_instance", mmodel_G, (BasicHandler, {}), returns=["m", "k", "c"]
+    )
+    assert model.returns == ["m", "k", "c"]
+    assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36, 12)
 
 
 class TestModelValidation:
