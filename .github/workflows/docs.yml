@@ -1,0 +1,17 @@
+name: Build and publish to github repo
+
+on:
+  release
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy
+        uses: peterhs73/sphinx-docs-action@v0.0.1
+        with:
+          docs-source: docs/
+          external-repo: peterhs73/mmodel-docs
+          deploy-token: ${{ secrets.PRIVATE_TOKEN}}
