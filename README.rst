@@ -69,16 +69,20 @@ definition. To loop the "base" parameter.
     from mmodel import subgraph_by_parameters, modify_subgraph, loop_modifier
 
     subgraph = subgraph_by_parameters(graph, ["base"])
-    loop_node = Model(subgraph, MemHandler, [loop_modifier("base")])
+    loop_node = Model(
+        "loop_node",
+        subgraph,
+        (MemHandler, {}),
+        modifiers=[(loop_modifier, {"parameter": "base"})],
+    )
     looped_graph = modify_subgraph(graph, subgraph, "loop node", loop_node)
-    looped_model = Model(looped_graph, handler=MemHandler)
+    looped_model = Model("loop_model", looped_graph, loop_node.handler)
 
     >>> print(looped_model)
-    Example model
-      signature: base, x, y
-      returns: result
-      handler: MemHandler
-      modifiers: none
+    loop_model(base, x, y)
+        returns: result
+        handler: MemHandler, {}
+        modifiers: []
     
     >>> looped_model([2, 4], 5, 3) # (5 + 3)log(5 + 3, 2)
     [24.0, 12.0]
@@ -89,9 +93,9 @@ Modifiers can also be added to the whole model or a single node.
 To draw the graph or the underlying graph of the model:
 
 .. code-block:: python
-    
-    graph.draw()
-    example_func.draw()
+    from mmodel import draw_plain_graph
+    graph.draw(method=draw_plain_graph)
+    example_model.draw(method=draw_plain_graph)
 
 Installation
 ------------
@@ -122,7 +126,7 @@ To install test and docs, despondencies run::
     pip install .[test] .[docs]
 
 To run the tests in different python environments and cases 
-(py38, py39, coverage and docs)::
+(py38, py39, py310, coverage and docs)::
 
     tox
 
