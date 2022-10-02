@@ -140,28 +140,14 @@ class ModelGraph(nx.DiGraph):
                 v_params = set(v_sig.parameters.keys())
                 self.edges[u, v]["val"] = list(u_rts.intersection(v_params))
 
-    # def __str__(self):
-    #     """Output graph information"""
-    #     # default string is the string output of networkx.Graph
-    #     default_str = "".join(
-    #         [
-    #             type(self).__name__,
-    #             f" named {self.name!r}" if self.name else "",
-    #             f" with {self.number_of_nodes()} nodes and {self.number_of_edges()} edges",
-    #         ]
-    #     )
-    #     docstring = self.graph.get("doc", "")
-
-    #     return f"{default_str.rstrip()}\n\n{docstring}".rstrip()
-
-    def draw(self, draw_method):
+    def draw(self, method):
         """Draw the graph
 
         A drawing is provided. Defaults to ``draw_graph``
         '\l' forces the label to align left when it is defined after the line.
         """
 
-        return draw_method(self, str(self).replace("\n", "\l") + "\l")
+        return method(self, str(self).replace("\n", "\l") + "\l")
 
     def deepcopy(self):
         """Deepcopy graph
