@@ -45,10 +45,10 @@ Similarly, with multiple grouped edges
 
     G = ModelGraph()
 
-    G.add_grouped_edge_from(grouped_edges)
+    G.add_grouped_edges_from(grouped_edges)
     
     >>> print(G)
-    ModelGraph with 3 nodes and 2 edges
+    ModelGraph with 5 nodes and 4 edges
 
 Set node objects
 -----------------
@@ -88,17 +88,24 @@ the method does not work:
 2. functions without clear signature (``numpy`` universal functions)
 3. parameters that are different from defined parameter names
 
-In these case 1 and 2, a newly defined function with clear parameter information
-is recommended.
+In this cases, "inputs" parameter can be specified, the signature is changed
+using the signature modifiers:
+
+.. code-block:: python
+    
+    import numpy as np
+    G.set_node_object(node='b', func=np.sum, returns=['c'], inputs=["a", "b"])
+
+    >>> print(G.view_node('b'))
+    b node
+      callable: sum(a, b)
+      returns: c
+      modifiers: [signature_modifier, {'parameters': ['a', 'b']}]
 
 .. Note::
     The object is stored as a node attribute and the function signature
     (`inspect.Signature`) is stored. The parameter values are converted
     to signature objects.
-
-``mmodel`` determines function parameters using ``inspect.signature``, for
-callables that are not compatible with the function, the "params" argument
-is required.
 
 The name of the parameters that pass through each edge is determined and stored
 in the edge attribute "val". 
@@ -106,23 +113,19 @@ in the edge attribute "val".
 Name and docstring
 ----------------------
 
-Since the graph represents a model, we want to define the name and docstring
-of the model. They are stored as the graph attributes and can be defined during
-the graph definition and after. The graph attribute of graph G stores the
-attributes in a dictionary format.
+The name and graph string behaves as the networkx graphs. To add name to graph:
+
 
 .. code-block:: python
     
     # during graph definition
-    G = ModelGraph(name="test graph", doc="add two floats, a and b, returns c")
+    G = ModelGraph(name="ModelGraph Example")
 
     # after definition
-    G.graph['name'] = 'ModelGraph Example'
+    # G.graph['name'] = 'ModelGraph Example'
 
     >>> print(G)
     ModelGraph named 'ModelGraph Example' with 0 nodes and 0 edges
-
-    add two floats, a and b, returns c
 
 Mutability
 ------------
@@ -135,4 +138,5 @@ of the graph.
     G.copy() # shallow copy
     G.deepcopy() # deep copy
 
-For more ways to interact with ModelGraph, see :doc:`graph reference </ref_graph>`.
+For more ways to interact with ModelGraph, and networkx.graph see
+:doc:`graph reference </ref_graph>`.

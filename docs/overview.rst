@@ -38,19 +38,25 @@ levels of entrances for the package:
 How does it work?
 -----------------
 
-``mmodel`` uses a directed acyclic graph (DAG) to represent a non-linear
-model, with nodes presenting individual functions and edges representing
-parameter flow. The graph is created with a custom ``networkx`` graph class
-while retaining all of its graph algorithms and methods.
+``mmodel`` uses a two stage system to construct a executable python callable
+that behaves like a python function - **graph and model**.
 
-Once the model graph is defined, a build method ``Model`` creates the
-executable based on the model graph, graph handler, and additional modifiers.
-Constructing a model using a directed graph allows for clear execution steps,
-error messages, and easy testing. Notably, we can modify the subgraph easily
-without changing the model, which is efficient in terms of performance and
-code writing. For example, we can create a loop of the subgraph when looping
-the whole model is time-consuming due to matrix operation components outside
-of the loop.
+The **graph** is a directed acyclic graph (DAG) to represent a non-linear
+procedure, with nodes presenting individual functions and edges representing
+parameter flow. The graph is created with a custom ``networkx`` graph class
+while retaining all of its graph algorithms and methods. The class ``ModelGraph``
+handles the graph construction.
+
+The **model** can be created given the graph, the graph handler, and the modifiers.
+The model is an python executable object that behaves like a python function.
+Specifically, the handler creates the workflow that executes each node, and modifiers
+are python wrapper (closure/decorators) that can modify the nodes and the graph.
+The class ``Model`` handlers the model construction. Constructing a model using a
+directed graph allows for clear execution steps, error messages, and easy testing.
+Notably, we can modify the subgraph easily without changing the model, 
+which is efficient in terms of performance and code writing. 
+For example, we can create a loop of the subgraph when looping the whole model is
+time-consuming due to matrix operation components outside of the loop.
 
 Philosophy
 -----------

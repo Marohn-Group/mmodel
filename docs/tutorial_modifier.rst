@@ -1,10 +1,9 @@
 Modifying model and node
 =========================
 
-Modifiers are used to modify callables. They are defined as decorators. 
-Here we use decorators to modify already defined callables, namely
-the model and nodes in the graph. They are used during the definition of the
-node object or the model.
+Modifiers are used to modify callables. They can be python closures (wrappers)
+or decorators. They are used during the definition of the
+node object or the model. A modifier is provided as (func, kwargs) tuple.
 
 To add a loop modifier to the node 'add':
 
@@ -27,22 +26,28 @@ To add a loop modifier to the node 'add':
     G.set_node_object('power', func_b, ['d'])
 
     # set object with modifier
-    bloop = loop_modifier('b')
-    G.set_node_object('add', func_a, ['c'], modifiers=[bloop])
+    G.set_node_object(
+        'add', func_a, ['c'], modifiers=[(loop_modifier, {"parameter": "b"})]
+    )
 
     # post modification
     # a new copy of graph is created
     from mmodel import modify_node
-    new_graph = modify_node(G, 'add', modifiers=[bloop])
+    new_graph = modify_node(G, 'add', modifiers=[(loop_modifier, {"parameter": "b"})])
     
 Similarly, use "modifiers" argument to define model modifiers.
 
 
-Modifier with parameters
+Modifier using decorators
 -------------------------
 
-If the modifier requires parameters, the parameter should be defined first.
-The modifier should take a function as the only parameter.
+If the decorator have additional parameters, the parameters should be applied first.
+For example:
+
+.. code-block:: python
+
+    ... modifiers=[(loop_modifier(parameter='b'), {}), ...]
+    
 
 
 Modifier chaining

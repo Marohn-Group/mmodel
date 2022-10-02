@@ -20,7 +20,7 @@ The resulting subgraph can be built into models:
 .. code-block:: python
 
     H = subgraph_by_returns(G, ['c'])
-    model = Model(H, MemHandler)
+    model = Model(H, (MemHandler, {}))
  
 The filtering is useful if we only want to create model executable for
 only part of the graph.
@@ -37,9 +37,14 @@ uses. Here we loop the "base" parameter from the Quickstart example.
     from mmodel import subgraph_by_parameters, modify_subgraph, loop_modifier
 
     subgraph = subgraph_by_parameters(graph, ["base"])
-    loop_node = Model(subgraph, MemHandler, [loop_modifier("base")])
+    loop_node = Model(
+        "loop_node",
+        subgraph,
+        (MemHandler, {}),
+        modifiers=[(loop_modifier, {"parameter": "base"})],
+    )
     looped_graph = modify_subgraph(graph, subgraph, "loop node", loop_node)
-    looped_model = Model(looped_graph, handler=MemHandler)
+    looped_model = Model("loop_model", looped_graph, loop_node.handler)
 
 .. note::
 
@@ -50,4 +55,5 @@ uses. Here we loop the "base" parameter from the Quickstart example.
     3. update graph with the subgraph nodes object ``loop_node`` with
        ``modify_subgraph``, in this step the original returns list is retained.
        (to modify the returns, use "subgraph_returns" argument)
-    4. build the model for the graph with ``Model``
+    4. build the model for the graph with ``Model``. The handler is the same as
+       the loop_node.

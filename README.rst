@@ -93,6 +93,7 @@ Modifiers can also be added to the whole model or a single node.
 To draw the graph or the underlying graph of the model:
 
 .. code-block:: python
+
     from mmodel import draw_plain_graph
     graph.draw(method=draw_plain_graph)
     example_model.draw(method=draw_plain_graph)
