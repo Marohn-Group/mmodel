@@ -1,7 +1,8 @@
 name: Build and publish to github repo
 
 on:
-  release
+  release:
+    types: [published]
 
   workflow_dispatch:
 
