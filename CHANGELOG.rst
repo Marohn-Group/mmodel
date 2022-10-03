@@ -7,7 +7,7 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
-[Unreleased]
+[0.4.0] - 2022-10-3
 ------------------------
 
 Handler API is rewritten.
@@ -29,7 +29,7 @@ Changed
 - model docstring is tied to model instead of graph, use 'description' for
   long docstring.
 - 'name' attribute required for Model instances
-- Node execute exception message now includes node information
+- node execute exception message now includes node information
 - add "returns" parameter to Model
 
 Added
@@ -42,6 +42,7 @@ Removed
 ^^^^^^^
 
 - 'info' attribute no longer used in modifier and handlers
+- model and node string output no longer append "model" and "node"
 
 [0.3.1] - 2022-06-12
 --------------------
