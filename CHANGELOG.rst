@@ -41,7 +41,7 @@ Added
 Removed
 ^^^^^^^
 
-- 'info' attribute no longer used in modifier and handlers.
+- 'info' attribute no longer used in modifiers and handlers.
 - "model" and "node" no longer appended to model and node string output.
 
 [0.3.1] - 2022-06-12
