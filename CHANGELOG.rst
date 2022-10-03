@@ -14,7 +14,7 @@ Handler API is rewritten.
 
 Fixed
 ^^^^^
-- object str label aligns to the left for graph and model
+- object str label aligns to the left for the graph and model
 - H5Handler can write objects to file
 - fix bug middle nodes output not included in the final output
 
@@ -26,8 +26,8 @@ Changed
 - modifier list contains the arguments when supplied
 - handler arguments are supplied with the handler class
 - draw graph method no longer has a default value
-- model docstring is tied to model instead of graph, use 'description' for
-  long docstring.
+- model docstring is tied to the model instead of the graph, use 'description'
+  for long docstring.
 - 'name' attribute required for Model instances
 - node execute exception message now includes node information
 - add "returns" parameter to Model
@@ -41,8 +41,8 @@ Added
 Removed
 ^^^^^^^
 
-- 'info' attribute no longer used in modifier and handlers
-- model and node string output no longer append "model" and "node"
+- 'info' attribute no longer used in modifier and handlers.
+- "model" and "node" no longer appended to model and node string output.
 
 [0.3.1] - 2022-06-12
 --------------------
