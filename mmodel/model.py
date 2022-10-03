@@ -22,6 +22,8 @@ class Model:
     :param list modifiers: modifiers used for the whole graph model executable.
         Optional, defaults to an empty list. For each modifier, the format is
         (modifier, {}). All modifiers should have function as the first argument
+    :param str description: model description
+    :param list returns: the returns of the model defaults to the graph returns.
     """
 
     def __init__(
@@ -29,7 +31,6 @@ class Model:
     ):
 
         assert self._is_valid_graph(graph)
-
         self.__name__ = name
 
         # store only the copy of the graph, note this is not the same copy

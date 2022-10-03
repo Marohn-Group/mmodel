@@ -6,7 +6,6 @@ The test strategy works as the following:
 - create a mock instance of the abstract class, and test the attributes
 - test individual method of child class methods
 - test Handler as a whole
-
 """
 
 
@@ -16,6 +15,7 @@ import math
 import h5py
 import numpy as np
 import re
+from textwrap import dedent
 
 
 class TestMemData:
@@ -152,22 +152,9 @@ class Test_H5Data:
         assert str(data.f) == "<Closed HDF5 file>"
 
 
-exception_pattern = """\
-Exception occurred for node 'log':
---- node info ---
-log node
-  callable: logarithm\\(c, b\\)
-  returns: m
-  modifiers: \\[\\]
---- input info ---
-  c = 0
-  b = 2"""
-
-
 class HandlerTester:
     def test_execution(self, handler_instance):
-        """Test running the model as a function
-        """
+        """Test running the model as a function"""
 
         assert handler_instance(a=10, d=15, f=0, b=2) == (-3, math.log(12, 2), 0)
         assert handler_instance(a=1, d=2, f=1, b=4) == (15, math.log(5, 4), 1)
@@ -175,7 +162,18 @@ class HandlerTester:
     def test_node_exception(self, handler_instance):
         """Test when node exception a custom exception is outputted"""
 
-        with pytest.raises(Exception, match=exception_pattern):
+        exception_pattern = """\
+        Exception occurred for node 'log':
+        --- node info ---
+        log
+          callable: logarithm\\(c, b\\)
+          returns: m
+          modifiers: \\[\\]
+        --- input info ---
+        c = 0
+        b = 2"""
+
+        with pytest.raises(Exception, match=dedent(exception_pattern)):
             handler_instance(a=-2, d=15, f=1, b=2)
 
     def test_intermediate_returns(self, handler_instance_mod):
@@ -217,7 +215,7 @@ class TestMemHandler(HandlerTester):
 
 class TestH5Handler(HandlerTester):
     """Test class Model
-    
+
     In test_execution, two models are run consecutively, which tests the uniqueness of the
     h5 group entry.
     """

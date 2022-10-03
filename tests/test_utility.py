@@ -8,10 +8,11 @@ from tests.conftest import graph_equal
 import networkx as nx
 from functools import wraps
 
-
-def mock_func(a, c, b=2, *args, d, e=10, **kwargs):
-    return
-
+@pytest.fixture
+def func():
+    def example_func(a, c, b=2, *args, d, e=10, **kwargs):
+        return
+    return example_func
 
 @pytest.mark.parametrize(
     "parameter, result",
@@ -25,20 +26,20 @@ def mock_func(a, c, b=2, *args, d, e=10, **kwargs):
         ("kwargs", (4, False, "kwargs")),
     ],
 )
-def test_param_sorter(parameter, result):
+def test_param_sorter(parameter, result, func):
     """Test param_sorter result"""
 
-    params = inspect.signature(mock_func).parameters
+    params = inspect.signature(func).parameters
     assert util.param_sorter(params[parameter]) == result
 
 
-def test_param_sorter_order():
+def test_param_sorter_order(func):
     """Test param_sorter sorting order
 
     the correct order is a, b, *args, c, **kwargs, d=10
     """
 
-    params = inspect.signature(mock_func).parameters
+    params = inspect.signature(func).parameters
     shuffled_params_list = list(params.items())
     random.shuffle(shuffled_params_list)
     shuffled_params = OrderedDict(shuffled_params_list)

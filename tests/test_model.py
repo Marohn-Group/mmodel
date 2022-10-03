@@ -6,197 +6,153 @@ from mmodel.modifier import loop_modifier
 import math
 import networkx as nx
 from copy import deepcopy
+from textwrap import dedent
 
 
-def test_invalid_model(mmodel_G):
-    """Test if invalid model raises an assertion error of incorrect graph"""
+class TestModel:
+    """Test Model instances"""
 
-    g = mmodel_G.deepcopy()
-    # add a new node and edge
-    g.add_edge("log", "test")
+    @pytest.fixture
+    def model_instance(self, mmodel_G):
+        """Construct a model_instance"""
 
-    with pytest.raises(AssertionError):
-        Model("invalid graph model", g, (BasicHandler, {}))
+        return Model(
+            "model_instance", mmodel_G, (BasicHandler, {}), description="example model"
+        )
 
+    def test_model_attr(self, model_instance, mmodel_signature):
+        """Test the model has the correct name, signature, returns"""
 
-def test_default_modifier(mmodel_G):
-    """Test if default modifiers is changed to [] if input is None"""
+        assert model_instance.__name__ == "model_instance"
+        assert model_instance.__signature__ == mmodel_signature
+        assert model_instance.returns == ["k", "m", "p"]
+        assert model_instance.modifiers == []
 
-    model = Model("test model", mmodel_G, (BasicHandler, {}))
-    assert model.modifiers == []
+    def test_model_str(self, model_instance):
+        """Test model representation"""
 
+        MODEL_STR = """\
+        model_instance(a, d, f, b=2)
+          returns: k, m, p
+          handler: BasicHandler, {}
+          modifiers: []
+        example model"""
 
-MODEL_STR = """\
-model_instance(a, d, f, b=2)
-  returns: k, m, p
-  handler: BasicHandler, {}
-  modifiers: []
-test model description"""
+        assert str(model_instance) == dedent(MODEL_STR)
 
+    def test_model_graph_freeze(self, model_instance):
+        """Test the graph is frozen"""
 
-@pytest.fixture
-def model_instance(mmodel_G):
-    """Construct a model_instance"""
-    description = "test model description"
-    return Model("model_instance", mmodel_G, (BasicHandler, {}), [], description)
+        assert nx.is_frozen(model_instance.graph)
 
+    def test_model_execution(self, model_instance):
+        """Test if the default is correctly used"""
 
-def test_model_attr(model_instance, mmodel_signature):
-    """Test the model has the correct name, signature, returns"""
+        assert model_instance(10, 15, 1) == (-36, math.log(12, 2), 1)
+        assert model_instance(a=1, d=2, f=3, b=4) == (375, math.log(5, 4), 243)
 
-    assert model_instance.__name__ == "model_instance"
-    assert model_instance.__signature__ == mmodel_signature
-    assert model_instance.returns == ["k", "m", "p"]
+    def test_get_node(self, model_instance, mmodel_G):
+        """Test get_node method of the model"""
 
+        assert model_instance.get_node("log") == mmodel_G.nodes["log"]
 
-def test_model_str(model_instance):
-    """Test model representation"""
+    def test_get_node_object(self, model_instance, mmodel_G):
+        """Test get_node_object method"""
 
-    assert str(model_instance) == MODEL_STR
+        assert model_instance.get_node_object("log") == mmodel_G.nodes["log"]["func"]
 
+    def test_model_draw(self, model_instance):
+        """Test if the draw method of the model_instance
 
-def test_model_graph_freeze(model_instance):
-    """Test the graph is frozen"""
+        The draw methods are tested in test_draw module. Here we make sure
+        the label is correct.
+        """
+        dot_graph = model_instance.draw()
 
-    assert nx.is_frozen(model_instance.graph)
+        assert str(model_instance).replace("\n", "\l") in dot_graph.source
 
+    def test_model_view_node(self, model_instance):
+        """Test if view node outputs node information correctly"""
 
-def test_model_execution(model_instance):
-    """Test if the default is correctly used"""
+        node_s = """\
+        log
+          callable: logarithm(c, b)
+          returns: m
+          modifiers: []"""
 
-    assert model_instance(10, 15, 1) == (-36, math.log(12, 2), 1)
-    assert model_instance(a=1, d=2, f=3, b=4) == (375, math.log(5, 4), 243)
+        assert model_instance.view_node("log") == dedent(node_s)
 
+    def test_model_with_handler_argument(self, mmodel_G, tmp_path):
+        """Test if argument works with the H5Handler"""
 
-def test_get_node(model_instance, mmodel_G):
-    """Test get_node method of the model"""
+        path = tmp_path / "h5model_test.h5"
+        h5model = Model("h5 model", mmodel_G, (H5Handler, {"fname": path}))
 
-    assert model_instance.get_node("log") == mmodel_G.nodes["log"]
+        assert h5model(a=10, d=15, f=1, b=2) == (-36, math.log(12, 2), 1)
 
+        # the output of path is the repr instead of string
+        assert f"handler: H5Handler, {{'fname': {repr(path)}}}" in str(h5model)
 
-def test_get_node_object(model_instance, mmodel_G):
-    """Test get_node_object method"""
+    def test_model_returns(self, mmodel_G):
+        """Test model with custom returns
 
-    assert model_instance.get_node_object("log") == mmodel_G.nodes["log"]["func"]
+        The return order should be the same as the returns list
+        """
 
+        # less returns
+        model = Model(
+            "model_instance", mmodel_G, (BasicHandler, {}), returns=["m", "k"]
+        )
+        assert model.returns == ["m", "k"]
+        assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36)
 
-def test_model_draw(model_instance):
-    """Test if the draw method of the model_instance
-
-    The draw methods are tested in test_draw module. Here we make sure
-    the label is correct.
-    """
-    dot_graph = model_instance.draw()
-
-    assert str(model_instance).replace("\n", "\l") in dot_graph.source
-
-
-NODE_STR = """\
-log node
-  callable: logarithm(c, b)
-  returns: m
-  modifiers: []"""
-
-
-def test_model_view_node(model_instance):
-    """Test if view node outputs node information correctly"""
-
-    assert model_instance.view_node("log") == NODE_STR
-
-
-MOD_MODEL_STR = """\
-model_instance(a, d, f, b=2)
-  returns: k, m, p
-  handler: BasicHandler, {}
-  modifiers: [loop_modifier, {'parameter': 'a'}]
-test model description"""
-
-
-def test_mod_model_str(mmodel_G):
-    """Test the string representation with modifiers
-
-    with multiple modifiers, the modifiers are delimited by ", "
-    """
-    single_mod = Model(
-        "model_instance",
-        mmodel_G,
-        (BasicHandler, {}),
-        [(loop_modifier, {"parameter": "a"})],
-        "test model description",
-    )
-    assert str(single_mod) == MOD_MODEL_STR
-
-    double_mod = Model(
-        "model_instance",
-        mmodel_G,
-        (BasicHandler, {}),
-        modifiers=[
-            (loop_modifier, {"parameter": "a"}),
-            (loop_modifier, {"parameter": "b"}),
-        ],
-        description="description",
-    )
-    assert (
-        "modifiers: [loop_modifier, {'parameter': 'a'}, loop_modifier, {'parameter': 'b'}]"
-        in str(double_mod)
-    )
-
-
-@pytest.fixture
-def mod_model_instance(mmodel_G):
-    """Construct a model_instance with loop modifier"""
-
-    loop_mod = (loop_modifier, {"parameter": "a"})
-
-    return Model(
-        "mod model_instance", mmodel_G, (BasicHandler, {}), modifiers=[loop_mod]
-    )
-
-
-def test_mod_model_attr(mod_model_instance):
-    """Test if adding modifier changes the handler attribute (returns)"""
-
-    assert mod_model_instance.returns == ["k", "m", "p"]
-
-
-def test_mod_model_execution(mod_model_instance):
-    """Test if adding modifier changes the handler attribute (returns)"""
-
-    assert mod_model_instance(a=[1, 2], b=2, d=3, f=1) == [
-        (0, math.log(3, 2), 1),
-        (4, 2, 1),
-    ]
-
-
-def test_model_with_handler_argument(mmodel_G, tmp_path):
-    """Test if argument works with the H5Handler"""
-
-    path = tmp_path / "h5model_test.h5"
-    h5model = Model("h5 model", mmodel_G, (H5Handler, {"fname": path}))
-
-    assert h5model(a=10, d=15, f=1, b=2) == (-36, math.log(12, 2), 1)
-
-    # the output of path is the repr instead of string
-    assert f"handler: H5Handler, {{'fname': {repr(path)}}}" in str(h5model)
-
-
-def test_model_returns(mmodel_G):
-    """Test model with custom returns
-
-    The return order should be the same as the returns list
-    """
-
-    # less returns
-    model = Model("model_instance", mmodel_G, (BasicHandler, {}), returns=["m", "k"])
-    assert model.returns == ["m", "k"]
-    assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36)
-
-    # more returns
-    model = Model(
-        "model_instance", mmodel_G, (BasicHandler, {}), returns=["m", "k", "c"]
-    )
-    assert model.returns == ["m", "k", "c"]
-    assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36, 12)
+        # more returns
+        model = Model(
+            "model_instance", mmodel_G, (BasicHandler, {}), returns=["m", "k", "c"]
+        )
+        assert model.returns == ["m", "k", "c"]
+        assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36, 12)
+
+
+class TestModifiedModel:
+    """Test modified model"""
+
+    @pytest.fixture
+    def mod_model_instance(self, mmodel_G):
+        """Construct a model_instance with loop modifier"""
+
+        loop_mod = (loop_modifier, {"parameter": "a"})
+
+        return Model(
+            "mod_model_instance",
+            mmodel_G,
+            (BasicHandler, {}),
+            modifiers=[loop_mod],
+            description="modified model",
+        )
+
+    def test_mod_model_attr(self, mod_model_instance):
+        """Test if adding modifier changes the handler attribute (returns)"""
+
+        assert mod_model_instance.returns == ["k", "m", "p"]
+
+    def test_mod_model_execution(self, mod_model_instance):
+        """Test if adding modifier changes the handler attribute (returns)"""
+
+        assert mod_model_instance(a=[1, 2], b=2, d=3, f=1) == [
+            (0, math.log(3, 2), 1),
+            (4, 2, 1),
+        ]
+
+    def test_model_str(self, mod_model_instance):
+        """Test the string representation with modifiers"""
+        mod_model_s = """\
+        mod_model_instance(a, d, f, b=2)
+          returns: k, m, p
+          handler: BasicHandler, {}
+          modifiers: [loop_modifier, {'parameter': 'a'}]
+        modified model"""
+        assert str(mod_model_instance) == dedent(mod_model_s)
 
 
 class TestModelValidation:

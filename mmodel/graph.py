@@ -34,11 +34,7 @@ class ModelGraph(nx.DiGraph):
         Modifiers are applied directly onto the node.
         """
 
-        # if node not in self.nodes:
-        #     self.add_node(node)
-
         node_dict = self.nodes[node]
-
         # store the base object
         node_dict["base_obj"] = func
 
@@ -65,31 +61,17 @@ class ModelGraph(nx.DiGraph):
             # unzipping works for input with or without modifiers
             self.set_node_object(*node_obj)
 
-    def view_node(self, node: str):
-        """view node information
+    def add_edge(self, u_of_edge, v_of_edge, **attr):
+        """Modify add_edge to update the edge attribute in the end"""
 
-        The node information is kept consistent with the graph information.
-        """
+        super().add_edge(u_of_edge, v_of_edge, **attr)
+        self.update_graph()
 
-        node_dict = self.nodes[node]
-        sig_list = [str(param) for param in node_dict["sig"].parameters.values()]
-        # if it is not a proper function just print the repr
-        # Model class instance has the attr __name__
-        base_name = getattr(node_dict["base_obj"], "__name__", repr(callable))
-        modifier_str_list = [
-            f"{func.__name__}, {kwargs}" for func, kwargs in node_dict["modifiers"]
-        ]
-        modifier_str = f"[{', '.join(modifier_str_list)}]"
+    def add_edges_from(self, ebunch_to_add, **attr):
+        """Modify add_edges_from to update the edge attributes"""
 
-        return "\n".join(
-            [
-                f"{node} node",
-                f"  callable: {base_name}{node_dict['sig']}",
-                # f"  signature: {', '.join(sig_list)}",
-                f"  returns: {', '.join(node_dict['returns'])}",
-                f"  modifiers: {modifier_str}",
-            ]
-        )
+        super().add_edges_from(ebunch_to_add, **attr)
+        self.update_graph()
 
     def add_grouped_edge(self, u, v):
         """Add linked edge
@@ -117,18 +99,6 @@ class ModelGraph(nx.DiGraph):
         for u, v in group_edges:
             self.add_grouped_edge(u, v)
 
-    def add_edge(self, u_of_edge, v_of_edge, **attr):
-        """Modify add_edge to update the edge attribute in the end"""
-
-        super().add_edge(u_of_edge, v_of_edge, **attr)
-        self.update_graph()
-
-    def add_edges_from(self, ebunch_to_add, **attr):
-        """Modify add_edges_from to update the edge attributes"""
-
-        super().add_edges_from(ebunch_to_add, **attr)
-        self.update_graph()
-
     def update_graph(self):
         """Update edge attributes based on node objects and edges"""
 
@@ -138,7 +108,32 @@ class ModelGraph(nx.DiGraph):
 
             if v_sig is not None:
                 v_params = set(v_sig.parameters.keys())
-                self.edges[u, v]["val"] = list(u_rts.intersection(v_params))
+                self.edges[u, v]["val"] = sorted(u_rts.intersection(v_params))
+
+    def view_node(self, node: str):
+        """view node information
+
+        The node information is kept consistent with the graph information.
+        """
+
+        node_dict = self.nodes[node]
+        sig_list = [str(param) for param in node_dict["sig"].parameters.values()]
+        # if it is not a proper function just print the repr
+        # Model class instance has the attr __name__
+        base_name = getattr(node_dict["base_obj"], "__name__", repr(callable))
+        modifier_str_list = [
+            f"{func.__name__}, {kwargs}" for func, kwargs in node_dict["modifiers"]
+        ]
+        modifier_str = f"[{', '.join(modifier_str_list)}]"
+
+        return "\n".join(
+            [
+                f"{node}",
+                f"  callable: {base_name}{node_dict['sig']}",
+                f"  returns: {', '.join(node_dict['returns'])}",
+                f"  modifiers: {modifier_str}",
+            ]
+        )
 
     def draw(self, method):
         """Draw the graph

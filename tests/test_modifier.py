@@ -6,11 +6,10 @@ from mmodel.modifier import (
 )
 import pytest
 import inspect
-from functools import wraps
 
 
 @pytest.fixture
-def mockedfunc():
+def example_func():
     def func(a, b, c=2):
         """Test docstring"""
         return a + b + c
@@ -18,23 +17,23 @@ def mockedfunc():
     return func
 
 
-def test_loop(mockedfunc):
+def test_loop(example_func):
     """Test loop modifier"""
 
-    loop_mod = loop_modifier(mockedfunc, "b")
+    loop_mod = loop_modifier(example_func, "b")
 
     assert loop_mod(a=1, b=[1, 2, 3], c=4) == [6, 7, 8]
 
 
-def test_zip_loop_list(mockedfunc):
+def test_zip_loop_list(example_func):
     """Test zip loop modifier with list input"""
 
-    loop_mod = zip_loop_modifier(mockedfunc, ["a", "b"])
+    loop_mod = zip_loop_modifier(example_func, ["a", "b"])
 
     assert loop_mod(a=[0.1, 0.2, 0.3], b=[1, 2, 3], c=10) == [11.1, 12.2, 13.3]
 
 
-def test_signature_modifiers(mockedfunc):
+def test_signature_modifiers(example_func):
     """Test signature_modifier changes signature and executes function correctly
 
     Three cases are tested:
@@ -42,19 +41,19 @@ def test_signature_modifiers(mockedfunc):
     2. len(signature_parameter) = len(func_signature)
     """
 
-    mod_func_1 = signature_modifier(mockedfunc, ["d", "e"])
+    mod_func_1 = signature_modifier(example_func, ["d", "e"])
 
     # the default value is applied
     assert mod_func_1(d=1, e=2) == 5
     assert list(inspect.signature(mod_func_1).parameters.keys()) == ["d", "e"]
 
-    mod_func_2 = signature_modifier(mockedfunc, ["d", "e", "f"])
+    mod_func_2 = signature_modifier(example_func, ["d", "e", "f"])
 
     assert mod_func_2(d=1, e=2, f=3) == 6
     assert list(inspect.signature(mod_func_2).parameters.keys()) == ["d", "e", "f"]
 
 
-def test_signature_modifiers_fails(mockedfunc):
+def test_signature_modifiers_fails(example_func):
     """Test signature_modifier raises exception
 
     An exception is thrown when there are more parameters then the function signature
@@ -68,16 +67,16 @@ def test_signature_modifiers_fails(mockedfunc):
         ),
     ):
 
-        signature_modifier(mockedfunc, ["d", "e", "f", "g"])
+        signature_modifier(example_func, ["d", "e", "f", "g"])
 
 
-def test_signature_binding_modifier(mockedfunc):
+def test_signature_binding_modifier(example_func):
     """Test signature binding modifier on a regular function
 
     The result function should behave the same as before
     """
 
-    mod_func = signature_binding_modifier(mockedfunc)
+    mod_func = signature_binding_modifier(example_func)
 
     assert mod_func(1, 2) == 5
     assert mod_func(1, 2, 3) == 6
@@ -90,7 +89,7 @@ def test_signature_binding_modifier(mockedfunc):
         mod_func(a=1, b=2, e=2)
 
 
-def test_signature_binding_modifier_on_wrapper(mockedfunc):
+def test_signature_binding_modifier_on_wrapper(example_func):
     """Test signature binding modifier on a wrapped function
 
     Use signature modifier to change the function signature
@@ -99,7 +98,7 @@ def test_signature_binding_modifier_on_wrapper(mockedfunc):
     """
 
     # the new signature is only d an e
-    mod_func_1 = signature_modifier(mockedfunc, ["d", "e"])
+    mod_func_1 = signature_modifier(example_func, ["d", "e"])
     mod_func_2 = signature_binding_modifier(mod_func_1)
 
     assert mod_func_2(1, 2) == 5

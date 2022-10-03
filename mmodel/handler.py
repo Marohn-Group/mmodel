@@ -61,7 +61,7 @@ class TopologicalHandler:
             # format the error message
             node_str = self.graph.view_node(node)
             input_str = "\n".join(
-                [f"  {key} = {repr(value)}" for key, value in kwargs.items()]
+                [f"{key} = {repr(value)}" for key, value in kwargs.items()]
             )
             msg = ERROR_FORMAT.format(node=node, input_str=input_str, node_str=node_str)
             raise Exception(msg)
