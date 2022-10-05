@@ -1,7 +1,7 @@
 MModel
 ======
 
-|GitHub version| |PyPI version shields.io| |PyPI pyversions| |CircleCI|
+|GitHub version| |PyPI version shields.io| |PyPI pyversions| |Unittests|
 |Docs|
 
 MModel is a lightweight and modular model building framework
@@ -144,8 +144,8 @@ To create the documentation, run under the "/docs" directory::
 
 .. |PyPI pyversions| image:: https://img.shields.io/pypi/pyversions/mmodel.svg
 
-.. |CircleCI| image:: https://circleci.com/gh/peterhs73/MModel.svg?style=shield
-    :target: https://circleci.com/gh/peterhs73/MModel
+.. |Unittests| image:: https://github.com/peterhs73/MModel/actions/workflow/tox.yml/badge.svg
+    :target: https://github.com/peterhs73/MModel/actions
 
 .. |Docs| image:: https://img.shields.io/badge/Documentation--brightgreen.svg
     :target: https://peterhs73.github.io/mmodel-docs/
