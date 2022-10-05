@@ -63,12 +63,16 @@ filterwarnings = [
 ]
 
 [tool.tox]
-# for testing different python environments
-# somehow poetry, tox and python3.10 don't work
 legacy_tox_ini = """
 [tox]
 envlist = py38, py39, py310, coverage, docs
 isolated_build = True
+
+[gh-actions]
+python =
+    3.8: py38, coverage, docs
+    3.9: py39, coverage, docs
+    3.10: py310, coverage, docs
 
 [testenv:py38]
 deps = pytest >= 7.1.1
