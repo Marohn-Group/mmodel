@@ -70,9 +70,9 @@ isolated_build = True
 
 [gh-actions]
 python =
-    3.8: py38, coverage, docs
-    3.9: py39, coverage, docs
-    3.10: py310, coverage, docs
+    3.8: py38, docs
+    3.9: py39, docs
+    3.10: py310, docs
 
 [testenv:py38]
 deps = pytest >= 7.1.1

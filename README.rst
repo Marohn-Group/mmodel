@@ -144,7 +144,7 @@ To create the documentation, run under the "/docs" directory::
 
 .. |PyPI pyversions| image:: https://img.shields.io/pypi/pyversions/mmodel.svg
 
-.. |Unittests| image:: https://github.com/peterhs73/MModel/actions/workflow/tox.yml/badge.svg
+.. |Unittests| image:: https://github.com/peterhs73/MModel/actions/workflows/tox.yml/badge.svg
     :target: https://github.com/peterhs73/MModel/actions
 
 .. |Docs| image:: https://img.shields.io/badge/Documentation--brightgreen.svg
