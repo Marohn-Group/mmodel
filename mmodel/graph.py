@@ -26,7 +26,7 @@ class ModelGraph(nx.DiGraph):
     graph_attr_dict_factory = {"type": "ModelGraph"}.copy
 
     def set_node_object(
-        self, node, func, returns, inputs: list = None, modifiers: list = []
+        self, node, func, returns, inputs: list = None, modifiers: list = None
     ):
         """Add or update the functions of existing node
 
@@ -37,7 +37,7 @@ class ModelGraph(nx.DiGraph):
         node_dict = self.nodes[node]
         # store the base object
         node_dict["base_obj"] = func
-
+        modifiers = modifiers or list()
         if inputs:
             # if inputs are
             modifiers = [(signature_modifier, {"parameters": inputs})] + modifiers

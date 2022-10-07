@@ -57,7 +57,7 @@ def model_returns(graph):
     for node in graph.nodes():
         returns.extend(graph.nodes[node]["returns"])
     for edge in graph.edges():
-        intermediate.extend(graph.edges[edge]['val'])
+        intermediate.extend(graph.edges[edge]["val"])
 
     final_returns = list(set(returns) - set(intermediate))
     final_returns.sort()
@@ -129,9 +129,15 @@ def param_counter(graph, returns):
 
 
 def modify_subgraph(
-    graph, subgraph, subgraph_name, subgraph_obj, subgraph_returns=None
+    graph,
+    subgraph,
+    name,
+    obj,
+    returns=None,
+    inputs=None,
+    modifiers=None,
 ):
-    """Redirect graph based on subgraph
+    """Replace subgraph with a node
 
     Find all parent nodes, not in the subgraph but child nodes in the
     subgraph. (All child nodes of subgraph nodes are in the subgraph).
@@ -156,24 +162,25 @@ def modify_subgraph(
     for node in subgraph.nodes():
         for parent in graph.predecessors(node):
             if parent not in subgraph:
-                new_edges.append((parent, subgraph_name))
+                new_edges.append((parent, name))
         for child in graph.successors(node):
             if child not in subgraph:
-                new_edges.append((subgraph_name, child))
+                new_edges.append((name, child))
 
     graph.remove_nodes_from(subgraph.nodes)
     # remove unique edges
     graph.add_edges_from(set(new_edges))
 
     # subgraph requires to have the returns attribute
-    if subgraph_returns is None:
+    if returns is None:
         try:
-            subgraph_returns = subgraph_obj.returns
+            returns = obj.returns
         except AttributeError:
-            raise Exception("'subgraph_returns' not defined")
+            raise Exception("'returns' not defined")
 
-    graph.set_node_object(subgraph_name, func=subgraph_obj, returns=subgraph_returns)
-    # add the subgraph attribute to node
+    graph.set_node_object(
+        name, func=obj, returns=returns, inputs=inputs, modifiers=modifiers
+    )
 
     return graph
 

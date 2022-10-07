@@ -226,7 +226,7 @@ def test_modify_subgraph_none_returns_fails(mmodel_G):
     def mock_obj(c, x, y):
         return
 
-    with pytest.raises(Exception, match="'subgraph_returns' not defined"):
+    with pytest.raises(Exception, match="'returns' not defined"):
         util.modify_subgraph(mmodel_G, subgraph, "test", mock_obj)
 
 
