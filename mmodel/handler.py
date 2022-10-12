@@ -15,7 +15,15 @@ Exception occurred for node '{node}':
 
 
 class TopologicalHandler:
-    """Base class for executing graph nodes in topological order"""
+    """Base class for executing graph nodes in topological order
+    
+    Returns is the output order. If there is only one return
+    the value is outputted, otherwise a tuple is outputted. This
+    behavior is similar to python function.
+
+    The topological handler assumes each node has exactly one output
+    
+    """
 
     DataClass = None
 
@@ -46,13 +54,11 @@ class TopologicalHandler:
         kwargs = {key: data[key] for key in parameters}
         try:
             # execute
-            func_output = node_attr["func"](**kwargs)
-            returns = node_attr["returns"]
-            if len(returns) == 1:
-                data[returns[0]] = func_output
-            else:
-                data.update(dict(zip(returns, func_output)))
-        except:
+            func_result = node_attr["func"](**kwargs)
+            output = node_attr["output"]
+            data[output] = func_result
+
+        except: # exception occurred while running the node
             try:  # if the data class need to be closed
                 data.close()
             except:

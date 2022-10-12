@@ -16,8 +16,8 @@ class TestAddEdge:
         def func_a(m, n):
             return m + n
 
-        def func_b(o, p):
-            return o + p
+        def func_b(o):
+            return 2 * o
 
         def func_c(o, s):
             return o + s
@@ -26,10 +26,10 @@ class TestAddEdge:
             return t + w
 
         G = ModelGraph()
-        G.add_node("func_a", func=func_a, returns=["o", "p"], sig=signature(func_a))
-        G.add_node("func_b", func=func_b, returns=["q"], sig=signature(func_b))
-        G.add_node("func_c", func=func_c, returns=["t"], sig=signature(func_c))
-        G.add_node("func_d", func=func_d, returns=["x"], sig=signature(func_d))
+        G.add_node("func_a", func=func_a, output="o", sig=signature(func_a))
+        G.add_node("func_b", func=func_b, output="q", sig=signature(func_b))
+        G.add_node("func_c", func=func_c, output="t", sig=signature(func_c))
+        G.add_node("func_d", func=func_d, output="x", sig=signature(func_d))
 
         return G
 
@@ -38,15 +38,15 @@ class TestAddEdge:
 
         base_G.add_edge("func_a", "func_b")
 
-        assert base_G.edges["func_a", "func_b"]["val"] == ["o", "p"]
+        assert base_G.edges["func_a", "func_b"]["val"] == "o"
 
     def test_add_edges_from(self, base_G):
         """Test add_edges_from updates the graph and edge variable"""
 
         base_G.add_edges_from([["func_a", "func_b"], ["func_a", "func_c"]])
 
-        assert base_G.edges["func_a", "func_b"]["val"] == ["o", "p"]
-        assert base_G.edges["func_a", "func_c"]["val"] == ["o"]
+        assert base_G.edges["func_a", "func_b"]["val"] == "o"
+        assert base_G.edges["func_a", "func_c"]["val"] == "o"
 
     def test_add_grouped_edge_without_list(self, base_G):
         """Test add_grouped_edge
@@ -56,7 +56,7 @@ class TestAddEdge:
 
         base_G.add_grouped_edge("func_a", "func_b")
 
-        assert base_G.edges["func_a", "func_b"]["val"] == ["o", "p"]
+        assert base_G.edges["func_a", "func_b"]["val"] == "o"
 
     def test_add_grouped_edge_with_list(self, base_G):
         """Test add_grouped_edge
@@ -109,7 +109,7 @@ class TestSetNodeObject:
         G.set_node_object(
             "func_a",
             func_a,
-            ["o", "p"],
+            "o",
             inputs=["a", "b"],
             modifiers=[(modifier, {"value": 1})],
         )
@@ -119,8 +119,8 @@ class TestSetNodeObject:
     def test_set_node_object(self, base_G):
         """Test node basic attributes"""
 
-        assert base_G.nodes["func_a"]["base_obj"].__name__ == "func_a"
-        assert base_G.nodes["func_a"]["returns"] == ["o", "p"]
+        assert base_G.nodes["func_a"]["base_func"].__name__ == "func_a"
+        assert base_G.nodes["func_a"]["output"] == "o"
 
     def test_set_node_object_inputs(self, base_G):
         """Test node signatures are updated"""
@@ -134,6 +134,11 @@ class TestSetNodeObject:
             base_G.nodes["func_a"]["modifiers"][0][0].__name__ == "signature_modifier"
         )
         assert base_G.nodes["func_a"]["modifiers"][1][0].__name__ == "modifier"
+
+    def test_set_node_object_base_func(self, base_G):
+        """Test that the base function is not changed"""
+
+        assert base_G.nodes["func_a"]["base_func"](m=1, n=2) == 3
 
     def test_set_node_object_modified_func(self, base_G):
         """Test the final node function has the correct signature and output"""
@@ -156,8 +161,8 @@ class TestSetNodeObject:
             [("func_b", func_b, ["q"]), ("func_c", func_c, ["t"])]
         )
 
-        assert base_G.edges["func_a", "func_b"] == {"val": ["o", "p"]}
-        assert base_G.edges["func_a", "func_c"] == {"val": ["o"]}
+        assert base_G.edges["func_a", "func_b"] == {"val": "o"}
+        assert base_G.edges["func_a", "func_c"] == {"val": "o"}
 
 
 # --- Test mmodel_G ---
@@ -182,7 +187,7 @@ class TestModelGraphBasics:
     def test_view_node(self, mmodel_G):
         """Test if view node outputs node information correctly"""
 
-        log_s = "log\n  callable: logarithm(c, b)\n  returns: m\n  modifiers: []"
+        log_s = "log\n  callable: logarithm(c, b)\n  return: m\n  modifiers: []"
 
         assert mmodel_G.view_node("log") == log_s
 
@@ -199,7 +204,7 @@ class TestModelGraphBasics:
         mmodel_G.set_node_object(
             "test_node",
             func,
-            ["c"],
+            "c",
             [],
             [(modifier, {"value": 1}), (modifier, {"value": 2})],
         )
@@ -269,7 +274,7 @@ class TestGraphOperation:
 
         # partial subgraph
         H = G.subgraph(["subtract", "multiply"])
-        assert H.adj == {"subtract": {"multiply": {"val": ["e"]}}, "multiply": {}}
+        assert H.adj == {"subtract": {"multiply": {"val": "e"}}, "multiply": {}}
         assert H._graph == G  # original graph
 
         # empty subgraph
@@ -288,7 +293,7 @@ class TestGraphOperation:
 
         H = mmodel_G.subgraph(["subtract", "multiply"]).deepcopy()
 
-        assert H.adj == {"subtract": {"multiply": {"val": ["e"]}}, "multiply": {}}
+        assert H.adj == {"subtract": {"multiply": {"val": "e"}}, "multiply": {}}
 
         # check the graph attribute is no longer the same dictionary
         assert H.graph == mmodel_G.graph

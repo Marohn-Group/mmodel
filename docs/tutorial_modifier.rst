@@ -12,11 +12,11 @@ To add a loop modifier to the node 'add':
     G = ModelGraph()
 
     def func_a(a, b):
-        # returns "c"
+        # output "c"
         return a + b
 
     def func_b(c):
-        # returns "d"
+        # output "d"
         return c*c
 
     from mmodel import loop_modifier

@@ -22,9 +22,9 @@ The model determines the parameter for the model instance.
 Extra return variables
 ----------------------------
 
-The default return of the model is the returns of the terminal nodes. To
+The default return of the model is the output of the terminal nodes. To
 output some intermediate variables, use "extra_returns" to define additional
-returns for the model. All other handler parameters can be directly passed
+output for the model. All other handler parameters can be directly passed
 as keyword arguments.
 
 For all available handlers, see :doc:`handler reference </ref_handler>`. 

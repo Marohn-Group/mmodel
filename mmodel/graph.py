@@ -19,14 +19,14 @@ class ModelGraph(nx.DiGraph):
     The additional graph operations are added:
     - add_grouped_edges and set_node_objects.
     - Method add_grouped_edges, cannot have both edges to be a list.
-    - Method set_node_object update nodes with the node callable "func" and returns.
+    - Method set_node_object update nodes with the node callable "func" and output.
     - The method adds callable signature 'sig' to the node attribute
     """
 
     graph_attr_dict_factory = {"type": "ModelGraph"}.copy
 
     def set_node_object(
-        self, node, func, returns, inputs: list = None, modifiers: list = None
+        self, node, func, output: str, inputs: list = None, modifiers: list = None
     ):
         """Add or update the functions of existing node
 
@@ -36,7 +36,7 @@ class ModelGraph(nx.DiGraph):
 
         node_dict = self.nodes[node]
         # store the base object
-        node_dict["base_obj"] = func
+        node_dict["base_func"] = func
         modifiers = modifiers or list()
         if inputs:
             # if inputs are
@@ -47,7 +47,7 @@ class ModelGraph(nx.DiGraph):
 
         sig = inspect.signature(func)
         node_dict.update(
-            {"func": func, "sig": sig, "returns": returns, "modifiers": modifiers}
+            {"func": func, "sig": sig, "output": output, "modifiers": modifiers}
         )
         self.update_graph()
 
@@ -103,12 +103,7 @@ class ModelGraph(nx.DiGraph):
         """Update edge attributes based on node objects and edges"""
 
         for u, v in self.edges:
-            u_rts = set(self.nodes[u].get("returns", ()))
-            v_sig = self.nodes[v].get("sig", None)
-
-            if v_sig is not None:
-                v_params = set(v_sig.parameters.keys())
-                self.edges[u, v]["val"] = sorted(u_rts.intersection(v_params))
+            self.edges[u, v]["val"] = self.nodes[u].get("output", None)
 
     def view_node(self, node: str):
         """view node information
@@ -120,7 +115,7 @@ class ModelGraph(nx.DiGraph):
         sig_list = [str(param) for param in node_dict["sig"].parameters.values()]
         # if it is not a proper function just print the repr
         # Model class instance has the attr __name__
-        base_name = getattr(node_dict["base_obj"], "__name__", repr(callable))
+        base_name = getattr(node_dict["base_func"], "__name__", repr(callable))
         modifier_str_list = [
             f"{func.__name__}, {kwargs}" for func, kwargs in node_dict["modifiers"]
         ]
@@ -130,7 +125,7 @@ class ModelGraph(nx.DiGraph):
             [
                 f"{node}",
                 f"  callable: {base_name}{node_dict['sig']}",
-                f"  returns: {', '.join(node_dict['returns'])}",
+                f"  return: {node_dict['output']}",
                 f"  modifiers: {modifier_str}",
             ]
         )

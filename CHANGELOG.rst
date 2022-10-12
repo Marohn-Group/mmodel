@@ -7,13 +7,21 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
-[0.4.1] 
+[0.5.0] 
 ------------------------
+Change graph API where individual node can only have a single output
 
 Fixed
 ^^^^^
 
 - fix an issue where modify subgraph cannot add inputs or modifiers
+
+Changed
+^^^^^^^^
+
+- changed "returns" to "output", the value should be a string
+- "returns" now a Model exclusive parameter which denotes the order
+  of graph output
 
 [0.4.0] - 2022-10-3
 ------------------------

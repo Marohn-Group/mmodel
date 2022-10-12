@@ -58,7 +58,7 @@ flow. Therefore we need to link the node to its execution method. In ``mmodel``
 a node object is a combination of:
 
 1. callable, function or function-like ("func")
-2. callable return variable names ("returns")
+2. callable return variable names ("return")
 3. callable parameter
 
 For linking the node object to the node, two methods are provided:
@@ -70,7 +70,7 @@ The latter accepts a list of node objects.
     def test_func(a, b):
         return a + b
 
-    G.set_node_object(node='a', func=test_func, returns=['c'])
+    G.set_node_object(node='a', func=test_func, output=['c'])
 
     # or with multiple node objects
     node_objects = [
@@ -80,7 +80,7 @@ The latter accepts a list of node objects.
 
     G.set_node_objects_from(node_objects)
 
-In most cases, only the callable and the returns are needed because the parameters
+In most cases, only the callable and the output are needed because the parameters
 can be extracted from the function signature. However, there are several cases
 the method does not work:
 
@@ -94,7 +94,7 @@ using the signature modifiers:
 .. code-block:: python
     
     import numpy as np
-    G.set_node_object(node='b', func=np.sum, returns=['c'], inputs=["a", "b"])
+    G.set_node_object(node='b', func=np.sum, output=['c'], inputs=["a", "b"])
 
     >>> print(G.view_node('b'))
     b node

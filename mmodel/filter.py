@@ -44,7 +44,7 @@ def subgraph_by_returns(graph, returns: list):
 
     subgraph_nodes = []
 
-    for node, rts in nx.get_node_attributes(graph, "returns").items():
+    for node, rts in nx.get_node_attributes(graph, "output").items():
 
         if not set(rts).isdisjoint(returns):  # check if they overlap
             subgraph_nodes.append(node)

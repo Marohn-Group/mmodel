@@ -25,7 +25,7 @@ class TestModel:
 
         assert model_instance.__name__ == "model_instance"
         assert model_instance.__signature__ == mmodel_signature
-        assert model_instance.returns == ["k", "m", "p"]
+        assert model_instance.returns == ["k", "m"]
         assert model_instance.modifiers == []
 
     def test_model_str(self, model_instance):
@@ -33,7 +33,8 @@ class TestModel:
 
         MODEL_STR = """\
         model_instance(a, d, f, b=2)
-          returns: k, m, p
+          output: combined_output
+          returns: k, m
           handler: BasicHandler, {}
           modifiers: []
         example model"""
@@ -48,8 +49,8 @@ class TestModel:
     def test_model_execution(self, model_instance):
         """Test if the default is correctly used"""
 
-        assert model_instance(10, 15, 1) == (-36, math.log(12, 2), 1)
-        assert model_instance(a=1, d=2, f=3, b=4) == (375, math.log(5, 4), 243)
+        assert model_instance(10, 15, 1) == (-36, math.log(12, 2))
+        assert model_instance(a=1, d=2, f=3, b=4) == (375, math.log(5, 4))
 
     def test_get_node(self, model_instance, mmodel_G):
         """Test get_node method of the model"""
@@ -77,7 +78,7 @@ class TestModel:
         node_s = """\
         log
           callable: logarithm(c, b)
-          returns: m
+          return: m
           modifiers: []"""
 
         assert model_instance.view_node("log") == dedent(node_s)
@@ -88,7 +89,7 @@ class TestModel:
         path = tmp_path / "h5model_test.h5"
         h5model = Model("h5 model", mmodel_G, (H5Handler, {"fname": path}))
 
-        assert h5model(a=10, d=15, f=1, b=2) == (-36, math.log(12, 2), 1)
+        assert h5model(a=10, d=15, f=1, b=2) == (-36, math.log(12, 2))
 
         # the output of path is the repr instead of string
         assert f"handler: H5Handler, {{'fname': {repr(path)}}}" in str(h5model)
@@ -134,21 +135,22 @@ class TestModifiedModel:
     def test_mod_model_attr(self, mod_model_instance):
         """Test if adding modifier changes the handler attribute (returns)"""
 
-        assert mod_model_instance.returns == ["k", "m", "p"]
+        assert mod_model_instance.returns == ["k", "m"]
 
     def test_mod_model_execution(self, mod_model_instance):
         """Test if adding modifier changes the handler attribute (returns)"""
 
         assert mod_model_instance(a=[1, 2], b=2, d=3, f=1) == [
-            (0, math.log(3, 2), 1),
-            (4, 2, 1),
+            (0, math.log(3, 2)),
+            (4, 2),
         ]
 
     def test_model_str(self, mod_model_instance):
         """Test the string representation with modifiers"""
         mod_model_s = """\
         mod_model_instance(a, d, f, b=2)
-          returns: k, m, p
+          output: combined_output
+          returns: k, m
           handler: BasicHandler, {}
           modifiers: [loop_modifier, {'parameter': 'a'}]
         modified model"""
@@ -225,11 +227,11 @@ class TestModelValidation:
 
         with pytest.raises(
             AssertionError,
-            match="invalid graph: graph contains nodes with undefined callables returns",
+            match="invalid graph: graph contains nodes with undefined callables output",
         ):
             Model._is_valid_graph(g)
 
-        g.nodes["test"]["returns"] = ["c"]
+        g.nodes["test"]["output"] = "c"
 
         with pytest.raises(
             AssertionError,
@@ -247,7 +249,7 @@ class TestModelValidation:
 
         # the last one will pass even tho it is empty
 
-        g.edges["log", "test"]["val"] = []
+        g.edges["log", "test"]["val"] = None
         assert Model._is_valid_graph(g)
 
     def test_is_valid_graph_passing(self, mmodel_G):

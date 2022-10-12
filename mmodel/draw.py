@@ -54,7 +54,7 @@ def draw_graph(G, label: str = ""):
     :param str name: name of the graph
     :param str label: title of the graph
 
-    Each node shows node label (name + signature + returns)
+    Each node shows node label (name + signature + output)
     """
 
     settings = update_settings(label)
@@ -66,7 +66,7 @@ def draw_graph(G, label: str = ""):
         if "func" in ndict:
             label = (
                 f"{node}\l\n{ndict['func'].__name__}"
-                f"{ndict['sig']}\lreturn {', '.join(ndict['returns'])}\l"
+                f"{ndict['sig']}\lreturn {', '.join(ndict['output'])}\l"
             )
         else:
             label = node

@@ -23,11 +23,20 @@ class Model:
         Optional, defaults to an empty list. For each modifier, the format is
         (modifier, {}). All modifiers should have function as the first argument
     :param str description: model description
-    :param list returns: the returns of the model defaults to the graph returns.
+    :param list returns: the order of returns of the model defaults to the topological search
+    :param str output: output name of the model, defaults to terminal node name
+        if there are multiple terminal name, defaults to "combined_output"
     """
 
     def __init__(
-        self, name, graph, handler, modifiers=None, description: str = "", returns=None
+        self,
+        name,
+        graph,
+        handler,
+        modifiers=None,
+        description: str = "",
+        output: str = None,
+        returns: list = None,
     ):
 
         assert self._is_valid_graph(graph)
@@ -43,14 +52,22 @@ class Model:
         self.description = description
 
         handler_class, handler_kwargs = handler
-        returns = returns or model_returns(graph)
-        executor = handler_class(self.graph, returns, **handler_kwargs)
+        # TODO
+        # change the algorithm that checks the returns against graph returns
+        # for cutting the graph short
+        self.returns = returns or model_returns(graph)
+        if len(self.returns) == 1:
+            self.output = output or returns[0]
+        else:
+            self.output = output or "combined_output"
+
+        executor = handler_class(self.graph, self.returns, **handler_kwargs)
 
         for mdf, kwargs in self.modifiers:
             executor = mdf(executor, **kwargs)
 
         self.__signature__ = executor.__signature__
-        self.returns = executor.returns
+        # self.output = executor.output
         # final callable
         self.executor = executor
 
@@ -74,6 +91,7 @@ class Model:
         return "\n".join(
             [
                 f"{self.__name__}{self.__signature__}",
+                f"  output: {self.output}",
                 f"  returns: {', '.join(self.returns)}",
                 f"  handler: {handler_str}",
                 f"  modifiers: {modifier_str}",
@@ -100,8 +118,8 @@ class Model:
         ), "invalid graph: graph contains nodes with undefined callables"
 
         # the following might occur when the node object is incorrectly constructed
-        assert is_node_attr_defined(G, "returns"), (
-            "invalid graph: graph contains nodes with undefined callables returns, "
+        assert is_node_attr_defined(G, "output"), (
+            "invalid graph: graph contains nodes with undefined callables output, "
             "recommend using ModelGraph set_node_object method to add node object"
         )
         assert is_node_attr_defined(G, "sig"), (

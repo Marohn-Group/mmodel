@@ -23,7 +23,6 @@ def standard_G():
     The results are:
     k = (a + b - d)(a + b)^f
     m = log(a + b, b)
-    p = f^(a + b)
     """
 
     def addition(a, b=2):
@@ -33,7 +32,7 @@ def standard_G():
         return c - d
 
     def polynomial(c, f):
-        return c**f, f**c
+        return c**f
 
     def multiplication(e, g):
         return e * g
@@ -42,32 +41,29 @@ def standard_G():
         return math.log(c, b)
 
     node_list = [
-        ("add", {"func": addition, "returns": ["c"], "sig": signature(addition)}),
+        ("add", {"func": addition, "output": "c", "sig": signature(addition)}),
         (
             "subtract",
-            {"func": subtraction, "returns": ["e"], "sig": signature(subtraction)},
+            {"func": subtraction, "output": "e", "sig": signature(subtraction)},
         ),
-        (
-            "poly",
-            {"func": polynomial, "returns": ["g", "p"], "sig": signature(polynomial)},
-        ),
+        ("poly", {"func": polynomial, "output": "g", "sig": signature(polynomial)}),
         (
             "multiply",
             {
                 "func": multiplication,
-                "returns": ["k"],
+                "output": "k",
                 "sig": signature(multiplication),
             },
         ),
-        ("log", {"func": logarithm, "returns": ["m"], "sig": signature(logarithm)}),
+        ("log", {"func": logarithm, "output": "m", "sig": signature(logarithm)}),
     ]
 
     edge_list = [
-        ("add", "subtract", {"val": ["c"]}),
-        ("subtract", "multiply", {"val": ["e"]}),
-        ("add", "poly", {"val": ["c"]}),
-        ("poly", "multiply", {"val": ["g"]}),
-        ("add", "log", {"val": ["c"]}),
+        ("add", "subtract", {"val": "c"}),
+        ("subtract", "multiply", {"val": "e"}),
+        ("add", "poly", {"val": "c"}),
+        ("poly", "multiply", {"val": "g"}),
+        ("add", "log", {"val": "c"}),
     ]
 
     G = nx.DiGraph(name="test graph")
@@ -86,7 +82,6 @@ def mmodel_G():
     The results are:
     k = (a + b - d)(a + b)^f
     m = log(a + b, b)
-    p = f^(a + b)
     """
 
     def addition(a, b=2):
@@ -96,7 +91,7 @@ def mmodel_G():
         return c - d
 
     def polynomial(c, f):
-        return c**f, f**c
+        return c**f
 
     def multiplication(e, g):
         return e * g
@@ -110,11 +105,11 @@ def mmodel_G():
     ]
 
     node_objects = [
-        ("add", addition, ["c"]),
-        ("subtract", subtraction, ["e"]),
-        ("poly", polynomial, ["g", "p"]),
-        ("multiply", multiplication, ["k"]),
-        ("log", logarithm, ["m"]),
+        ("add", addition, "c"),
+        ("subtract", subtraction, "e"),
+        ("poly", polynomial, "g"),
+        ("multiply", multiplication, "k"),
+        ("log", logarithm, "m"),
     ]
 
     G = ModelGraph(name="test graph")

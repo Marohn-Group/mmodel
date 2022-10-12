@@ -156,8 +156,8 @@ class HandlerTester:
     def test_execution(self, handler_instance):
         """Test running the model as a function"""
 
-        assert handler_instance(a=10, d=15, f=0, b=2) == (-3, math.log(12, 2), 0)
-        assert handler_instance(a=1, d=2, f=1, b=4) == (15, math.log(5, 4), 1)
+        assert handler_instance(a=10, d=15, f=0, b=2) == (-3, math.log(12, 2))
+        assert handler_instance(a=1, d=2, f=1, b=4) == (15, math.log(5, 4))
 
     def test_node_exception(self, handler_instance):
         """Test when node exception a custom exception is outputted"""
@@ -167,7 +167,7 @@ class HandlerTester:
         --- node info ---
         log
           callable: logarithm\\(c, b\\)
-          returns: m
+          return: m
           modifiers: \\[\\]
         --- input info ---
         c = 0
@@ -191,7 +191,7 @@ class TestBasicHandler(HandlerTester):
     @pytest.fixture
     def handler_instance(self, mmodel_G):
         """Create handler instance for the test"""
-        return BasicHandler(mmodel_G, ["k", "m", "p"])
+        return BasicHandler(mmodel_G, ["k", "m"])
 
     @pytest.fixture
     def handler_instance_mod(self, mmodel_G):
@@ -205,7 +205,7 @@ class TestMemHandler(HandlerTester):
     @pytest.fixture
     def handler_instance(self, mmodel_G):
         """Create Model object for the test"""
-        return MemHandler(mmodel_G, ["k", "m", "p"])
+        return MemHandler(mmodel_G, ["k", "m"])
 
     @pytest.fixture
     def handler_instance_mod(self, mmodel_G):
@@ -236,7 +236,7 @@ class TestH5Handler(HandlerTester):
         The scope of the tmp_path is "function", the file
         object and model instance are destroyed after each test function
         """
-        return H5Handler(mmodel_G, ["k", "m", "p"], fname=h5_filename, gname="test run")
+        return H5Handler(mmodel_G, ["k", "m"], fname=h5_filename, gname="test run")
 
     @pytest.fixture
     def handler_instance_mod(self, mmodel_G, h5_filename):

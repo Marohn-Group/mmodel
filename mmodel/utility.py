@@ -37,7 +37,7 @@ def model_signature(graph):
                     continue
             parameters.update({pname: param})
 
-    for returns in nx.get_node_attributes(graph, "returns").values():
+    for returns in nx.get_node_attributes(graph, "output").values():
         for rt in returns:
             parameters.pop(rt, None)  # if doesn't exist return None
 
@@ -55,7 +55,7 @@ def model_returns(graph):
     intermediate = []
 
     for node in graph.nodes():
-        returns.extend(graph.nodes[node]["returns"])
+        returns.extend(graph.nodes[node]["output"])
     for edge in graph.edges():
         intermediate.extend(graph.edges[edge]["val"])
 
@@ -133,7 +133,7 @@ def modify_subgraph(
     subgraph,
     name,
     obj,
-    returns=None,
+    output=None,
     inputs=None,
     modifiers=None,
 ):
@@ -171,21 +171,16 @@ def modify_subgraph(
     # remove unique edges
     graph.add_edges_from(set(new_edges))
 
-    # subgraph requires to have the returns attribute
-    if returns is None:
-        try:
-            returns = obj.returns
-        except AttributeError:
-            raise Exception("'returns' not defined")
+    output = output or obj.output
 
     graph.set_node_object(
-        name, func=obj, returns=returns, inputs=inputs, modifiers=modifiers
+        name, func=obj, output=output, inputs=inputs, modifiers=modifiers
     )
 
     return graph
 
 
-def modify_node(graph, node, modifiers, node_returns=None):
+def modify_node(graph, node, modifiers, output=None):
     """Add modifiers to node
 
     The result is a new graph with node object modified.
@@ -193,8 +188,8 @@ def modify_node(graph, node, modifiers, node_returns=None):
 
     graph = graph.deepcopy()
     func = graph.nodes[node]["func"]
-    returns = node_returns or graph.nodes[node]["returns"]
-    graph.set_node_object(node, func=func, returns=returns, modifiers=modifiers)
+    output = output or graph.nodes[node]["output"]
+    graph.set_node_object(node, func=func, output=output, modifiers=modifiers)
 
     return graph
 
