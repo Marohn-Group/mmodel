@@ -15,6 +15,7 @@ Fixed
 ^^^^^
 
 - fix an issue where modify subgraph cannot add inputs or modifiers
+- fix an issue in tests that node attributes are not compared in `graph_equal()`
 
 Changed
 ^^^^^^^^

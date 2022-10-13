@@ -13,7 +13,31 @@ from inspect import signature, Signature, Parameter
 import networkx as nx
 from mmodel.graph import ModelGraph
 import math
-from networkx.utils import nodes_equal, edges_equal
+
+
+# define the global functions for two graph
+# both graphs references the same set of functions in nodes
+# in graph testing they should be equal
+
+
+def addition(a, b=2):
+    return a + b
+
+
+def subtraction(c, d):
+    return c - d
+
+
+def polynomial(c, f):
+    return c**f
+
+
+def multiplication(e, g):
+    return e * g
+
+
+def logarithm(c, b):
+    return math.log(c, b)
 
 
 @pytest.fixture()
@@ -25,37 +49,57 @@ def standard_G():
     m = log(a + b, b)
     """
 
-    def addition(a, b=2):
-        return a + b
-
-    def subtraction(c, d):
-        return c - d
-
-    def polynomial(c, f):
-        return c**f
-
-    def multiplication(e, g):
-        return e * g
-
-    def logarithm(c, b):
-        return math.log(c, b)
-
     node_list = [
-        ("add", {"func": addition, "output": "c", "sig": signature(addition)}),
+        (
+            "add",
+            {
+                "base_func": addition,
+                "func": addition,
+                "output": "c",
+                "sig": signature(addition),
+                "modifiers": [],
+            },
+        ),
         (
             "subtract",
-            {"func": subtraction, "output": "e", "sig": signature(subtraction)},
+            {
+                "base_func": subtraction,
+                "func": subtraction,
+                "output": "e",
+                "sig": signature(subtraction),
+                "modifiers": [],
+            },
         ),
-        ("poly", {"func": polynomial, "output": "g", "sig": signature(polynomial)}),
+        (
+            "poly",
+            {
+                "base_func": polynomial,
+                "func": polynomial,
+                "output": "g",
+                "sig": signature(polynomial),
+                "modifiers": [],
+            },
+        ),
         (
             "multiply",
             {
+                "base_func": multiplication,
                 "func": multiplication,
                 "output": "k",
                 "sig": signature(multiplication),
+                "modifiers": [],
             },
         ),
-        ("log", {"func": logarithm, "output": "m", "sig": signature(logarithm)}),
+        (
+            "log",
+            {
+                "base_func": logarithm,
+                "func": logarithm,
+                "output": "m",
+                "sig": signature(logarithm),
+                "modifiers": [],
+            },
+        ),
     ]
 
     edge_list = [
@@ -83,21 +127,6 @@ def mmodel_G():
     k = (a + b - d)(a + b)^f
     m = log(a + b, b)
     """
-
-    def addition(a, b=2):
-        return a + b
-
-    def subtraction(c, d):
-        return c - d
-
-    def polynomial(c, f):
-        return c**f
-
-    def multiplication(e, g):
-        return e * g
-
-    def logarithm(c, b):
-        return math.log(c, b)
 
     grouped_edges = [
         ("add", ["subtract", "poly", "log"]),
@@ -133,13 +162,13 @@ def mmodel_signature():
 
 
 def graph_equal(G1, G2):
-    """Test if graphs have the same nodes, edges and attributes"""
+    """Test if graphs have the same nodes, edges and attributes
 
-    assert nodes_equal(G1._node, G2._node)
-    assert edges_equal(G1._adj, G2._adj)
+    Dictionary comparison does not care about key orders
+    """
 
-    assert G1._pred == G2._pred
-    assert G1._succ == G2._succ
+    assert dict(G1.nodes) == dict(G2.nodes)
+    assert dict(G1.edges) == dict(G2.edges)
 
     # test graph attributes
     assert G1.graph == G2.graph
