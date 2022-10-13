@@ -16,19 +16,25 @@ Exception occurred for node '{node}':
 
 class TopologicalHandler:
     """Base class for executing graph nodes in topological order
-    
+
     Returns is the output order. If there is only one return
     the value is outputted, otherwise a tuple is outputted. This
     behavior is similar to python function.
 
-    The topological handler assumes each node has exactly one output
-    
+    The topological handler assumes each node has exactly one output.
+
+    :param str name: name of the handler (same as model usually)
+    :param obj graph: networkx graph
+    :param list returns: handler returns order
+        The list should have the same or more elements than graph returns.
+        See Model constructor definition
     """
 
     DataClass = None
 
-    def __init__(self, graph, returns: list = [], **datacls_kwargs):
+    def __init__(self, name, graph, returns: list = [], **datacls_kwargs):
 
+        self.__name__ = name
         self.__signature__ = model_signature(graph)
         self.returns = returns
         self.order = graph_topological_sort(graph)
@@ -58,7 +64,7 @@ class TopologicalHandler:
             output = node_attr["output"]
             data[output] = func_result
 
-        except: # exception occurred while running the node
+        except:  # exception occurred while running the node
             try:  # if the data class need to be closed
                 data.close()
             except:
@@ -183,12 +189,12 @@ class MemHandler(TopologicalHandler):
 
     DataClass = MemData
 
-    def __init__(self, graph, returns: list = []):
+    def __init__(self, name, graph, returns: list = []):
         """Add counter to the object"""
 
         counter = param_counter(graph, returns)
 
-        super().__init__(graph, returns, counter=counter)
+        super().__init__(name, graph, returns, counter=counter)
 
 
 class H5Handler(TopologicalHandler):
@@ -200,5 +206,5 @@ class H5Handler(TopologicalHandler):
 
     DataClass = H5Data
 
-    def __init__(self, graph, returns, fname: str, gname: str = ""):
-        super().__init__(graph, returns, fname=fname, gname=gname)
+    def __init__(self, name, graph, returns, fname: str, gname: str = ""):
+        super().__init__(name, graph, returns, fname=fname, gname=gname)

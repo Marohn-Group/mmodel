@@ -153,6 +153,12 @@ class Test_H5Data:
 
 
 class HandlerTester:
+    def test_handler_info(self, handler_instance):
+        """Test the signature and name of the handler"""
+
+        assert handler_instance.__name__ == "handler"
+        assert list(handler_instance.__signature__.parameters) == ["a", "d", "f", "b"]
+
     def test_execution(self, handler_instance):
         """Test running the model as a function"""
 
@@ -191,12 +197,12 @@ class TestBasicHandler(HandlerTester):
     @pytest.fixture
     def handler_instance(self, mmodel_G):
         """Create handler instance for the test"""
-        return BasicHandler(mmodel_G, ["k", "m"])
+        return BasicHandler("handler", mmodel_G, ["k", "m"])
 
     @pytest.fixture
     def handler_instance_mod(self, mmodel_G):
         """Create handler instance for the test with the intermediate value for returns"""
-        return BasicHandler(mmodel_G, ["c"])
+        return BasicHandler("handler", mmodel_G, ["c"])
 
 
 class TestMemHandler(HandlerTester):
@@ -205,12 +211,12 @@ class TestMemHandler(HandlerTester):
     @pytest.fixture
     def handler_instance(self, mmodel_G):
         """Create Model object for the test"""
-        return MemHandler(mmodel_G, ["k", "m"])
+        return MemHandler("handler", mmodel_G, ["k", "m"])
 
     @pytest.fixture
     def handler_instance_mod(self, mmodel_G):
         """Create handler instance for the test with the intermediate value for returns"""
-        return MemHandler(mmodel_G, ["c"])
+        return MemHandler("handler", mmodel_G, ["c"])
 
 
 class TestH5Handler(HandlerTester):
@@ -236,9 +242,13 @@ class TestH5Handler(HandlerTester):
         The scope of the tmp_path is "function", the file
         object and model instance are destroyed after each test function
         """
-        return H5Handler(mmodel_G, ["k", "m"], fname=h5_filename, gname="test run")
+        return H5Handler(
+            "handler", mmodel_G, ["k", "m"], fname=h5_filename, gname="test run"
+        )
 
     @pytest.fixture
     def handler_instance_mod(self, mmodel_G, h5_filename):
         """Create handler instance for the test with the intermediate value for returns"""
-        return H5Handler(mmodel_G, ["c"], fname=h5_filename, gname="test run")
+        return H5Handler(
+            "handler", mmodel_G, ["c"], fname=h5_filename, gname="test run"
+        )

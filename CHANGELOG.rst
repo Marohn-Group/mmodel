@@ -28,6 +28,7 @@ Added
 ^^^^^^
 
 - add graph modification when less than graph returns are specified
+- add "__name__" attribute to handler instance
 
 [0.4.0] - 2022-10-3
 ------------------------

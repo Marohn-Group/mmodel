@@ -64,7 +64,7 @@ class Model:
 
         handler_class, handler_kwargs = handler
 
-        executor = handler_class(self.graph, self.returns, **handler_kwargs)
+        executor = handler_class(name, self.graph, self.returns, **handler_kwargs)
 
         for mdf, kwargs in self.modifiers:
             executor = mdf(executor, **kwargs)
