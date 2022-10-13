@@ -5,6 +5,7 @@ from mmodel.utility import (
     is_edge_attr_defined,
     model_returns,
 )
+from mmodel.filter import subgraph_by_returns
 from mmodel.draw import draw_graph
 import networkx as nx
 
@@ -35,7 +36,6 @@ class Model:
         handler,
         modifiers=None,
         description: str = "",
-        output: str = None,
         returns: list = None,
     ):
 
@@ -46,20 +46,23 @@ class Model:
         # used by the handler
         # modify self.graph does not change the model itself
         # self.graph = nx.freeze(graph.deepcopy())
-        self.graph = nx.freeze(graph)
+
+        graph_returns = model_returns(graph)
+        self.base_graph = nx.freeze(graph)
+        self.returns = returns or graph_returns
+            # if there are nodes in graph_returns that is not in returns
+            # this means that some nodes are not needed for the calculation
+        if set(graph_returns) - set(self.returns):
+            # returns subgraph view of the original graph, is also freezed
+            self.graph = subgraph_by_returns(self.base_graph, returns)
+        else:
+            self.graph  = self.base_graph
+
         self.modifiers = modifiers or list()
         self.handler = handler
         self.description = description
 
         handler_class, handler_kwargs = handler
-        # TODO
-        # change the algorithm that checks the returns against graph returns
-        # for cutting the graph short
-        self.returns = returns or model_returns(graph)
-        if len(self.returns) == 1:
-            self.output = output or returns[0]
-        else:
-            self.output = output or "combined_output"
 
         executor = handler_class(self.graph, self.returns, **handler_kwargs)
 
@@ -91,7 +94,6 @@ class Model:
         return "\n".join(
             [
                 f"{self.__name__}{self.__signature__}",
-                f"  output: {self.output}",
                 f"  returns: {', '.join(self.returns)}",
                 f"  handler: {handler_str}",
                 f"  modifiers: {modifier_str}",
@@ -156,3 +158,4 @@ class Model:
         """
 
         return method(self.graph, label=str(self).replace("\n", "\l") + "\l")
+

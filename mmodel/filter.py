@@ -32,7 +32,7 @@ def subgraph_by_nodes(graph, nodes: list):
 
 
 def subgraph_by_returns(graph, returns: list):
-    """Construct subgraph based on node returns
+    """Construct subgraph based on node output
 
     :return: subgraph view of the filtered graph
 
@@ -44,9 +44,10 @@ def subgraph_by_returns(graph, returns: list):
 
     subgraph_nodes = []
 
-    for node, rts in nx.get_node_attributes(graph, "output").items():
+    for node, output in nx.get_node_attributes(graph, "output").items():
 
-        if not set(rts).isdisjoint(returns):  # check if they overlap
+        if output in returns:
+
             subgraph_nodes.append(node)
             subgraph_nodes.extend(nx.ancestors(graph, node))
 

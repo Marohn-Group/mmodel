@@ -23,6 +23,11 @@ Changed
 - "returns" now a Model exclusive parameter which denotes the order
   of graph output
 
+Added
+^^^^^^
+
+- add graph modification when less than graph returns are specified
+
 [0.4.0] - 2022-10-3
 ------------------------
 

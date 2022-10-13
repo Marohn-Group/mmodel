@@ -103,7 +103,10 @@ class ModelGraph(nx.DiGraph):
         """Update edge attributes based on node objects and edges"""
 
         for u, v in self.edges:
-            self.edges[u, v]["val"] = self.nodes[u].get("output", None)
+            # the edge "val" is not defined if the parent node does not
+            # have "output" attribute
+            if "output" in self.nodes[u]:
+                self.edges[u, v]["val"] = self.nodes[u]["output"]
 
     def view_node(self, node: str):
         """view node information

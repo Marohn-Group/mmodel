@@ -132,7 +132,7 @@ def modify_subgraph(
     graph,
     subgraph,
     name,
-    obj,
+    func,
     output=None,
     inputs=None,
     modifiers=None,
@@ -148,15 +148,10 @@ def modify_subgraph(
     :param graph subgraph: subgraph that is being replaced by a node
         subgraph is a view of the original graph
     :param str subgraph_name: name of the subgraph
+    :param str output: output parameter name
     """
 
     graph = graph.deepcopy()
-
-    # since we are not storing subgraph information here
-    # and we are not modifying the subgraph, we do not need to copy
-    # the subgraph
-    # subgraph = subgraph.deepcopy()
-    # subgraph.graph = {'name': subgraph_name}
 
     new_edges = []
     for node in subgraph.nodes():
@@ -171,23 +166,24 @@ def modify_subgraph(
     # remove unique edges
     graph.add_edges_from(set(new_edges))
 
-    output = output or obj.output
-
     graph.set_node_object(
-        name, func=obj, output=output, inputs=inputs, modifiers=modifiers
+        name, func=func, output=output, inputs=inputs, modifiers=modifiers
     )
 
     return graph
 
 
-def modify_node(graph, node, modifiers, output=None):
+def modify_node(graph, node, func=None, modifiers=None, output=None):
     """Add modifiers to node
 
     The result is a new graph with node object modified.
+    :param str output: change the output of the node. If the node is not
+        terminal, the output should not be changed.
     """
 
     graph = graph.deepcopy()
-    func = graph.nodes[node]["func"]
+    func = func or graph.nodes[node]["func"]
+    modifiers = modifiers or graph.nodes[node]["modifiers"]
     output = output or graph.nodes[node]["output"]
     graph.set_node_object(node, func=func, output=output, modifiers=modifiers)
 

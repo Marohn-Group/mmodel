@@ -7,6 +7,7 @@ import math
 import networkx as nx
 from copy import deepcopy
 from textwrap import dedent
+from tests.conftest import graph_equal
 
 
 class TestModel:
@@ -28,12 +29,16 @@ class TestModel:
         assert model_instance.returns == ["k", "m"]
         assert model_instance.modifiers == []
 
+    def test_model_output(self, mmodel_G):
+        return Model(
+            "model_instance", mmodel_G, (BasicHandler, {}), description="example model"
+        )
+
     def test_model_str(self, model_instance):
         """Test model representation"""
 
         MODEL_STR = """\
         model_instance(a, d, f, b=2)
-          output: combined_output
           returns: k, m
           handler: BasicHandler, {}
           modifiers: []
@@ -94,25 +99,62 @@ class TestModel:
         # the output of path is the repr instead of string
         assert f"handler: H5Handler, {{'fname': {repr(path)}}}" in str(h5model)
 
-    def test_model_returns(self, mmodel_G):
+    def test_model_returns_same(self, mmodel_G):
         """Test model with custom returns
 
-        The return order should be the same as the returns list
+        The return order should be the same as the returns list, and the base graph
+        and graph should be the same (same object in fact)
         """
 
         # less returns
         model = Model(
             "model_instance", mmodel_G, (BasicHandler, {}), returns=["m", "k"]
         )
+        assert model.graph is model.base_graph
         assert model.returns == ["m", "k"]
         assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36)
 
+    def test_model_returns_more(self, mmodel_G):
+        """Test model with custom returns that are more than graph"""
         # more returns
         model = Model(
             "model_instance", mmodel_G, (BasicHandler, {}), returns=["m", "k", "c"]
         )
+        assert model.graph is model.base_graph
         assert model.returns == ["m", "k", "c"]
         assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36, 12)
+
+    def test_model_returns_less(self, mmodel_G):
+        """Test model with custom returns that are less than graph
+        
+        In this case the graph is adjusted
+        """
+        # more returns
+        model = Model(
+            "model_instance", mmodel_G, (BasicHandler, {}), returns=["k"]
+        )
+
+        assert graph_equal(model.base_graph, mmodel_G)
+        assert 'log' not in model.graph.nodes
+        assert nx.is_frozen(model.graph) # check that it is frozen
+        assert model.returns == ["k"]
+        assert model(a=10, d=15, f=1, b=2) == -36
+
+    def test_model_returns_less_partial(self, mmodel_G):
+        """Test model with less than graph returns but with added intermediate value
+        
+        In this case the graph is adjusted
+        """
+        # more returns
+        model = Model(
+            "model_instance", mmodel_G, (BasicHandler, {}), returns=["k", "c"]
+        )
+
+        assert graph_equal(model.base_graph, mmodel_G)
+        assert 'log' not in model.graph.nodes
+        assert nx.is_frozen(model.graph) # check that it is frozen
+        assert model.returns == ["k", "c"]
+        assert model(a=10, d=15, f=1, b=2) == (-36, 12)
 
 
 class TestModifiedModel:
@@ -149,7 +191,6 @@ class TestModifiedModel:
         """Test the string representation with modifiers"""
         mod_model_s = """\
         mod_model_instance(a, d, f, b=2)
-          output: combined_output
           returns: k, m
           handler: BasicHandler, {}
           modifiers: [loop_modifier, {'parameter': 'a'}]
