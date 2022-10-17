@@ -37,9 +37,8 @@ def model_signature(graph):
                     continue
             parameters.update({pname: param})
 
-    for returns in nx.get_node_attributes(graph, "output").values():
-        for rt in returns:
-            parameters.pop(rt, None)  # if doesn't exist return None
+    for output in nx.get_node_attributes(graph, "output").values():
+        parameters.pop(output, None)  # if doesn't exist return None
 
     return inspect.Signature(sorted(parameters.values(), key=param_sorter))
 
@@ -55,9 +54,9 @@ def model_returns(graph):
     intermediate = []
 
     for node in graph.nodes():
-        returns.extend(graph.nodes[node]["output"])
+        returns.append(graph.nodes[node]["output"])
     for edge in graph.edges():
-        intermediate.extend(graph.edges[edge]["val"])
+        intermediate.append(graph.edges[edge]["val"])
 
     final_returns = list(set(returns) - set(intermediate))
     final_returns.sort()
