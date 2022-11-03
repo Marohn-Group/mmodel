@@ -53,21 +53,18 @@ def test_signature_modifiers(example_func):
     assert list(inspect.signature(mod_func_2).parameters.keys()) == ["d", "e", "f"]
 
 
-def test_signature_modifiers_fails(example_func):
-    """Test signature_modifier raises exception
-
-    An exception is thrown when there are more parameters then the function signature
+def test_signature_modifiers_kwargs():
+    """Test signature modifier on function with keyword arguments
+    
+    The signature modification replaces "**kwargs" to arguments 
     """
 
-    with pytest.raises(
-        Exception,
-        match=(
-            "The number of signature modifier parameters "
-            "exceeds that of function's parameters"
-        ),
-    ):
-
-        signature_modifier(example_func, ["d", "e", "f", "g"])
+    def func(a, b, **kwargs):
+        return a, b, kwargs
+    
+    mod_func = signature_modifier(func, ['e', 'f', 'g', 'h'])
+    
+    assert mod_func(e=1, f=2, g=3, h=4) == (1, 2, {'g':3, 'h':4})
 
 
 def test_signature_binding_modifier(example_func):
@@ -110,3 +107,4 @@ def test_signature_binding_modifier_on_wrapper(example_func):
     # c is not in the modified signature
     with pytest.raises(TypeError, match="got an unexpected keyword argument 'c'"):
         mod_func_2(c=4, d=2, e=1)
+

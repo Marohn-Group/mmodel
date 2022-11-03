@@ -66,26 +66,25 @@ def signature_modifier(func, parameters):
     """
     sig = inspect.Signature([inspect.Parameter(var, 1) for var in parameters])
 
-    old_parameters = list(inspect.signature(func).parameters.keys())
-
-    if len(parameters) > len(old_parameters):
-        raise Exception(
-            "The number of signature modifier parameters "
-            "exceeds that of function's parameters"
-        )
+    # if there's "kwargs" in the parameter, ignore the parameter
+    old_parameters = []
+    for name, param in inspect.signature(func).parameters.items():
+        if param.kind < 4:
+            old_parameters.append(name)
 
     # once unzipped to return iterators, the original variable returns none
     param_pair = list(zip(old_parameters, parameters))
 
     @wraps(func)
     def wrapped(**kwargs):
-        # replace keys
-        replace_kwargs = {old: kwargs[new] for old, new in param_pair}
-        return func(**replace_kwargs)
+        # assume there's no repeated signature name that are not overlapping
+        # replace a, b with b, c is not allowed in the following step
+        for old, new in param_pair:
+            kwargs[old] = kwargs.pop(new)
+        return func(**kwargs)
 
     wrapped.__signature__ = sig
     return wrapped
-
 
 def signature_binding_modifier(func):
     """Add parameter binding and checking for function
