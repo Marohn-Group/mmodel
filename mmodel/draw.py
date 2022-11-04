@@ -66,7 +66,7 @@ def draw_graph(G, label: str = ""):
         if "func" in ndict:
             label = (
                 f"{node}\l\n{ndict['func'].__name__}"
-                f"{ndict['sig']}\lreturn {', '.join(ndict['output'])}\l"
+                f"{ndict['sig']}\lreturn {ndict['output']}\l"
             )
         else:
             label = node
@@ -75,7 +75,7 @@ def draw_graph(G, label: str = ""):
     for u, v, edict in G.edges(data=True):
 
         if "val" in edict:
-            xlabel = ", ".join(edict["val"])
+            xlabel = edict["val"]
         else:
             xlabel = ""
 
