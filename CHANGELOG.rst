@@ -23,6 +23,7 @@ Changed
 - changed "returns" to "output", the value should be a string
 - "returns" now a Model exclusive parameter which denotes the order
   of graph output
+- Model string output wraps each line at 80 characters.
 
 Added
 ^^^^^^

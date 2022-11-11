@@ -16,9 +16,12 @@ class TestModel:
     @pytest.fixture
     def model_instance(self, mmodel_G):
         """Construct a model_instance"""
-
+        description = (
+            "A long description that tests if model module"
+            " wraps the Model output string description at 90 characters."
+        )
         return Model(
-            "model_instance", mmodel_G, (BasicHandler, {}), description="example model"
+            "model_instance", mmodel_G, (BasicHandler, {}), description=description
         )
 
     def test_model_attr(self, model_instance, mmodel_signature):
@@ -29,11 +32,6 @@ class TestModel:
         assert model_instance.returns == ["k", "m"]
         assert model_instance.modifiers == []
 
-    def test_model_output(self, mmodel_G):
-        return Model(
-            "model_instance", mmodel_G, (BasicHandler, {}), description="example model"
-        )
-
     def test_model_str(self, model_instance):
         """Test model representation"""
 
@@ -42,7 +40,8 @@ class TestModel:
           returns: k, m
           handler: BasicHandler, {}
           modifiers: []
-        example model"""
+        A long description that tests if model module wraps the Model output string
+        description at 90 characters."""
 
         assert str(model_instance) == dedent(MODEL_STR)
 
@@ -97,7 +96,9 @@ class TestModel:
         assert h5model(a=10, d=15, f=1, b=2) == (-36, math.log(12, 2))
 
         # the output of path is the repr instead of string
-        assert f"handler: H5Handler, {{'fname': {repr(path)}}}" in str(h5model)
+        assert f"handler: H5Handler, {{'fname': {repr(path)}}}".replace(" ", "") in str(
+            h5model
+        ).replace("\n", "").replace(" ", "")
 
     def test_model_returns_same(self, mmodel_G):
         """Test model with custom returns
@@ -126,23 +127,21 @@ class TestModel:
 
     def test_model_returns_less(self, mmodel_G):
         """Test model with custom returns that are less than graph
-        
+
         In this case the graph is adjusted
         """
         # more returns
-        model = Model(
-            "model_instance", mmodel_G, (BasicHandler, {}), returns=["k"]
-        )
+        model = Model("model_instance", mmodel_G, (BasicHandler, {}), returns=["k"])
 
         assert graph_equal(model.base_graph, mmodel_G)
-        assert 'log' not in model.graph.nodes
-        assert nx.is_frozen(model.graph) # check that it is frozen
+        assert "log" not in model.graph.nodes
+        assert nx.is_frozen(model.graph)  # check that it is frozen
         assert model.returns == ["k"]
         assert model(a=10, d=15, f=1, b=2) == -36
 
     def test_model_returns_less_partial(self, mmodel_G):
         """Test model with less than graph returns but with added intermediate value
-        
+
         In this case the graph is adjusted
         """
         # more returns
@@ -151,8 +150,8 @@ class TestModel:
         )
 
         assert graph_equal(model.base_graph, mmodel_G)
-        assert 'log' not in model.graph.nodes
-        assert nx.is_frozen(model.graph) # check that it is frozen
+        assert "log" not in model.graph.nodes
+        assert nx.is_frozen(model.graph)  # check that it is frozen
         assert model.returns == ["k", "c"]
         assert model(a=10, d=15, f=1, b=2) == (-36, 12)
 

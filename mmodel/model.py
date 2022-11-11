@@ -8,6 +8,7 @@ from mmodel.utility import (
 from mmodel.filter import subgraph_by_returns
 from mmodel.draw import draw_graph
 import networkx as nx
+from textwrap import wrap as txtwrap
 
 
 class Model:
@@ -50,13 +51,13 @@ class Model:
         graph_returns = model_returns(graph)
         self.base_graph = nx.freeze(graph)
         self.returns = returns or graph_returns
-            # if there are nodes in graph_returns that is not in returns
-            # this means that some nodes are not needed for the calculation
+        # if there are nodes in graph_returns that is not in returns
+        # this means that some nodes are not needed for the calculation
         if set(graph_returns) - set(self.returns):
             # returns subgraph view of the original graph, is also freezed
             self.graph = subgraph_by_returns(self.base_graph, returns)
         else:
-            self.graph  = self.base_graph
+            self.graph = self.base_graph
 
         self.modifiers = modifiers or list()
         self.handler = handler
@@ -91,15 +92,20 @@ class Model:
         ]
         modifier_str = f"[{', '.join(modifier_str_list)}]"
 
-        return "\n".join(
-            [
-                f"{self.__name__}{self.__signature__}",
-                f"  returns: {', '.join(self.returns)}",
-                f"  handler: {handler_str}",
-                f"  modifiers: {modifier_str}",
-                f"{self.description}",
-            ]
-        ).rstrip()
+        model_str = [
+            f"{self.__name__}{self.__signature__}",
+            f"  returns: {', '.join(self.returns)}",
+            f"  handler: {handler_str}",
+            f"  modifiers: {modifier_str}",
+            f"{self.description}",
+        ]
+
+        # wrap string
+        model_str_wrapped = []
+        for s in model_str:
+            model_str_wrapped.extend(txtwrap(s, 80))
+
+        return "\n".join(model_str_wrapped).rstrip()
 
     @staticmethod
     def _is_valid_graph(G):
@@ -158,4 +164,3 @@ class Model:
         """
 
         return method(self.graph, label=str(self).replace("\n", "\l") + "\l")
-
