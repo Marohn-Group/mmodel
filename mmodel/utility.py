@@ -67,15 +67,17 @@ def replace_signature(signature, replacement_dict):
     """Replace signature with a dictionary of (key, pair)
 
     The function is used to replace several input parameters with an object.
-    The signature is the original signature.
-    The dictionary key should be the replacement object, and the values
-    should be a list of the target parameters to be replaced.
+    The signature is the original signature. The dictionary key should be the
+    replacement object, and the values should be a list of the target
+    parameters to be replaced. The replacement allows unused parameters, they
+    are skipped.
     """
 
     params = dict(signature.parameters)
     for func, target_list in replacement_dict.items():
         for target in target_list:
-            del params[target]
+            # del params[target]
+            params.pop(target, None)
         params[func] = inspect.Parameter(func, 1)
 
     return signature.replace(parameters=sorted(params.values(), key=param_sorter))
