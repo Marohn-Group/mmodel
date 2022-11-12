@@ -3,6 +3,7 @@ from mmodel.modifier import (
     zip_loop_modifier,
     signature_modifier,
     signature_binding_modifier,
+    pos_signature_modifier,
 )
 import pytest
 import inspect
@@ -55,16 +56,56 @@ def test_signature_modifiers(example_func):
 
 def test_signature_modifiers_kwargs():
     """Test signature modifier on function with keyword arguments
-    
-    The signature modification replaces "**kwargs" to arguments 
+
+    The signature modification replaces "**kwargs" to arguments
     """
 
     def func(a, b, **kwargs):
         return a, b, kwargs
-    
-    mod_func = signature_modifier(func, ['e', 'f', 'g', 'h'])
-    
-    assert mod_func(e=1, f=2, g=3, h=4) == (1, 2, {'g':3, 'h':4})
+
+    mod_func = signature_modifier(func, ["e", "f", "g", "h"])
+
+    assert mod_func(e=1, f=2, g=3, h=4) == (1, 2, {"g": 3, "h": 4})
+
+
+def test_pos_signature_modifiers_builtin():
+    """Test pos_signature_modifiers on builtin functions"""
+
+    import math
+    import operator
+
+    sub_mod = pos_signature_modifier(operator.sub, ["no1", "no2"])
+
+    assert list(inspect.signature(sub_mod).parameters.keys()) == ["no1", "no2"]
+    assert sub_mod(no1=2, no2=1) == 1
+    # reverse wrapped input order should not affect the result
+    assert sub_mod(no2=1, no1=2) == 1
+
+    pow_mod = pos_signature_modifier(math.pow, ["no1", "no2"])
+
+    assert list(inspect.signature(pow_mod).parameters.keys()) == ["no1", "no2"]
+    assert pow_mod(no1=2, no2=1) == 2
+    # reverse wrapped input order should not affect the result
+    assert pow_mod(no2=2, no1=1) == 1
+
+
+def test_pos_signature_modifiers_ufunc():
+    """Test pos_signature_modifiers on numpy functions
+
+    Here we test if the replacement function with different number of input parameters
+    """
+
+    import numpy as np
+
+    arange_mod = pos_signature_modifier(np.arange, ["stop"])
+
+    assert list(inspect.signature(arange_mod).parameters.keys()) == ["stop"]
+    assert np.array_equal(arange_mod(stop=5), np.array([0, 1, 2, 3, 4]))
+
+    arange_mod = pos_signature_modifier(np.arange, ["start", "stop"])
+
+    assert list(inspect.signature(arange_mod).parameters.keys()) == ["start", "stop"]
+    assert np.array_equal(arange_mod(start=1, stop=4), np.array([1, 2, 3]))
 
 
 def test_signature_binding_modifier(example_func):
@@ -107,4 +148,3 @@ def test_signature_binding_modifier_on_wrapper(example_func):
     # c is not in the modified signature
     with pytest.raises(TypeError, match="got an unexpected keyword argument 'c'"):
         mod_func_2(c=4, d=2, e=1)
-

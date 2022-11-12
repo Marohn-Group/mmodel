@@ -2,7 +2,9 @@ import inspect
 import networkx as nx
 from mmodel.draw import draw_graph
 from copy import deepcopy
-from mmodel.modifier import signature_modifier
+from mmodel.modifier import signature_modifier, pos_signature_modifier
+import types
+import numpy as np
 
 
 class ModelGraph(nx.DiGraph):
@@ -39,8 +41,13 @@ class ModelGraph(nx.DiGraph):
         node_dict["base_func"] = func
         modifiers = modifiers or list()
         if inputs:
-            # if inputs are
-            modifiers = [(signature_modifier, {"parameters": inputs})] + modifiers
+            # if inputs are builtin or ufunc
+            if isinstance(func, types.BuiltinFunctionType) or isinstance(func, np.ufunc):
+                modifiers = [
+                    (pos_signature_modifier, {"parameters": inputs})
+                ] + modifiers
+            else:
+                modifiers = [(signature_modifier, {"parameters": inputs})] + modifiers
 
         for mdf, kwargs in modifiers:
             func = mdf(func, **kwargs)
@@ -133,7 +140,7 @@ class ModelGraph(nx.DiGraph):
             ]
         )
 
-    def draw(self, method):
+    def draw(self, method=draw_graph):
         """Draw the graph
 
         A drawing is provided. Defaults to ``draw_graph``

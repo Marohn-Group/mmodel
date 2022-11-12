@@ -165,7 +165,30 @@ class TestSetNodeObject:
         assert base_G.edges["func_a", "func_c"] == {"val": "o"}
 
 
-# --- Test mmodel_G ---
+class TestModelGrapahFunc:
+    """Test node object input for builtin func and ufunc"""
+
+    @pytest.fixture
+    def base_G(self):
+        """Basic ModelGraph with pre defined edges"""
+
+        import numpy as np
+        import math
+
+        G = ModelGraph()
+        G.add_edge("func_a", "func_b")
+
+        G.set_node_object("func_a", np.add, "x", inputs=["a", "b"])
+        G.set_node_object("func_b", math.ceil, "p", inputs=["x"])
+
+        return G
+
+    def test_signature(self, base_G):
+        """Test signature of the graph nodes"""
+        assert list(base_G.nodes["func_a"]["sig"].parameters.keys()) == ["a", "b"]
+        assert list(base_G.nodes["func_b"]["sig"].parameters.keys()) == ["x"]
+
+
 class TestModelGraphBasics:
     """Test the basic string and repr of the graph and nodes"""
 

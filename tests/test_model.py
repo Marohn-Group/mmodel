@@ -296,3 +296,38 @@ class TestModelValidation:
         """Test is_valid_graph that correctly passing"""
 
         assert Model._is_valid_graph(mmodel_G)
+
+
+class TestModelSpecialFunc:
+    """Test models with builtin or numpy ufunc"""
+
+    @pytest.fixture
+    def model(self):
+        """Basic Model with builtin and ufunc nodes"""
+
+        import numpy as np
+        import math
+        from mmodel import ModelGraph
+
+        G = ModelGraph()
+        G.add_edge("func_a", "func_b")
+
+        G.set_node_object("func_a", np.add, "x", inputs=["a", "b"])
+        G.set_node_object("func_b", math.ceil, "p", inputs=["x"])
+
+        return Model(
+            "model_instance",
+            G,
+            (BasicHandler, {}),
+            description="model with builtin and ufunc",
+        )
+
+    def test_model_signature(self, model):
+        """Test model signature"""
+
+        assert list(inspect.signature(model).parameters.keys()) == ["a", "b"]
+
+    def test_model_execution(self, model):
+        """Test model result"""
+
+        assert model(3, 1.9) == 5

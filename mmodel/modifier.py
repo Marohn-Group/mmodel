@@ -54,14 +54,8 @@ def signature_modifier(func, parameters):
     .. Note::
 
         The modifier does not work with functions that have positional only
-        input parameters. When the signature_parameter length is smaller than the
-        list of original signatures, there are two cases:
-        1. The additional parameters have a default value - they do not show up
-        in the signature, but the default values are applied to function
-        2. The additional parameters do not have a default value - error is thrown
-        for missing input
-
-        ``mmodel`` allows the first case scenario, no checking is performed.
+        input parameters, or functions do not have a signature (builtin and numpy ufunc).
+        Use pos_signature_modifier instead.
 
     """
     sig = inspect.Signature([inspect.Parameter(var, 1) for var in parameters])
@@ -85,6 +79,31 @@ def signature_modifier(func, parameters):
 
     wrapped.__signature__ = sig
     return wrapped
+
+def pos_signature_modifier(func, parameters):
+    """Replace node object signature with position arguments
+
+    For functions that do not have a signature or only allowing positional only
+    inputs. The modifier is specifically used to change the "signature" of builtin
+    function or numpy ufunc.
+
+    .. note::
+
+        The modifier is only tested against builtin function or ufunc.
+    """
+    sig = inspect.Signature([inspect.Parameter(var, 1) for var in parameters])
+
+    @wraps(func)
+    def wrapped(**kwargs):
+
+        # extra the variables in order
+        inputs = [kwargs[key] for key in parameters]
+
+        return func(*inputs)
+
+    wrapped.__signature__ = sig
+    return wrapped
+
 
 def signature_binding_modifier(func):
     """Add parameter binding and checking for function
