@@ -4,6 +4,7 @@ from mmodel.modifier import (
     signature_modifier,
     signature_binding_modifier,
     pos_signature_modifier,
+    partial_modifier,
 )
 import pytest
 import inspect
@@ -148,3 +149,13 @@ def test_signature_binding_modifier_on_wrapper(example_func):
     # c is not in the modified signature
     with pytest.raises(TypeError, match="got an unexpected keyword argument 'c'"):
         mod_func_2(c=4, d=2, e=1)
+
+
+def test_partial_modifier(example_func):
+    """Test partial_modifier"""
+
+    mod_func = partial_modifier(example_func, b=5)
+
+    assert list(inspect.signature(mod_func).parameters.keys()) == ["a", "c"]
+    assert mod_func(a=1) == 8  # a = 1, c = 2 and d = 5
+    assert mod_func(a=1, c=3) == 9  # a = 1, c = 3, d = 5

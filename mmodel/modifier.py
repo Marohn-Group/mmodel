@@ -128,3 +128,27 @@ def signature_binding_modifier(func):
         return func(**parsed_kwargs)
 
     return wrapped
+
+def partial_modifier(func, **partialargs):
+    """Pre define variable parameters
+    
+    This is similar to a python partial function, but the signature
+    removes the parameter that has a defined value.
+    """
+
+    params = dict(inspect.signature(func).parameters)
+    for key in partialargs.keys():
+        del params[key]
+
+    @wraps(func)
+    def wrapped(**kwargs):
+        # update the dictionary
+        kwargs.update(**partialargs)
+
+        return func(**kwargs)
+
+    wrapped.__signature__ = inspect.Signature(params.values())
+
+    return wrapped
+
+

@@ -24,15 +24,16 @@ Changed
 - "returns" now a Model exclusive parameter which denotes the order
   of graph output
 - Model string output wraps each line at 80 characters.
+- ``signature_modifier`` can modify function with "kwargs"
 
 Added
 ^^^^^^
 
 - add graph modification when less than graph returns are specified
 - add "__name__" attribute to handler instance
-- ``signature_modifier`` can modify function with "kwargs"
 - ``pos_signature_modifier`` allows for node object to have positional only parameters
 - graph node definition allows for builtin and numpy ufunc
+- ``partial modifier`` that can pre define parameter values
 
 [0.4.0] - 2022-10-3
 ------------------------
