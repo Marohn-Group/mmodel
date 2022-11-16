@@ -157,13 +157,13 @@ class HandlerTester:
         """Test the signature and name of the handler"""
 
         assert handler_instance.__name__ == "handler"
-        assert list(handler_instance.__signature__.parameters) == ["a", "d", "f", "b"]
+        assert list(handler_instance.__signature__.parameters) == ["a", "b", "d", "f"]
 
     def test_execution(self, handler_instance):
         """Test running the model as a function"""
 
         assert handler_instance(a=10, d=15, f=0, b=2) == (-3, math.log(12, 2))
-        assert handler_instance(a=1, d=2, f=1, b=4) == (15, math.log(5, 4))
+        assert handler_instance(a=1, d=2, f=1, b=4) == (3, math.log(3, 4))
 
     def test_node_exception(self, handler_instance):
         """Test when node exception a custom exception is outputted"""

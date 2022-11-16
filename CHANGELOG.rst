@@ -25,6 +25,7 @@ Changed
   of graph output
 - Model string output wraps each line at 80 characters.
 - ``signature_modifier`` can modify function with "kwargs"
+- default keyword argument does not show up in model signature
 
 Added
 ^^^^^^
@@ -33,7 +34,7 @@ Added
 - add "__name__" attribute to handler instance
 - ``pos_signature_modifier`` allows for node object to have positional only parameters
 - graph node definition allows for builtin and numpy ufunc
-- ``partial modifier`` that can pre define parameter values
+- graph node inputs allows default value with a (parameter, default) tuple
 
 [0.4.0] - 2022-10-3
 ------------------------

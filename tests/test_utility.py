@@ -75,7 +75,7 @@ def test_model_signature(mmodel_G, mmodel_signature):
 def test_replace_signature(mmodel_signature):
     """Test replace signature"""
 
-    replacement_dict = {"a_rep": ["a"], "f_rep": ["f","g"]}
+    replacement_dict = {"a_rep": ["a"], "f_rep": ["f", "g"]}
     signature = util.replace_signature(mmodel_signature, replacement_dict)
 
     assert "a_rep" in signature.parameters
@@ -86,6 +86,26 @@ def test_replace_signature(mmodel_signature):
 
     # make sure the original signature is not modified
     assert "a_rep" not in mmodel_signature.parameters
+
+
+def test_parse_parameters():
+    """Test parse_parameters
+
+    Here we test when the default value is at the end or in the middle
+    """
+
+    sig, porder, dargs = util.parse_parameters(["a", "b", ("c", 2)])
+    assert porder == ["a", "b", "c"]
+    assert list(sig.parameters.keys()) == ["a", "b", "c"]
+    assert sig.parameters["c"].default == 2
+    assert dargs == {"c": 2}
+
+    sig, porder, dargs = util.parse_parameters(["a", ("b", 3), ("c", 2), "d"])
+    assert porder == ["a", "b", "c", "d"]
+    assert list(sig.parameters.keys()) == ["a", "d", "b", "c"]
+    assert sig.parameters["b"].default == 3
+    assert sig.parameters["c"].default == 2
+    assert dargs == {"b": 3, "c": 2}
 
 
 def test_model_returns(mmodel_G):
@@ -121,7 +141,7 @@ def test_param_counter(mmodel_G):
 
     counter = util.param_counter(mmodel_G, [])
 
-    assert counter == {"a": 1, "b": 2, "c": 3, "d": 1, "e": 1, "f": 1, "g": 1}
+    assert counter == {"a": 1, "b": 1, "c": 3, "d": 1, "e": 1, "f": 1, "g": 1}
 
 
 def test_param_counter_add_returns(mmodel_G):
@@ -129,7 +149,7 @@ def test_param_counter_add_returns(mmodel_G):
 
     counter = util.param_counter(mmodel_G, ["c", "g"])
 
-    assert counter == {"a": 1, "b": 2, "c": 4, "d": 1, "e": 1, "f": 1, "g": 2}
+    assert counter == {"a": 1, "b": 1, "c": 4, "d": 1, "e": 1, "f": 1, "g": 2}
 
 
 def test_modify_subgraph_terminal(mmodel_G):
@@ -207,7 +227,7 @@ def test_modify_node(mmodel_G):
 
         return wrapped
 
-    mod_G = util.modify_node(mmodel_G, "subtract", modifiers=[(mod, {'a': 1})])
+    mod_G = util.modify_node(mmodel_G, "subtract", modifiers=[(mod, {"a": 1})])
 
     # add one to the final value
     assert mod_G.nodes["subtract"]["func"](1, 2) == 0

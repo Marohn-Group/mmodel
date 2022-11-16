@@ -56,8 +56,13 @@ class TopologicalHandler:
     def run_node(self, data, node, node_attr):
         """Run individual node"""
 
-        parameters = node_attr["sig"].parameters
-        kwargs = {key: data[key] for key in parameters}
+        # Only parameter without defaults are applied
+
+        kwargs = {
+            key: data[key]
+            for key, param in node_attr["sig"].parameters.items()
+            if (param.default is param.empty)
+        }
         try:
             # execute
             func_result = node_attr["func"](**kwargs)

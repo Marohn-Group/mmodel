@@ -36,7 +36,7 @@ class TestModel:
         """Test model representation"""
 
         MODEL_STR = """\
-        model_instance(a, d, f, b=2)
+        model_instance(a, b, d, f)
           returns: k, m
           handler: BasicHandler, {}
           modifiers: []
@@ -53,8 +53,8 @@ class TestModel:
     def test_model_execution(self, model_instance):
         """Test if the default is correctly used"""
 
-        assert model_instance(10, 15, 1) == (-36, math.log(12, 2))
-        assert model_instance(a=1, d=2, f=3, b=4) == (375, math.log(5, 4))
+        assert model_instance(10, 2, 15, 1) == (-36, math.log(12, 2))
+        assert model_instance(a=1, d=2, f=3, b=4) == (27, math.log(3, 4))
 
     def test_get_node(self, model_instance, mmodel_G):
         """Test get_node method of the model"""
@@ -137,7 +137,7 @@ class TestModel:
         assert "log" not in model.graph.nodes
         assert nx.is_frozen(model.graph)  # check that it is frozen
         assert model.returns == ["k"]
-        assert model(a=10, d=15, f=1, b=2) == -36
+        assert model(a=10, d=15, f=1) == -36
 
     def test_model_returns_less_partial(self, mmodel_G):
         """Test model with less than graph returns but with added intermediate value
@@ -153,7 +153,7 @@ class TestModel:
         assert "log" not in model.graph.nodes
         assert nx.is_frozen(model.graph)  # check that it is frozen
         assert model.returns == ["k", "c"]
-        assert model(a=10, d=15, f=1, b=2) == (-36, 12)
+        assert model(a=10, d=15, f=1) == (-36, 12)
 
 
 class TestModifiedModel:
@@ -189,7 +189,7 @@ class TestModifiedModel:
     def test_model_str(self, mod_model_instance):
         """Test the string representation with modifiers"""
         mod_model_s = """\
-        mod_model_instance(a, d, f, b=2)
+        mod_model_instance(a, b, d, f)
           returns: k, m
           handler: BasicHandler, {}
           modifiers: [loop_modifier, {'parameter': 'a'}]

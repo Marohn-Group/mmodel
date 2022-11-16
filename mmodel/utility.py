@@ -1,4 +1,4 @@
-import inspect
+from inspect import signature, Signature, Parameter
 import networkx as nx
 
 
@@ -24,7 +24,7 @@ def model_signature(graph):
     """Obtain the signature from the model graph
 
     :param DiGraph graph: networkx.Digraph() object,
-        with 'func_signature', 'returns' defined for nodes
+        with 'signature', 'output' defined for nodes
         and "parameters" for edges.
         The args are a dictionary of inspected signature
     """
@@ -32,15 +32,14 @@ def model_signature(graph):
     parameters = {}
     for sig in nx.get_node_attributes(graph, "sig").values():
         for pname, param in sig.parameters.items():
-            if pname in parameters:
-                if param_sorter(parameters[pname]) >= param_sorter(param):
-                    continue
-            parameters.update({pname: param})
+            # remove the default values
+            if param.default is param.empty and param not in parameters:
+                parameters.update({pname: param})
 
     for output in nx.get_node_attributes(graph, "output").values():
         parameters.pop(output, None)  # if doesn't exist return None
 
-    return inspect.Signature(sorted(parameters.values(), key=param_sorter))
+    return Signature(sorted(parameters.values(), key=param_sorter))
 
 
 def model_returns(graph):
@@ -78,9 +77,37 @@ def replace_signature(signature, replacement_dict):
         for target in target_list:
             # del params[target]
             params.pop(target, None)
-        params[func] = inspect.Parameter(func, 1)
+        params[func] = Parameter(func, 1)
 
     return signature.replace(parameters=sorted(params.values(), key=param_sorter))
+
+
+def parse_parameters(parameters):
+    """Parse a list of parameters to signatures
+
+    :param list parameters: Parameters to parse. Element can either be a string
+        as the parameter name or a tuple/list as (parameter, default)
+
+    :return: parameter order and signature
+    """
+
+    param_order = []  # parameters in the correct order
+    sig_list = []  # signature values
+    sig_df_list = []  # default values
+    defultargs = {}  # default arguments dictionary
+    for var in parameters:
+        if isinstance(var, tuple) or isinstance(var, list):
+            var_name, default_value = var
+            param_order.append(var_name)
+            sig_df_list.append(Parameter(var_name, 1, default=default_value))
+            defultargs[var_name] = default_value
+        else:
+            param_order.append(var)
+            sig_list.append(Parameter(var, 1))
+
+    sig = Signature(sig_list + sig_df_list)  # the default values are ordered next
+
+    return sig, param_order, defultargs
 
 
 def graph_topological_sort(graph):
@@ -117,7 +144,10 @@ def param_counter(graph, returns):
 
     value_list = []
     for sig in nx.get_node_attributes(graph, "sig").values():
-        value_list.extend(sig.parameters.keys())
+        for key, param in sig.parameters.items():
+
+            if param.default is param.empty:
+                value_list.append(key)
 
     # add the additional parameter to list
     value_list += returns

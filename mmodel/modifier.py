@@ -1,6 +1,6 @@
 from functools import wraps
 import inspect
-from mmodel.utility import parse_input
+from mmodel.utility import parse_input, parse_parameters
 
 
 def loop_modifier(func, parameter: str):
@@ -58,7 +58,7 @@ def signature_modifier(func, parameters):
         Use pos_signature_modifier instead.
 
     """
-    sig = inspect.Signature([inspect.Parameter(var, 1) for var in parameters])
+    sig, param_order, defaultargs = parse_parameters(parameters)
 
     # if there's "kwargs" in the parameter, ignore the parameter
     old_parameters = []
@@ -67,18 +67,20 @@ def signature_modifier(func, parameters):
             old_parameters.append(name)
 
     # once unzipped to return iterators, the original variable returns none
-    param_pair = list(zip(old_parameters, parameters))
+    param_pair = list(zip(old_parameters, param_order))
 
     @wraps(func)
     def wrapped(**kwargs):
         # assume there's no repeated signature name that are not overlapping
         # replace a, b with b, c is not allowed in the following step
+        kwargs.update(defaultargs)
         for old, new in param_pair:
             kwargs[old] = kwargs.pop(new)
         return func(**kwargs)
 
     wrapped.__signature__ = sig
     return wrapped
+
 
 def pos_signature_modifier(func, parameters):
     """Replace node object signature with position arguments
@@ -91,13 +93,13 @@ def pos_signature_modifier(func, parameters):
 
         The modifier is only tested against builtin function or ufunc.
     """
-    sig = inspect.Signature([inspect.Parameter(var, 1) for var in parameters])
+    sig, param_order, defaultargs = parse_parameters(parameters)
 
     @wraps(func)
     def wrapped(**kwargs):
-
+        kwargs.update(defaultargs)
         # extra the variables in order
-        inputs = [kwargs[key] for key in parameters]
+        inputs = [kwargs[key] for key in param_order]
 
         return func(*inputs)
 
@@ -128,27 +130,3 @@ def signature_binding_modifier(func):
         return func(**parsed_kwargs)
 
     return wrapped
-
-def partial_modifier(func, **partialargs):
-    """Pre define variable parameters
-    
-    This is similar to a python partial function, but the signature
-    removes the parameter that has a defined value.
-    """
-
-    params = dict(inspect.signature(func).parameters)
-    for key in partialargs.keys():
-        del params[key]
-
-    @wraps(func)
-    def wrapped(**kwargs):
-        # update the dictionary
-        kwargs.update(**partialargs)
-
-        return func(**kwargs)
-
-    wrapped.__signature__ = inspect.Signature(params.values())
-
-    return wrapped
-
-

@@ -4,7 +4,6 @@ from mmodel.modifier import (
     signature_modifier,
     signature_binding_modifier,
     pos_signature_modifier,
-    partial_modifier,
 )
 import pytest
 import inspect
@@ -69,6 +68,21 @@ def test_signature_modifiers_kwargs():
     assert mod_func(e=1, f=2, g=3, h=4) == (1, 2, {"g": 3, "h": 4})
 
 
+def test_signature_modifiers_with_defaults():
+    """Test signature modifier on function with keyword arguments
+
+    The signature modification replaces "**kwargs" to arguments
+    """
+
+    def func(a, b, c):
+        return a + b + c
+
+    mod_func = signature_modifier(func, ["e", ("f", 2), "g"])
+
+    assert mod_func(e=1, f=2, g=3) == 6
+    assert mod_func(e=1, g=3) == 6
+
+
 def test_pos_signature_modifiers_builtin():
     """Test pos_signature_modifiers on builtin functions"""
 
@@ -107,6 +121,23 @@ def test_pos_signature_modifiers_ufunc():
 
     assert list(inspect.signature(arange_mod).parameters.keys()) == ["start", "stop"]
     assert np.array_equal(arange_mod(start=1, stop=4), np.array([1, 2, 3]))
+
+def test_pos_signature_modifiers_with_defaults():
+    """Test signature modifier on function with keyword arguments
+
+    The signature modification replaces "**kwargs" to arguments
+    """
+
+    import operator
+
+    mod_func = pos_signature_modifier(operator.pow, ["e", ('power', 2)])
+
+    assert mod_func(e=3) == 9
+
+    mod_func = pos_signature_modifier(operator.pow, [('base', 2), "e"])
+
+    assert mod_func(e=3) == 8
+
 
 
 def test_signature_binding_modifier(example_func):
@@ -149,13 +180,3 @@ def test_signature_binding_modifier_on_wrapper(example_func):
     # c is not in the modified signature
     with pytest.raises(TypeError, match="got an unexpected keyword argument 'c'"):
         mod_func_2(c=4, d=2, e=1)
-
-
-def test_partial_modifier(example_func):
-    """Test partial_modifier"""
-
-    mod_func = partial_modifier(example_func, b=5)
-
-    assert list(inspect.signature(mod_func).parameters.keys()) == ["a", "c"]
-    assert mod_func(a=1) == 8  # a = 1, c = 2 and d = 5
-    assert mod_func(a=1, c=3) == 9  # a = 1, c = 3, d = 5

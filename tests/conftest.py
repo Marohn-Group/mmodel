@@ -20,8 +20,8 @@ import math
 # in graph testing they should be equal
 
 
-def addition(a, b=2):
-    return a + b
+def addition(a, factor=2):
+    return a + factor
 
 
 def subtraction(c, d):
@@ -45,8 +45,8 @@ def standard_G():
     """Standard test graph generated using DiGraph
 
     The results are:
-    k = (a + b - d)(a + b)^f
-    m = log(a + b, b)
+    k = (a + 2 - d)(a + 2)^f
+    m = log(a + 2, b)
     """
 
     node_list = [
@@ -124,8 +124,8 @@ def mmodel_G():
     """Mock test graph generated using ModelGraph
 
     The results are:
-    k = (a + b - d)(a + b)^f
-    m = log(a + b, b)
+    k = (a + 2 - d)(a + b)^f
+    m = log(a + 2, b)
     """
 
     grouped_edges = [
@@ -153,9 +153,9 @@ def mmodel_signature():
 
     param_list = [
         Parameter("a", 1),
+        Parameter("b", 1),
         Parameter("d", 1),
         Parameter("f", 1),
-        Parameter("b", 1, default=2),
     ]
 
     return Signature(param_list)
