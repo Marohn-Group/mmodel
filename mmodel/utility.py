@@ -232,21 +232,40 @@ def parse_input(signature, *args, **kwargs):
     return values.arguments
 
 
-def is_node_attr_defined(graph, attr: str):
+def is_node_attr_defined(graph, attr: str, attr_name: str = None):
     """Check if all graph nodes have the target attribute defined
 
-    Use ``set`` to ignore the order. Returns true if all nodes have the target
-    attribute
+    Raise exception if the attribute is undefined
     """
+    attr_name = attr_name or attr
+    node_list = []
+    for node, node_attr in graph.nodes.data():
+        if attr not in node_attr:
+            node_list.append(node)
 
-    return set(nx.get_node_attributes(graph, attr).keys()) == set(graph.nodes)
+    if node_list:
+        raise Exception(
+            f"invalid graph: {attr_name} "
+            f"('{attr}') is not defined for node(s) {node_list}"
+        )
+
+    return True
 
 
-def is_edge_attr_defined(graph, attr: str):
+def is_edge_attr_defined(graph, attr: str, attr_name: str = None):
     """Check if all graph edges have the target attribute defined
 
-    Use ``set`` to ignore the order. Returns true if all nodes have the target
-    attribute
+    Raise exception if the attribute is undefined
     """
+    attr_name = attr_name or attr
+    edge_list = []
+    for u, v, edge_attr in graph.edges.data():
+        if attr not in edge_attr:
+            edge_list.append((u, v))
+    if edge_list:
+        raise Exception(
+            f"invalid graph: {attr_name} ('{attr}')"
+            f" is not defined for edge(s) {edge_list}"
+        )
 
-    return set(nx.get_edge_attributes(graph, attr).keys()) == set(graph.edges)
+    return True

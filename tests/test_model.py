@@ -242,7 +242,8 @@ class TestModelValidation:
         # 4 is the isolated node
 
         with pytest.raises(
-            AssertionError, match="invalid graph: graph contains isolated nodes"
+            AssertionError,
+            match=r"invalid graph: graph contains isolated node\(s\) \[4\]",
         ):
             Model._is_valid_graph(g)
 
@@ -259,32 +260,44 @@ class TestModelValidation:
         g.add_edge("log", "test")
 
         with pytest.raises(
-            AssertionError,
-            match="invalid graph: graph contains nodes with undefined callables",
+            Exception,
+            match=(
+                r"invalid graph: callable \('func'\) "
+                r"is not defined for node\(s\) \['test'\]"
+            ),
         ):
             Model._is_valid_graph(g)
 
         g.nodes["test"]["func"] = test
 
         with pytest.raises(
-            AssertionError,
-            match="invalid graph: graph contains nodes with undefined callables output",
+            Exception,
+            match=(
+                r"invalid graph: output \('output'\) "
+                r"is not defined for node\(s\) \['test'\]"
+            ),
         ):
             Model._is_valid_graph(g)
 
         g.nodes["test"]["output"] = "c"
 
         with pytest.raises(
-            AssertionError,
-            match="invalid graph: graph contains nodes with undefined callables signatures",
+            Exception,
+            match=(
+                r"invalid graph: signature \('sig'\) "
+                r"is not defined for node\(s\) \['test'\]"
+            ),
         ):
             Model._is_valid_graph(g)
 
         g.nodes["test"]["sig"] = inspect.signature(test)
 
         with pytest.raises(
-            AssertionError,
-            match="invalid graph: graph contains edges with undefined variable attributes",
+            Exception,
+            match=(
+                r"invalid graph: variable \('val'\) "
+                r"is not defined for edge\(s\) \[\('log', 'test'\)\]"
+            ),
         ):
             Model._is_valid_graph(g)
 

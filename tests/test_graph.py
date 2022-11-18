@@ -22,14 +22,10 @@ class TestAddEdge:
         def func_c(o, s):
             return o + s
 
-        def func_d(t, w):
-            return t + w
-
         G = ModelGraph()
         G.add_node("func_a", func=func_a, output="o", sig=signature(func_a))
         G.add_node("func_b", func=func_b, output="q", sig=signature(func_b))
         G.add_node("func_c", func=func_c, output="t", sig=signature(func_c))
-        G.add_node("func_d", func=func_d, output="x", sig=signature(func_d))
 
         return G
 
@@ -47,6 +43,25 @@ class TestAddEdge:
 
         assert base_G.edges["func_a", "func_b"]["val"] == "o"
         assert base_G.edges["func_a", "func_c"]["val"] == "o"
+
+    def test_update_edge_vals(self, base_G):
+        """Test edge updates
+
+        The edges are not updated if:
+        1. the parent edge is not defined
+        1. the child edge is not defined
+        2. the parent out does not match child parameter
+        """
+
+        base_G.add_edge("func_a", "func_d")
+        assert "val" not in base_G.edges["func_a", "func_d"]
+
+        def func_d(t, w):
+            return t + w
+
+        base_G.add_node("func_d", func=func_d, output="x", sig=signature(func_d))
+        assert "val" not in base_G.edges["func_a", "func_d"]
+
 
     def test_add_grouped_edge_without_list(self, base_G):
         """Test add_grouped_edge

@@ -42,7 +42,9 @@ class ModelGraph(nx.DiGraph):
         modifiers = modifiers or list()
         if inputs:
             # if inputs are builtin or ufunc
-            if isinstance(func, types.BuiltinFunctionType) or isinstance(func, np.ufunc):
+            if isinstance(func, types.BuiltinFunctionType) or isinstance(
+                func, np.ufunc
+            ):
                 modifiers = [
                     (pos_signature_modifier, {"parameters": inputs})
                 ] + modifiers
@@ -111,8 +113,12 @@ class ModelGraph(nx.DiGraph):
 
         for u, v in self.edges:
             # the edge "val" is not defined if the parent node does not
-            # have "output" attribute
-            if "output" in self.nodes[u]:
+            # have "output" attribute, or the child node does not have
+            # the parameter
+            
+            # extract the parameter dictionary
+            v_sig = getattr(self.nodes[v].get("sig", None), 'parameters', {})
+            if "output" in self.nodes[u] and self.nodes[u]["output"] in v_sig:
                 self.edges[u, v]["val"] = self.nodes[u]["output"]
 
     def view_node(self, node: str):

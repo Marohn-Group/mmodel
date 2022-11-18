@@ -120,25 +120,15 @@ class Model:
 
         assert nx.is_directed(G), "invalid graph: undirected graph"
         assert not nx.recursive_simple_cycles(G), "invalid graph: graph contains cycles"
-        assert not list(nx.isolates(G)), "invalid graph: graph contains isolated nodes"
+        assert not list(
+            nx.isolates(G)
+        ), f"invalid graph: graph contains isolated node(s) {list(nx.isolates(G))}"
 
-        assert is_node_attr_defined(
-            G, "func"
-        ), "invalid graph: graph contains nodes with undefined callables"
-
+        assert is_node_attr_defined(G, "func", "callable")
         # the following might occur when the node object is incorrectly constructed
-        assert is_node_attr_defined(G, "output"), (
-            "invalid graph: graph contains nodes with undefined callables output, "
-            "recommend using ModelGraph set_node_object method to add node object"
-        )
-        assert is_node_attr_defined(G, "sig"), (
-            "invalid graph: graph contains nodes with undefined callables signatures, "
-            "recommend using ModelGraph set_node_object method to add node object"
-        )
-        assert is_edge_attr_defined(G, "val"), (
-            "invalid graph: graph contains edges with undefined variable attributes, "
-            "recommend using ModelGraph set_node_object method to add node object"
-        )
+        assert is_node_attr_defined(G, "output")
+        assert is_node_attr_defined(G, "sig", "signature")
+        assert is_edge_attr_defined(G, "val", "variable")
 
         return True
 

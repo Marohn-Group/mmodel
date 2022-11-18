@@ -160,7 +160,7 @@ def test_modify_subgraph_terminal(mmodel_G):
 
     subgraph = mmodel_G.subgraph(["multiply", "poly"])
 
-    def func(c, x, y):
+    def func(c, e, x, y):
         return
 
     graph = util.modify_subgraph(mmodel_G, subgraph, "test", func)
@@ -245,10 +245,15 @@ def test_is_node_attr_defined():
 
     # missing attribute
     g = nx.DiGraph()
-    g.add_node(1, weight=0.5)
+    g.add_node(1, w=0.5)
     g.add_node(2)
+    g.add_node(3)
 
-    assert not util.is_node_attr_defined(g, "weight")
+    with pytest.raises(
+        Exception,
+        match=r"invalid graph: weight \('w'\) is not defined for node\(s\) \[2, 3\]",
+    ):
+        util.is_node_attr_defined(g, "w", "weight")
 
 
 def test_is_edge_attr_defined():
@@ -263,7 +268,15 @@ def test_is_edge_attr_defined():
 
     # missing attribute
     g = nx.DiGraph()
-    g.add_edge(1, 2, weight=0.5)
+    g.add_edge(1, 2, w=0.5)
     g.add_edge(2, 3)
+    g.add_edge(3, 4)
 
-    assert not util.is_edge_attr_defined(g, "weight")
+    with pytest.raises(
+        Exception,
+        match=(
+            r"invalid graph: weight \('w'\) is "
+            r"not defined for edge\(s\) \[\(2, 3\), \(3, 4\)\]"
+        ),
+    ):
+        util.is_edge_attr_defined(g, "w", "weight")

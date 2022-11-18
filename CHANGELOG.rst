@@ -26,6 +26,7 @@ Changed
 - Model string output wraps each line at 80 characters.
 - ``signature_modifier`` can modify function with "kwargs"
 - default keyword argument does not show up in model signature
+- model's graph checking generates more detailed exception messages 
 
 Added
 ^^^^^^
