@@ -27,6 +27,7 @@ class TestModel:
     def test_model_attr(self, model_instance, mmodel_signature):
         """Test the model has the correct name, signature, returns"""
 
+        assert model_instance.name == "model_instance"
         assert model_instance.__name__ == "model_instance"
         assert model_instance.__signature__ == mmodel_signature
         assert model_instance.returns == ["k", "m"]

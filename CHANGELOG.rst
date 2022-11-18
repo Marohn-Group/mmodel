@@ -35,6 +35,7 @@ Added
 - ``pos_signature_modifier`` allows for node object to have positional only parameters
 - graph node definition allows for builtin and numpy ufunc
 - graph node inputs allows default value with a (parameter, default) tuple
+- add name attribute to Model
 
 [0.4.0] - 2022-10-3
 ------------------------

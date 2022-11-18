@@ -41,6 +41,7 @@ class Model:
     ):
 
         assert self._is_valid_graph(graph)
+        self.name = name
         self.__name__ = name
 
         # store only the copy of the graph, note this is not the same copy
