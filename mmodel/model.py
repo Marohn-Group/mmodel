@@ -118,11 +118,14 @@ class Model:
         are specific to ``Model`` class.
         """
 
-        assert nx.is_directed(G), "invalid graph: undirected graph"
-        assert not nx.recursive_simple_cycles(G), "invalid graph: graph contains cycles"
-        assert not list(
-            nx.isolates(G)
-        ), f"invalid graph: graph contains isolated node(s) {list(nx.isolates(G))}"
+        assert nx.is_directed(G), f"invalid graph ({G.name}): undirected graph"
+        assert not nx.recursive_simple_cycles(
+            G
+        ), f"invalid graph ({G.name}): graph contains cycles"
+        assert not list(nx.isolates(G)), (
+            f"invalid graph ({G.name}): "
+            f"graph contains isolated node(s) {list(nx.isolates(G))}"
+        )
 
         assert is_node_attr_defined(G, "func", "callable")
         # the following might occur when the node object is incorrectly constructed

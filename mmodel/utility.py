@@ -238,6 +238,12 @@ def is_node_attr_defined(graph, attr: str, attr_name: str = None):
     Raise exception if the attribute is undefined
     """
     attr_name = attr_name or attr
+
+    if graph.name:
+        graph_str = f"graph ({graph.name})"
+    else:
+        graph_str = "graph"
+
     node_list = []
     for node, node_attr in graph.nodes.data():
         if attr not in node_attr:
@@ -245,7 +251,7 @@ def is_node_attr_defined(graph, attr: str, attr_name: str = None):
 
     if node_list:
         raise Exception(
-            f"invalid graph: {attr_name} "
+            f"invalid {graph_str}: {attr_name} "
             f"('{attr}') is not defined for node(s) {node_list}"
         )
 
@@ -258,13 +264,19 @@ def is_edge_attr_defined(graph, attr: str, attr_name: str = None):
     Raise exception if the attribute is undefined
     """
     attr_name = attr_name or attr
+
+    if graph.name:
+        graph_str = f"graph ({graph.name})"
+    else:
+        graph_str = "graph"
+
     edge_list = []
     for u, v, edge_attr in graph.edges.data():
         if attr not in edge_attr:
             edge_list.append((u, v))
     if edge_list:
         raise Exception(
-            f"invalid graph: {attr_name} ('{attr}')"
+            f"invalid {graph_str}: {attr_name} ('{attr}')"
             f" is not defined for edge(s) {edge_list}"
         )
 

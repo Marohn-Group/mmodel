@@ -215,12 +215,12 @@ class TestModelGraphBasics:
     def test_graph_name(self, mmodel_G):
         """Test naming and docs of the graph"""
 
-        assert mmodel_G.name == "test graph"
+        assert mmodel_G.name == "test_graph"
 
     def test_graph_str(self, mmodel_G):
         """Test graph representation"""
 
-        assert str(mmodel_G) == "ModelGraph named 'test graph' with 5 nodes and 5 edges"
+        assert str(mmodel_G) == "ModelGraph named 'test_graph' with 5 nodes and 5 edges"
 
     def test_view_node(self, mmodel_G):
         """Test if view node outputs node information correctly"""
@@ -259,7 +259,7 @@ class TestModelGraphBasics:
         the label is correct. The repr escapes \n, therefore the string is used to compare
         """
         dot_graph = mmodel_G.draw(draw_graph)
-        label = """label="ModelGraph named \'test graph\' with 5 nodes and 5 edges"""
+        label = """label="ModelGraph named \'test_graph\' with 5 nodes and 5 edges"""
         assert label in dot_graph.source
 
 

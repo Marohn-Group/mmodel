@@ -2,7 +2,7 @@ from mmodel.draw import draw_graph, draw_plain_graph, update_settings, DEFAULT_S
 import networkx as nx
 
 
-dot_source = """digraph "test graph" {
+dot_source = """digraph test_graph {
 graph [label="test label" labeljust=l labelloc=t ordering=out splines=ortho]
 node [shape=box]
 add
@@ -17,7 +17,7 @@ subtract -> multiply
 poly -> multiply
 }"""
 
-plain_dot_source = """digraph "test graph" {
+plain_dot_source = """digraph test_graph {
 graph [label="test label" labeljust=l labelloc=t ordering=out splines=ortho]
 node [shape=box]
 a [label=a]
@@ -56,9 +56,8 @@ def test_draw_graph(mmodel_G):
 def test_draw_partial_graph():
     """Test draw graph without node object information"""
 
-    G = nx.DiGraph()
+    G = nx.DiGraph(name="test_graph")
     G.add_edge("a", "b")
-    G.name = "test graph"
 
     dot_graph = draw_graph(G, label="test label")
 

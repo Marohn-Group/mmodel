@@ -110,7 +110,7 @@ def standard_G():
         ("add", "log", {"val": "c"}),
     ]
 
-    G = nx.DiGraph(name="test graph")
+    G = nx.DiGraph(name="test_graph")
     G.graph["type"] = "ModelGraph"  # for comparison
 
     G.add_nodes_from(node_list)
@@ -141,7 +141,7 @@ def mmodel_G():
         ("log", logarithm, "m"),
     ]
 
-    G = ModelGraph(name="test graph")
+    G = ModelGraph(name="test_graph")
     G.add_grouped_edges_from(grouped_edges)
     G.set_node_objects_from(node_objects)
     return G

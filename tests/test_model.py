@@ -205,8 +205,11 @@ class TestModelValidation:
         """Test is_graph_valid that correctly identifies non directed graphs"""
 
         g = nx.complete_graph(4)
+        g.name = "test_graph"
 
-        with pytest.raises(AssertionError, match="invalid graph: undirected graph"):
+        with pytest.raises(
+            AssertionError, match=r"invalid graph \(test_graph\): undirected graph"
+        ):
             Model._is_valid_graph(g)
 
     def test_is_valid_graph_cycles(self):
@@ -215,35 +218,38 @@ class TestModelValidation:
         Check a self cycle and a non self cycle
         """
 
-        g = nx.DiGraph()
+        g = nx.DiGraph(name="test_graph")
         g.add_edges_from([[1, 2], [2, 3], [3, 1]])
         # cycle goes from 1 -> 2 -> 3 -> 1
 
         with pytest.raises(
-            AssertionError, match="invalid graph: graph contains cycles"
+            AssertionError, match=r"invalid graph \(test_graph\): graph contains cycles"
         ):
             Model._is_valid_graph(g)
 
-        g = nx.DiGraph()
+        g = nx.DiGraph(name="test_graph")
         g.add_edge(1, 1)
         # cycle goes from 1 -> 1
 
         with pytest.raises(
-            AssertionError, match="invalid graph: graph contains cycles"
+            AssertionError, match=r"invalid graph \(test_graph\): graph contains cycles"
         ):
             Model._is_valid_graph(g)
 
     def test_is_valid_graph_isolates(self):
         """Test is_graph_valid that correctly identifies isolated nodes"""
 
-        g = nx.DiGraph()
+        g = nx.DiGraph(name="test_graph")
         g.add_edges_from([[1, 2], [2, 3]])
         g.add_node(4)
         # 4 is the isolated node
 
         with pytest.raises(
             AssertionError,
-            match=r"invalid graph: graph contains isolated node\(s\) \[4\]",
+            match=(
+                r"invalid graph \(test_graph\): graph contains"
+                r" isolated node\(s\) \[4\]"
+            ),
         ):
             Model._is_valid_graph(g)
 
@@ -258,11 +264,12 @@ class TestModelValidation:
 
         g = deepcopy(standard_G)
         g.add_edge("log", "test")
+        # g.name = "test_graph"
 
         with pytest.raises(
             Exception,
             match=(
-                r"invalid graph: callable \('func'\) "
+                r"invalid graph \(test_graph\): callable \('func'\) "
                 r"is not defined for node\(s\) \['test'\]"
             ),
         ):
@@ -273,7 +280,7 @@ class TestModelValidation:
         with pytest.raises(
             Exception,
             match=(
-                r"invalid graph: output \('output'\) "
+                r"invalid graph \(test_graph\): output \('output'\) "
                 r"is not defined for node\(s\) \['test'\]"
             ),
         ):
@@ -284,7 +291,7 @@ class TestModelValidation:
         with pytest.raises(
             Exception,
             match=(
-                r"invalid graph: signature \('sig'\) "
+                r"invalid graph \(test_graph\): signature \('sig'\) "
                 r"is not defined for node\(s\) \['test'\]"
             ),
         ):
@@ -295,7 +302,7 @@ class TestModelValidation:
         with pytest.raises(
             Exception,
             match=(
-                r"invalid graph: variable \('val'\) "
+                r"invalid graph \(test_graph\): variable \('val'\) "
                 r"is not defined for edge\(s\) \[\('log', 'test'\)\]"
             ),
         ):
