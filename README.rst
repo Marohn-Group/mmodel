@@ -20,34 +20,52 @@ To create a nonlinear model that has the result of
 
     from mmodel import ModelGraph, Model, MemHandler
     import math
+    import operator
 
-    def func_a(x, y):
-        return x + y
+    def user_func(sum_xy, log_xy):
+        """Function that adds a value to the multiplied inputs"""
+        return sum_xy * log_xy + 6
 
-    def func_b(sum_xy, base):
-        return math.log(sum_xy, base)
+The graph is defined using grouped edges (the ``networkx`` syntax of edge
+definition also works)
 
-    def func_c(sum_xy, log_xy):
-        return sum_xy * log_xy
+.. code-block:: python
 
-    # create graph links
-
+    # create graph edges
     grouped_edges = [
-        ("func a", ["func b", "func c"]),
-        ("func b", "func c"),
+        ("add", ["log", "user func"]),
+        ("log", "user func"),
     ]
 
+The functions are then be added to node attributes. The order of definition
+is node_name, node_func, output, input (if different from original function),
+and modifiers.
+
+.. code-block:: python
+
+    # define note objects
     node_objects = [
-        ("func a", func_a, ["sum_xy"]),
-        ("func b", func_b, ["log_xy"]),
-        ("func c", func_c, ["result"]),
+        ("add", operator.add, "sum_xy", ['x', 'y']),
+        ("log", math.log, "log_xy", ['sum_xy', 'log_base']),
+        ("user func", user_func, "result"),
     ]
 
     graph = ModelGraph(name="example_graph")
     graph.add_grouped_edges_from(grouped_edges)
     graph.set_node_objects_from(node_objects)
 
+To define the model, the name, graph, and handler needs to specified. Additional
+parameter include modifiers, description, and returns list. The input parameters
+of the model is determined based on the node information.
+
+.. code-block:: python
+
     example_model = Model("example_model", graph, handler=(MemHandler, {}))
+
+The model behaves like a Python function, with additional metadata. The graph can
+be plotted using the ``draw`` method.
+
+.. code-block:: python
 
     >>> print(example_model)
     example_model(base, x, y)
@@ -56,47 +74,73 @@ To create a nonlinear model that has the result of
       handler: MemHandler, {}
       modifiers: none
 
-    >>> example_model(2, 5, 3) # (5 + 3)log(5 + 3, 2)
-    24.0
+    >>> example_model(2, 5, 3) # (5 + 3)log(5 + 3, 2) + 6
+    30.0
 
-The resulting ``example_func`` is callable.
+    >>> example_model.draw()
 
-One key feature of ``mmodel`` is modifiers, which modify callables post
-definition. To loop the "base" parameter.
+The resulting graph contains the model metadata and detailed node information
+
+.. |br| raw:: html
+    
+    <br/>
+
+.. .. image:: example.png
+..   :width: 300
+..   :alt: example model graph
+
+|br|
+One key feature of ``mmodel`` that differs from other workflow is modifiers, 
+which modify callables post definition. Modifiers works on both the node level and model level.
+
+Example: Using modifier and graph to loop the nodes that requires the "log_base" parameter.
 
 .. code-block:: python 
 
     from mmodel import subgraph_by_parameters, modify_subgraph, loop_modifier
 
-    subgraph = subgraph_by_parameters(graph, ["base"])
+    subgraph = subgraph_by_parameters(graph, ["log_base"])
     loop_node = Model(
-        "loop_node",
+        "loop_submodel",
         subgraph,
-        (MemHandler, {}),
-        modifiers=[(loop_modifier, {"parameter": "base"})],
+        handler=(MemHandler, {}),
+        modifiers=[(loop_modifier, {"parameter": "log_base"})],
     )
-    looped_graph = modify_subgraph(graph, subgraph, "loop node", loop_node)
-    looped_model = Model("loop_model", looped_graph, loop_node.handler)
+    looped_graph = modify_subgraph(
+        graph, subgraph, "loop_node", loop_node, output="looped_result"
+    )
+
+    looped_model = Model("loopped_model", looped_graph, loop_node.handler)
+
+We can inspect the loop node as well as the new model
+
+.. code-block:: python 
+
+    >>> print(loop_node)
+    loop_submodel(log_base, sum_xy)
+      returns: result
+      handler: MemHandler, {}
+      modifiers: [loop_modifier, {'parameter': 'log_base'}]
 
     >>> print(looped_model)
-    loop_model(base, x, y)
-        returns: result
-        handler: MemHandler, {}
-        modifiers: []
+    loopped_model(log_base, x, y)
+      returns: looped_result
+      handler: MemHandler, {}
+      modifiers: []
     
-    >>> looped_model([2, 4], 5, 3) # (5 + 3)log(5 + 3, 2)
-    [24.0, 12.0]
+    >>> looped_model([2, 4], 5, 3) # (5 + 3)log(5 + 3, 2) + 6
+    [30.0, 18.0]
 
 
-Modifiers can also be added to the whole model or a single node.
-
-To draw the graph or the underlying graph of the model:
+To draw the graph or the underlying graph of the model. Both methods default
+to show the detailed node information (``draw_graph`` function). Use ``draw_plain_graph``
+only shows node name.
 
 .. code-block:: python
 
-    from mmodel import draw_plain_graph
-    graph.draw(method=draw_plain_graph)
-    example_model.draw(method=draw_plain_graph)
+    from mmodel import draw_plain_graph, draw_graph
+    graph.draw(method=draw_plain_graph) # default to draw_graph
+    example_model.draw(method=draw_plain_graph) # default to draw_graph
 
 Installation
 ------------
