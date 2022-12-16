@@ -41,13 +41,7 @@ class Model:
     ):
 
         assert self._is_valid_graph(graph)
-        self.name = name
-        self.__name__ = name
-
-        # store only the copy of the graph, note this is not the same copy
-        # used by the handler
-        # modify self.graph does not change the model itself
-        # self.graph = nx.freeze(graph.deepcopy())
+        self.name = self.__name__ = name
 
         graph_returns = model_returns(graph)
         self.base_graph = nx.freeze(graph)
@@ -55,7 +49,7 @@ class Model:
         # if there are nodes in graph_returns that is not in returns
         # this means that some nodes are not needed for the calculation
         if set(graph_returns) - set(self.returns):
-            # returns subgraph view of the original graph, is also freezed
+            # returns subgraph view of the original graph, is also frozen
             self.graph = subgraph_by_returns(self.base_graph, returns)
         else:
             self.graph = self.base_graph
