@@ -9,6 +9,8 @@ it immutable. The handler is given as the (class, kwargs) tuple.
 
 .. code-block:: python
 
+    # see the Graph page on how to build a graph
+
     from mmodel import MemHandler
 
     model = Model(G, handler=(MemHandler, {}))

@@ -3,7 +3,7 @@ Modifying model and node
 
 Modifiers are used to modify callables. They can be python closures (wrappers)
 or decorators. They are used during the definition of the
-node object or the model. A modifier is provided as (func, kwargs) tuple.
+node object or the model. A modifier is provided as (func, kwargs_dict) tuple.
 
 To add a loop modifier to the node 'add':
 
@@ -23,11 +23,11 @@ To add a loop modifier to the node 'add':
 
     G.add_edge('add', 'power')
     # set object without modifiers
-    G.set_node_object('power', func_b, ['d'])
+    G.set_node_object('power', func_b, 'd')
 
     # set object with modifier
     G.set_node_object(
-        'add', func_a, ['c'], modifiers=[(loop_modifier, {"parameter": "b"})]
+        'add', func_a, 'c', modifiers=[(loop_modifier, {"parameter": "b"})]
     )
 
     # post modification
@@ -48,7 +48,6 @@ For example:
 
     ... modifiers=[(loop_modifier(parameter='b'), {}), ...]
     
-
 
 Modifier chaining
 ------------------

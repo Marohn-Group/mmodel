@@ -81,15 +81,14 @@ be plotted using the ``draw`` method.
 
 The resulting graph contains the model metadata and detailed node information
 
-.. |br| raw:: html
+.. .. |br| raw:: html
     
-    <br/>
+..     <br/>
 
 .. .. image:: example.png
 ..   :width: 300
 ..   :alt: example model graph
 
-|br|
 One key feature of ``mmodel`` that differs from other workflow is modifiers, 
 which modify callables post definition. Modifiers works on both the node level and model level.
 

@@ -30,25 +30,28 @@ Subgraph as model
 
 Subgraphing is also useful if we want to apply modifiers to part of the
 graph. For example, we want to loop a variable that only part of the subgraph
-uses. Here we loop the "base" parameter from the Quickstart example.
+uses. Here we loop the "log_base" parameter from the Quickstart example.
 
-.. code-block:: python
+.. code-block:: python 
 
     from mmodel import subgraph_by_parameters, modify_subgraph, loop_modifier
 
-    subgraph = subgraph_by_parameters(graph, ["base"])
+    subgraph = subgraph_by_parameters(graph, ["log_base"])
     loop_node = Model(
-        "loop_node",
+        "loop_submodel",
         subgraph,
-        (MemHandler, {}),
-        modifiers=[(loop_modifier, {"parameter": "base"})],
+        handler=(MemHandler, {}),
+        modifiers=[(loop_modifier, {"parameter": "log_base"})],
     )
-    looped_graph = modify_subgraph(graph, subgraph, "loop node", loop_node)
-    looped_model = Model("loop_model", looped_graph, loop_node.handler)
+    looped_graph = modify_subgraph(
+        graph, subgraph, "loop_node", loop_node, output="looped_result"
+    )
+
+    looped_model = Model("loopped_model", looped_graph, loop_node.handler)
 
 .. note::
 
-    The process above: 
+    The steps:
 
     1. filter the graph with ``subgraph_by_parameters``
     2. create subgraph model with ``Model`` and loop modifiers  
