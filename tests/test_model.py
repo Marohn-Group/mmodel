@@ -77,6 +77,22 @@ class TestModel:
 
         assert str(model_instance).replace("\n", "\l") in dot_graph.source
 
+    def test_model_draw_export(self, model_instance, tmp_path):
+        """Test the draw method that export to files
+
+        Check the model description is in the file content
+        """
+
+        filename = str(tmp_path) + ".dot"
+        model_instance.draw(export=filename)
+        reference = str(model_instance).replace("\n", "").replace("\l", "")
+
+        with open(filename, "r") as f:
+
+            assert reference in f.read().replace("\n", "").replace("\l", "").replace(
+                "\\", ""
+            )
+
     def test_model_view_node(self, model_instance):
         """Test if view node outputs node information correctly"""
 

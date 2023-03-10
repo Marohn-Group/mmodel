@@ -37,6 +37,7 @@ Added
 - graph node definition allows for builtin and numpy ufunc
 - graph node inputs allows default value with a (parameter, default) tuple
 - add name attribute to Model
+- add export to graph and model's ``draw`` method
 
 [0.4.0] - 2022-10-3
 ------------------------

@@ -144,11 +144,20 @@ class Model:
 
         return self.graph.view_node(node)
 
-    def draw(self, method: callable = draw_graph):
+    def draw(self, method: callable = draw_graph, export=None):
         """Draw the graph of the model
+
+        :param str export: filename to export to, extension name required.
 
         A drawing is provided. Defaults to ``draw_graph``.
         '\l' forces the label to align left when it is defined after the line.
+        Returns the dot_graph (can be rendered in Jupyter notebook).
+        If the export parameter is specified, the dot file is saved to file.
+        See graphviz.render() for more rendering options.
         """
 
-        return method(self.graph, label=str(self).replace("\n", "\l") + "\l")
+        dot_graph = method(self.graph, label=str(self).replace("\n", "\l") + "\l")
+        if export:
+            dot_graph.render(outfile=export)
+        
+        return  dot_graph

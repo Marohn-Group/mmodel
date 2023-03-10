@@ -4,6 +4,7 @@ import pytest
 from functools import wraps
 from networkx import DiGraph
 from inspect import signature
+import os
 
 
 class TestAddEdge:
@@ -61,7 +62,6 @@ class TestAddEdge:
 
         base_G.add_node("func_d", func=func_d, output="x", sig=signature(func_d))
         assert "val" not in base_G.edges["func_a", "func_d"]
-
 
     def test_add_grouped_edge_without_list(self, base_G):
         """Test add_grouped_edge
@@ -261,6 +261,20 @@ class TestModelGraphBasics:
         dot_graph = mmodel_G.draw(draw_graph)
         label = """label="ModelGraph named \'test_graph\' with 5 nodes and 5 edges"""
         assert label in dot_graph.source
+
+    def test_draw_export(self, mmodel_G, tmp_path):
+        """Test the draw method that export to files
+
+        Check the graph description is in the file content
+        """
+
+        filename = str(tmp_path) + ".dot"
+        mmodel_G.draw(draw_graph, export=filename)
+
+        label = """label="ModelGraph named \'test_graph\' with 5 nodes and 5 edges"""
+
+        with open(filename, "r") as f:
+            assert label in f.read()
 
 
 class TestGraphOperation:
