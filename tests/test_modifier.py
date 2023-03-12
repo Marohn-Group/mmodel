@@ -26,6 +26,15 @@ def test_loop(example_func):
     assert loop_mod(a=1, b=[1, 2, 3], c=4) == [6, 7, 8]
 
 
+def test_loop_exceptions(example_func):
+    """Test loop modifier exception if the input value is not an iterable"""
+
+    loop_mod = loop_modifier(example_func, "b")
+    
+    with pytest.raises(Exception, match="b value is not iterable"):
+        loop_mod(a=1, b=1, c=4)
+
+
 def test_zip_loop_list(example_func):
     """Test zip loop modifier with list input"""
 

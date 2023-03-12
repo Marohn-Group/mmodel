@@ -13,6 +13,13 @@ def loop_modifier(func, parameter: str):
     def loop_wrapped(**kwargs):
 
         loop_values = kwargs.pop(parameter)
+
+        try:
+         # make sure the parameter input is iterable
+            iter(loop_values)
+        except TypeError:
+            raise Exception(f"{parameter} value is not iterable")
+
         return [func(**kwargs, **{parameter: value}) for value in loop_values]
 
     return loop_wrapped
