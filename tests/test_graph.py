@@ -268,7 +268,7 @@ class TestModelGraphBasics:
         Check the graph description is in the file content
         """
 
-        filename = str(tmp_path) + ".dot"
+        filename = tmp_path / "test_draw.dot"
         mmodel_G.draw(draw_graph, export=filename)
 
         label = """label="ModelGraph named \'test_graph\' with 5 nodes and 5 edges"""

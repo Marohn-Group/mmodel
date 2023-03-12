@@ -83,7 +83,7 @@ class TestModel:
         Check the model description is in the file content
         """
 
-        filename = str(tmp_path) + ".dot"
+        filename = tmp_path / "test_draw.dot"
         model_instance.draw(export=filename)
         reference = str(model_instance).replace("\n", "").replace("\l", "")
 
