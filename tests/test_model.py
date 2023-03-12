@@ -252,23 +252,6 @@ class TestModelValidation:
         ):
             Model._is_valid_graph(g)
 
-    def test_is_valid_graph_isolates(self):
-        """Test is_graph_valid that correctly identifies isolated nodes"""
-
-        g = nx.DiGraph(name="test_graph")
-        g.add_edges_from([[1, 2], [2, 3]])
-        g.add_node(4)
-        # 4 is the isolated node
-
-        with pytest.raises(
-            AssertionError,
-            match=(
-                r"invalid graph \(test_graph\): graph contains"
-                r" isolated node\(s\) \[4\]"
-            ),
-        ):
-            Model._is_valid_graph(g)
-
     def test_is_valid_graph_missing_attr(self, standard_G):
         """Test is_graph_valid that correctly identifies isolated nodes
 

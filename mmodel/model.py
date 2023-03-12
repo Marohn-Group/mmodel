@@ -116,10 +116,6 @@ class Model:
         assert not nx.recursive_simple_cycles(
             G
         ), f"invalid graph ({G.name}): graph contains cycles"
-        assert not list(nx.isolates(G)), (
-            f"invalid graph ({G.name}): "
-            f"graph contains isolated node(s) {list(nx.isolates(G))}"
-        )
 
         assert is_node_attr_defined(G, "func", "callable")
         # the following might occur when the node object is incorrectly constructed
