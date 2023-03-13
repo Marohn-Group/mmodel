@@ -3,6 +3,7 @@ import networkx as nx
 from mmodel.draw import draw_graph
 from copy import deepcopy
 from mmodel.modifier import signature_modifier, pos_signature_modifier
+from mmodel.filter import subnodes_by_inputs, subnodes_by_outputs
 import types
 import numpy as np
 
@@ -38,10 +39,10 @@ class ModelGraph(nx.DiGraph):
 
         node_dict = self.nodes[node]
         # store the base object
-        node_dict["base_func"] = func
+        node_dict["_func"] = func
         modifiers = modifiers or list()
         if inputs:
-            # if inputs are builtin or ufunc
+            # if function is built-in or ufunc
             if isinstance(func, types.BuiltinFunctionType) or isinstance(
                 func, np.ufunc
             ):
@@ -115,9 +116,9 @@ class ModelGraph(nx.DiGraph):
             # the edge "val" is not defined if the parent node does not
             # have "output" attribute, or the child node does not have
             # the parameter
-            
+
             # extract the parameter dictionary
-            v_sig = getattr(self.nodes[v].get("sig", None), 'parameters', {})
+            v_sig = getattr(self.nodes[v].get("sig", None), "parameters", {})
             if "output" in self.nodes[u] and self.nodes[u]["output"] in v_sig:
                 self.edges[u, v]["val"] = self.nodes[u]["output"]
 
@@ -131,7 +132,7 @@ class ModelGraph(nx.DiGraph):
         sig_list = [str(param) for param in node_dict["sig"].parameters.values()]
         # if it is not a proper function just print the repr
         # Model class instance has the attr __name__
-        base_name = getattr(node_dict["base_func"], "__name__", repr(callable))
+        base_name = getattr(node_dict["_func"], "__name__", repr(callable))
         modifier_str_list = [
             f"{func.__name__}, {kwargs}" for func, kwargs in node_dict["modifiers"]
         ]
@@ -145,6 +146,25 @@ class ModelGraph(nx.DiGraph):
                 f"  modifiers: {modifier_str}",
             ]
         )
+
+    # graph operations
+    def subgraph(self, nodes=None, inputs=None, outputs=None):
+        """Extract subgraph by nodes, inputs, output
+
+        If multiple parameters are specified, the result is a union
+        of the selection.
+        """
+
+        nodes = nodes or []
+        node_inputs = subnodes_by_inputs(self, inputs or [])
+        node_outputs = subnodes_by_outputs(self, outputs or [])
+
+        # convert nodes to list because the parent class method accept generator
+        # for nodes.
+        # may consider not use the same name as the parent class to avoid collision
+        subgraph_nodes = set(list(nodes) + node_inputs + node_outputs) # unique nodes
+
+        return super().subgraph(subgraph_nodes)
 
     def draw(self, method=draw_graph, export=None):
         """Draw the graph
@@ -162,8 +182,8 @@ class ModelGraph(nx.DiGraph):
 
         if export:
             dot_graph.render(outfile=export)
-        
-        return  dot_graph
+
+        return dot_graph
 
     def deepcopy(self):
         """Deepcopy graph

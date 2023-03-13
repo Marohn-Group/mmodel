@@ -5,7 +5,7 @@ from mmodel.utility import (
     is_edge_attr_defined,
     model_returns,
 )
-from mmodel.filter import subgraph_by_returns
+from mmodel.filter import subnodes_by_outputs
 from mmodel.draw import draw_graph
 import networkx as nx
 from textwrap import wrap as txtwrap
@@ -35,38 +35,30 @@ class Model:
         name,
         graph,
         handler,
-        modifiers=None,
-        description: str = "",
-        returns: list = None,
+        modifiers: list = None,
+        description: str = ""
+        # returns: list = None,
     ):
 
         assert self._is_valid_graph(graph)
         self.name = self.__name__ = name
 
-        graph_returns = model_returns(graph)
-        self.base_graph = nx.freeze(graph)
-        self.returns = returns or graph_returns
-        # if there are nodes in graph_returns that is not in returns
-        # this means that some nodes are not needed for the calculation
-        if set(graph_returns) - set(self.returns):
-            # returns subgraph view of the original graph, is also frozen
-            self.graph = subgraph_by_returns(self.base_graph, returns)
-        else:
-            self.graph = self.base_graph
-
+        # create a copy of the graph
+        self._graph = nx.freeze(graph.deepcopy())
+        self.returns = model_returns(self._graph) # tuples
         self.modifiers = modifiers or list()
         self.handler = handler
         self.description = description
 
         handler_class, handler_kwargs = handler
 
-        executor = handler_class(name, self.graph, self.returns, **handler_kwargs)
+        executor = handler_class(name, self._graph, self.returns, **handler_kwargs)
 
         for mdf, kwargs in self.modifiers:
             executor = mdf(executor, **kwargs)
 
         self.__signature__ = executor.__signature__
-        # self.output = executor.output
+
         # final callable
         self.executor = executor
 
@@ -125,20 +117,26 @@ class Model:
 
         return True
 
+    @property
+    def graph(self):
+        """The graph attribute output a copy of the graph"""
+        return self._graph.deepcopy()
+
+
     def get_node(self, node):
         """Quick access to node within the model"""
 
-        return self.graph.nodes[node]
+        return self._graph.nodes[node]
 
     def get_node_object(self, node):
         """Quick access to node callable within the model"""
 
-        return self.graph.nodes[node]["func"]
+        return self._graph.nodes[node]["func"]
 
     def view_node(self, node):
         """View a specific node"""
 
-        return self.graph.view_node(node)
+        return self._graph.view_node(node)
 
     def draw(self, method: callable = draw_graph, export=None):
         """Draw the graph of the model
@@ -152,8 +150,8 @@ class Model:
         See graphviz.render() for more rendering options.
         """
 
-        dot_graph = method(self.graph, label=str(self).replace("\n", "\l") + "\l")
+        dot_graph = method(self._graph, label=str(self).replace("\n", "\l") + "\l")
         if export:
             dot_graph.render(outfile=export)
-        
-        return  dot_graph
+
+        return dot_graph

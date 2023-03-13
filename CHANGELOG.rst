@@ -14,13 +14,14 @@ Change graph API where individual node can only have a single output
 Fixed
 ^^^^^
 
-- fix an issue where modify subgraph cannot add inputs or modifiers
-- fix an issue in tests that node attributes are not compared in `graph_equal()`
+- fix the issue where modify subgraph cannot add inputs or modifiers
+- fix the issue in tests that node attributes are not compared in `graph_equal()`
+- fix the issue that original graph freezes when a model is created
 
 Changed
 ^^^^^^^^
 
-- changed "returns" to "output", the value should be a string
+- change "returns" to "output", the value should be a string
 - "returns" now a Model exclusive parameter which denotes the order
   of graph output
 - Model string output wraps each line at 80 characters.
@@ -28,6 +29,15 @@ Changed
 - default keyword argument does not show up in model signature
 - model's graph checking generates more detailed exception messages
 - allow isolated graph in model (for single node models)
+- subgraph method of the graph is modified to create subgraph with
+  inputs and outputs
+- model graph is a now a property method, a new copy of graph is created
+  every time
+- change ``util.modify_subgraph`` function to ``util.replace_subgraph``
+- change ``subgraph_by_parameters`` and ``subgraph_by_returns`` to
+  ``subnodes_by_inputs`` and ``subnodes_by_outputs``
+- change node attribute "base_func" to "_func"
+- change model attribute "base_graph" to "graph"
 
 Added
 ^^^^^^

@@ -134,7 +134,7 @@ class TestSetNodeObject:
     def test_set_node_object(self, base_G):
         """Test node basic attributes"""
 
-        assert base_G.nodes["func_a"]["base_func"].__name__ == "func_a"
+        assert base_G.nodes["func_a"]["_func"].__name__ == "func_a"
         assert base_G.nodes["func_a"]["output"] == "o"
 
     def test_set_node_object_inputs(self, base_G):
@@ -153,7 +153,7 @@ class TestSetNodeObject:
     def test_set_node_object_base_func(self, base_G):
         """Test that the base function is not changed"""
 
-        assert base_G.nodes["func_a"]["base_func"](m=1, n=2) == 3
+        assert base_G.nodes["func_a"]["_func"](m=1, n=2) == 3
 
     def test_set_node_object_modified_func(self, base_G):
         """Test the final node function has the correct signature and output"""
@@ -277,7 +277,7 @@ class TestModelGraphBasics:
             assert label in f.read()
 
 
-class TestGraphOperation:
+class TestNetworkXGraphOperation:
     """Test the copy, deepcopy, chain, subgraph, subgraph copy based on networkx"""
 
     def test_copy(self, mmodel_G):
@@ -353,3 +353,33 @@ class TestGraphOperation:
 
         H.name = "subgraph_test"
         assert mmodel_G.name != "subgraph_test"
+
+
+class TestMModelGraphOperation:
+    """Test graph operation defined specific to mmodel"""
+
+    def test_subgraph_by_outputs(self, mmodel_G):
+        """Test subgraph if outputs are specified"""
+
+        subgraph = mmodel_G.subgraph(outputs=["m"])
+        assert graph_equal(subgraph, mmodel_G.subgraph(nodes=["add", "log"]))
+
+    def test_subgraph_by_inputs(self, mmodel_G):
+        """Test subgraph if inputs are specified"""
+
+        subgraph = mmodel_G.subgraph(inputs=["f"])
+        assert graph_equal(subgraph, mmodel_G.subgraph(nodes=["poly", "multiply"]))
+
+    def test_subgraph_combined(self, mmodel_G):
+        """Test subgraph with nodes, outputs and inputs
+
+        The resulting graph should be union of all selected values
+        """
+
+        subgraph = mmodel_G.subgraph(inputs=["f"], outputs=["m"])
+        assert graph_equal(
+            subgraph, mmodel_G.subgraph(nodes=["add", "log", "poly", "multiply"])
+        )
+
+        subgraph = mmodel_G.subgraph(nodes=["subtract"], inputs=["f"], outputs=["m"])
+        assert graph_equal(subgraph, mmodel_G)

@@ -96,9 +96,9 @@ Example: Using modifier and graph to loop the nodes that requires the "log_base"
 
 .. code-block:: python 
 
-    from mmodel import subgraph_by_parameters, modify_subgraph, loop_modifier
+    from mmodel import modify_subgraph, loop_modifier
 
-    subgraph = subgraph_by_parameters(graph, ["log_base"])
+    subgraph = graph.subgraph(inputs=["log_base"])
     loop_node = Model(
         "loop_submodel",
         subgraph,

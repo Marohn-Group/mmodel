@@ -53,7 +53,7 @@ def standard_G():
         (
             "add",
             {
-                "base_func": addition,
+                "_func": addition,
                 "func": addition,
                 "output": "c",
                 "sig": signature(addition),
@@ -63,7 +63,7 @@ def standard_G():
         (
             "subtract",
             {
-                "base_func": subtraction,
+                "_func": subtraction,
                 "func": subtraction,
                 "output": "e",
                 "sig": signature(subtraction),
@@ -73,7 +73,7 @@ def standard_G():
         (
             "poly",
             {
-                "base_func": polynomial,
+                "_func": polynomial,
                 "func": polynomial,
                 "output": "g",
                 "sig": signature(polynomial),
@@ -83,7 +83,7 @@ def standard_G():
         (
             "multiply",
             {
-                "base_func": multiplication,
+                "_func": multiplication,
                 "func": multiplication,
                 "output": "k",
                 "sig": signature(multiplication),
@@ -93,7 +93,7 @@ def standard_G():
         (
             "log",
             {
-                "base_func": logarithm,
+                "_func": logarithm,
                 "func": logarithm,
                 "output": "m",
                 "sig": signature(logarithm),

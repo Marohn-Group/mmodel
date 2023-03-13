@@ -49,7 +49,19 @@ class TestModel:
     def test_model_graph_freeze(self, model_instance):
         """Test the graph is frozen"""
 
-        assert nx.is_frozen(model_instance.graph)
+        assert nx.is_frozen(model_instance._graph)
+
+    def test_model_original_graph_not_frozen(self, mmodel_G):
+        """Make sure that the original graph is not frozen when define models"""
+
+        Model("model_instance", mmodel_G, (BasicHandler, {}))
+        assert not nx.is_frozen(mmodel_G)
+
+    def test_model_graph_property(self, model_instance):
+        """Test the graph attribute generates copy of the graph every time"""
+
+        assert not nx.is_frozen(model_instance.graph)
+        assert model_instance.graph is not model_instance._graph
 
     def test_model_execution(self, model_instance):
         """Test if the default is correctly used"""
@@ -94,7 +106,7 @@ class TestModel:
             )
 
     def test_model_view_node(self, model_instance):
-        """Test if view node outputs node information correctly"""
+        """Test if view node outputs information correctly"""
 
         node_s = """\
         log
@@ -116,61 +128,6 @@ class TestModel:
         assert f"handler: H5Handler, {{'fname': {repr(path)}}}".replace(" ", "") in str(
             h5model
         ).replace("\n", "").replace(" ", "")
-
-    def test_model_returns_same(self, mmodel_G):
-        """Test model with custom returns
-
-        The return order should be the same as the returns list, and the base graph
-        and graph should be the same (same object in fact)
-        """
-
-        # less returns
-        model = Model(
-            "model_instance", mmodel_G, (BasicHandler, {}), returns=["m", "k"]
-        )
-        assert model.graph is model.base_graph
-        assert model.returns == ["m", "k"]
-        assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36)
-
-    def test_model_returns_more(self, mmodel_G):
-        """Test model with custom returns that are more than graph"""
-        # more returns
-        model = Model(
-            "model_instance", mmodel_G, (BasicHandler, {}), returns=["m", "k", "c"]
-        )
-        assert model.graph is model.base_graph
-        assert model.returns == ["m", "k", "c"]
-        assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36, 12)
-
-    def test_model_returns_less(self, mmodel_G):
-        """Test model with custom returns that are less than graph
-
-        In this case the graph is adjusted
-        """
-        # more returns
-        model = Model("model_instance", mmodel_G, (BasicHandler, {}), returns=["k"])
-
-        assert graph_equal(model.base_graph, mmodel_G)
-        assert "log" not in model.graph.nodes
-        assert nx.is_frozen(model.graph)  # check that it is frozen
-        assert model.returns == ["k"]
-        assert model(a=10, d=15, f=1) == -36
-
-    def test_model_returns_less_partial(self, mmodel_G):
-        """Test model with less than graph returns but with added intermediate value
-
-        In this case the graph is adjusted
-        """
-        # more returns
-        model = Model(
-            "model_instance", mmodel_G, (BasicHandler, {}), returns=["k", "c"]
-        )
-
-        assert graph_equal(model.base_graph, mmodel_G)
-        assert "log" not in model.graph.nodes
-        assert nx.is_frozen(model.graph)  # check that it is frozen
-        assert model.returns == ["k", "c"]
-        assert model(a=10, d=15, f=1) == (-36, 12)
 
 
 class TestModifiedModel:
@@ -220,13 +177,13 @@ class TestModelValidation:
     def test_is_valid_graph_digraph(self):
         """Test is_graph_valid that correctly identifies non directed graphs"""
 
-        g = nx.complete_graph(4)
-        g.name = "test_graph"
+        G = nx.complete_graph(4)
+        G.name = "test_graph"
 
         with pytest.raises(
             AssertionError, match=r"invalid graph \(test_graph\): undirected graph"
         ):
-            Model._is_valid_graph(g)
+            Model._is_valid_graph(G)
 
     def test_is_valid_graph_cycles(self):
         """Test is_graph_valid that correctly identifies cycles
@@ -234,23 +191,23 @@ class TestModelValidation:
         Check a self cycle and a non self cycle
         """
 
-        g = nx.DiGraph(name="test_graph")
-        g.add_edges_from([[1, 2], [2, 3], [3, 1]])
+        G = nx.DiGraph(name="test_graph")
+        G.add_edges_from([[1, 2], [2, 3], [3, 1]])
         # cycle goes from 1 -> 2 -> 3 -> 1
 
         with pytest.raises(
             AssertionError, match=r"invalid graph \(test_graph\): graph contains cycles"
         ):
-            Model._is_valid_graph(g)
+            Model._is_valid_graph(G)
 
-        g = nx.DiGraph(name="test_graph")
-        g.add_edge(1, 1)
+        G = nx.DiGraph(name="test_graph")
+        G.add_edge(1, 1)
         # cycle goes from 1 -> 1
 
         with pytest.raises(
             AssertionError, match=r"invalid graph \(test_graph\): graph contains cycles"
         ):
-            Model._is_valid_graph(g)
+            Model._is_valid_graph(G)
 
     def test_is_valid_graph_missing_attr(self, standard_G):
         """Test is_graph_valid that correctly identifies isolated nodes
@@ -261,9 +218,9 @@ class TestModelValidation:
         def test(a, b):
             return
 
-        g = deepcopy(standard_G)
-        g.add_edge("log", "test")
-        # g.name = "test_graph"
+        G = deepcopy(standard_G)
+        G.add_edge("log", "test")
+        # G.name = "test_graph"
 
         with pytest.raises(
             Exception,
@@ -272,9 +229,9 @@ class TestModelValidation:
                 r"is not defined for node\(s\) \['test'\]"
             ),
         ):
-            Model._is_valid_graph(g)
+            Model._is_valid_graph(G)
 
-        g.nodes["test"]["func"] = test
+        G.nodes["test"]["func"] = test
 
         with pytest.raises(
             Exception,
@@ -283,9 +240,9 @@ class TestModelValidation:
                 r"is not defined for node\(s\) \['test'\]"
             ),
         ):
-            Model._is_valid_graph(g)
+            Model._is_valid_graph(G)
 
-        g.nodes["test"]["output"] = "c"
+        G.nodes["test"]["output"] = "c"
 
         with pytest.raises(
             Exception,
@@ -294,9 +251,9 @@ class TestModelValidation:
                 r"is not defined for node\(s\) \['test'\]"
             ),
         ):
-            Model._is_valid_graph(g)
+            Model._is_valid_graph(G)
 
-        g.nodes["test"]["sig"] = inspect.signature(test)
+        G.nodes["test"]["sig"] = inspect.signature(test)
 
         with pytest.raises(
             Exception,
@@ -305,12 +262,12 @@ class TestModelValidation:
                 r"is not defined for edge\(s\) \[\('log', 'test'\)\]"
             ),
         ):
-            Model._is_valid_graph(g)
+            Model._is_valid_graph(G)
 
         # the last one will pass even tho it is empty
 
-        g.edges["log", "test"]["val"] = None
-        assert Model._is_valid_graph(g)
+        G.edges["log", "test"]["val"] = None
+        assert Model._is_valid_graph(G)
 
     def test_is_valid_graph_passing(self, mmodel_G):
         """Test is_valid_graph that correctly passing"""

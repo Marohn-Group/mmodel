@@ -159,7 +159,7 @@ def param_counter(graph, returns):
     return count
 
 
-def modify_subgraph(
+def replace_subgraph(
     graph,
     subgraph,
     name,
@@ -204,19 +204,24 @@ def modify_subgraph(
     return graph
 
 
-def modify_node(graph, node, func=None, modifiers=None, output=None):
+def modify_node(
+    graph, node, func=None, output=None, inputs=None, modifiers=None, inplace=False
+):
     """Add modifiers to node
 
     The result is a new graph with node object modified.
     :param str output: change the output of the node. If the node is not
         terminal, the output should not be changed.
+    :param bool inplace: if True, the original graph is modified
     """
-
-    graph = graph.deepcopy()
+    if not inplace:
+        graph = graph.deepcopy()
     func = func or graph.nodes[node]["func"]
     modifiers = modifiers or graph.nodes[node]["modifiers"]
     output = output or graph.nodes[node]["output"]
-    graph.set_node_object(node, func=func, output=output, modifiers=modifiers)
+    graph.set_node_object(
+        node, func=func, output=output, inputs=inputs, modifiers=modifiers
+    )
 
     return graph
 

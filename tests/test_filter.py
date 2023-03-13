@@ -1,46 +1,32 @@
 from tests.conftest import graph_equal
-from mmodel.filter import subgraph_by_parameters, subgraph_by_nodes, subgraph_by_returns
+from mmodel.filter import subnodes_by_inputs, subnodes_by_outputs
 
 
-def test_subgraph_by_parameters(mmodel_G):
-    """Test if the subgraph returns all nodes (including children)"""
+def test_subgraph_by_inputs(mmodel_G):
+    """Test if the subgraph returns all nodes (including child nodes)"""
 
-    subgraph1 = subgraph_by_parameters(mmodel_G, ["f"])
-    subgraph2 = mmodel_G.subgraph(["multiply", "poly"])
+    subgraph_nodes = subnodes_by_inputs(mmodel_G, ["f"])
+    assert set(subgraph_nodes) == {"poly", "multiply"}
 
-    # have the same copy
-    assert graph_equal(subgraph1, subgraph2)
-    # retains oringinal graph
-    assert subgraph1._graph == mmodel_G
-
-    # multiple parameters
-    subgraph3 = subgraph_by_parameters(mmodel_G, ["f", "g"])
-    assert graph_equal(subgraph3, subgraph2)
+    # multiple input parameters
+    subgraph_nodes = subnodes_by_inputs(mmodel_G, ["f", "g"])
+    assert set(subgraph_nodes) == {"poly", "multiply"}
 
     # whole graph
-    subgraph4 = subgraph_by_parameters(mmodel_G, ["a"])
-    assert graph_equal(subgraph4, mmodel_G)
+    subgraph_nodes = subnodes_by_inputs(mmodel_G, ["a"])
+    assert set(subgraph_nodes) == {"add", "subtract", "poly", "multiply", "log"}
 
 
-def test_subgraph_by_nodes(mmodel_G):
-    """Test if the subgraph contains all necessary nodes"""
+def test_subgraph_by_outputs(mmodel_G):
+    """Test if the subgraph returns all nodes (including parent nodes)"""
 
-    subgraph = subgraph_by_nodes(mmodel_G, ["subtract", "multiply"])
+    # return the original graph
+    subgraph_nodes = subnodes_by_outputs(mmodel_G, ["k", "m"])
+    assert set(subgraph_nodes) == {"add", "subtract", "poly", "multiply", "log"}
 
-    assert sorted(list(subgraph.nodes)) == ["multiply", "subtract"]
-
-
-def test_subgraph_by_returns(mmodel_G):
-    """Test if the subgraph returns all nodes (including parents)"""
-
-    # subgraph 1 and 2 should return the original graph
-    subgraph1 = subgraph_by_returns(mmodel_G, ["k", "m"])
-    assert graph_equal(subgraph1, mmodel_G)
-
-    subgraph2 = subgraph_by_returns(mmodel_G, ["c", "k", "m"])
-    assert graph_equal(subgraph2, mmodel_G)
+    subgraph_nodes = subnodes_by_outputs(mmodel_G, ["c", "k", "m"])
+    assert set(subgraph_nodes) == {"add", "subtract", "poly", "multiply", "log"}
 
     # partial graph
-    subgraph3 = subgraph_by_returns(mmodel_G, ["m"])
-    subgraph4 = mmodel_G.subgraph(["add", "log"])
-    assert graph_equal(subgraph3, subgraph4)
+    subgraph_nodes = subnodes_by_outputs(mmodel_G, ["m"])
+    assert set(subgraph_nodes) == {"add", "log"}
