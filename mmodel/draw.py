@@ -74,8 +74,8 @@ def draw_graph(G, label: str = ""):
 
     for u, v, edict in G.edges(data=True):
 
-        if "val" in edict:
-            xlabel = edict["val"]
+        if "var" in edict:
+            xlabel = edict["var"]
         else:
             xlabel = ""
 

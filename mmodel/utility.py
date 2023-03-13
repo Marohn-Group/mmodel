@@ -55,7 +55,7 @@ def model_returns(graph):
     for node in graph.nodes():
         returns.append(graph.nodes[node]["output"])
     for edge in graph.edges():
-        intermediate.append(graph.edges[edge]["val"])
+        intermediate.append(graph.edges[edge]["var"])
 
     final_returns = list(set(returns) - set(intermediate))
     final_returns.sort()

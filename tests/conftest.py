@@ -103,11 +103,11 @@ def standard_G():
     ]
 
     edge_list = [
-        ("add", "subtract", {"val": "c"}),
-        ("subtract", "multiply", {"val": "e"}),
-        ("add", "poly", {"val": "c"}),
-        ("poly", "multiply", {"val": "g"}),
-        ("add", "log", {"val": "c"}),
+        ("add", "subtract", {"var": "c"}),
+        ("subtract", "multiply", {"var": "e"}),
+        ("add", "poly", {"var": "c"}),
+        ("poly", "multiply", {"var": "g"}),
+        ("add", "log", {"var": "c"}),
     ]
 
     G = nx.DiGraph(name="test_graph")

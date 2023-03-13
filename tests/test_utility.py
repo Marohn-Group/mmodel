@@ -178,8 +178,8 @@ def test_replace_subgraph_terminal(mmodel_G):
     }
 
     # Test the edge attributes
-    assert graph.edges["add", "test"]["val"] == "c"
-    assert graph.edges["subtract", "test"]["val"] == "e"
+    assert graph.edges["add", "test"]["var"] == "c"
+    assert graph.edges["subtract", "test"]["var"] == "e"
 
 
 def test_replace_subgraph_middle(mmodel_G):
@@ -209,9 +209,9 @@ def test_replace_subgraph_middle(mmodel_G):
     }
 
     # Test the edge attributes
-    assert graph.edges["add", "test"]["val"] == "c"
+    assert graph.edges["add", "test"]["var"] == "c"
     # test node is connected to multiply node
-    assert graph.edges["test", "multiply"]["val"] == "e"
+    assert graph.edges["test", "multiply"]["var"] == "e"
 
 
 def test_modify_node(mmodel_G):

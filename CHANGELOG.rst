@@ -38,6 +38,7 @@ Changed
   ``subnodes_by_inputs`` and ``subnodes_by_outputs``
 - change node attribute "base_func" to "_func"
 - change model attribute "base_graph" to "graph"
+- change edge attribute "var" to "val"
 
 Added
 ^^^^^^

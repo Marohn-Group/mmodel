@@ -258,7 +258,7 @@ class TestModelValidation:
         with pytest.raises(
             Exception,
             match=(
-                r"invalid graph \(test_graph\): variable \('val'\) "
+                r"invalid graph \(test_graph\): variable \('var'\) "
                 r"is not defined for edge\(s\) \[\('log', 'test'\)\]"
             ),
         ):
@@ -266,7 +266,7 @@ class TestModelValidation:
 
         # the last one will pass even tho it is empty
 
-        G.edges["log", "test"]["val"] = None
+        G.edges["log", "test"]["var"] = None
         assert Model._is_valid_graph(G)
 
     def test_is_valid_graph_passing(self, mmodel_G):

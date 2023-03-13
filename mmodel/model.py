@@ -113,7 +113,7 @@ class Model:
         # the following might occur when the node object is incorrectly constructed
         assert is_node_attr_defined(G, "output")
         assert is_node_attr_defined(G, "sig", "signature")
-        assert is_edge_attr_defined(G, "val", "variable")
+        assert is_edge_attr_defined(G, "var", "variable")
 
         return True
 
