@@ -1,26 +1,8 @@
 from inspect import signature, Signature, Parameter
 import networkx as nx
 
-
-def param_sorter(parameter):
-    """Sorter for argument parameter
-
-    The values in the tuple are compared in sequential order
-    1. Order by parameter kind
-    2. Default parameter rank at the end of its kind
-    3. Alphabetical order
-
-    :param inspect.Parameter parameter: parameter object
-    :rtype: (bool, parameter.name, parameter.kind)
-    """
-
-    if parameter.default is not parameter.empty:
-        return parameter.kind, True, parameter.name
-    else:
-        return parameter.kind, False, parameter.name
-
-
-def model_signature(graph):
+# graph properties
+def modelgraph_signature(graph):
     """Obtain the signature from the model graph
 
     :param DiGraph graph: networkx.Digraph() object,
@@ -42,11 +24,14 @@ def model_signature(graph):
     return Signature(sorted(parameters.values(), key=param_sorter))
 
 
-def model_returns(graph):
+def modelgraph_returns(graph):
     """Obtain the return parameter from the model graph
 
     The assumption is that all return parameter names are unique.
     The function checks all returns value and all intermediate value (edge values)
+
+    :returns: list of variable names based on note outputs
+    :rtype: list
     """
 
     returns = []
@@ -60,6 +45,24 @@ def model_returns(graph):
     final_returns = list(set(returns) - set(intermediate))
     final_returns.sort()
     return final_returns
+
+
+def param_sorter(parameter):
+    """Sorter for argument parameter
+
+    The values in the tuple are compared in sequential order
+    1. Order by parameter kind
+    2. Default parameter rank at the end of its kind
+    3. Alphabetical order
+
+    :param inspect.Parameter parameter: parameter object
+    :rtype: (bool, parameter.name, parameter.kind)
+    """
+
+    if parameter.default is not parameter.empty:
+        return parameter.kind, True, parameter.name
+    else:
+        return parameter.kind, False, parameter.name
 
 
 def replace_signature(signature, replacement_dict):
@@ -80,34 +83,6 @@ def replace_signature(signature, replacement_dict):
         params[func] = Parameter(func, 1)
 
     return signature.replace(parameters=sorted(params.values(), key=param_sorter))
-
-
-def parse_parameters(parameters):
-    """Parse a list of parameters to signatures
-
-    :param list parameters: Parameters to parse. Element can either be a string
-        as the parameter name or a tuple/list as (parameter, default)
-
-    :return: parameter order and signature
-    """
-
-    param_order = []  # parameters in the correct order
-    sig_list = []  # signature values
-    sig_df_list = []  # default values
-    defultargs = {}  # default arguments dictionary
-    for var in parameters:
-        if isinstance(var, tuple) or isinstance(var, list):
-            var_name, default_value = var
-            param_order.append(var_name)
-            sig_df_list.append(Parameter(var_name, 1, default=default_value))
-            defultargs[var_name] = default_value
-        else:
-            param_order.append(var)
-            sig_list.append(Parameter(var, 1))
-
-    sig = Signature(sig_list + sig_df_list)  # the default values are ordered next
-
-    return sig, param_order, defultargs
 
 
 def graph_topological_sort(graph):
@@ -131,42 +106,8 @@ def graph_topological_sort(graph):
     return topological_order
 
 
-def param_counter(graph, returns):
-    """Count the number of times a parameter is used for graph execution
-
-    Count all function signature parameters. For extra returns,
-    add one to each count value.
-
-    :param list returns: method returns (include extra returns)
-    :return: dictionary with parameter_name: count pair
-    :rtype: dict
-    """
-
-    value_list = []
-    for sig in nx.get_node_attributes(graph, "sig").values():
-        for key, param in sig.parameters.items():
-
-            if param.default is param.empty:
-                value_list.append(key)
-
-    # add the additional parameter to list
-    value_list += returns
-
-    count = {}
-    for value in value_list:
-        count[value] = count.get(value, 0) + 1
-
-    return count
-
-
 def replace_subgraph(
-    graph,
-    subgraph,
-    name,
-    func,
-    output=None,
-    inputs=None,
-    modifiers=None,
+    graph, subgraph, name, func, output=None, inputs=None, modifiers=None
 ):
     """Replace subgraph with a node
 
@@ -207,7 +148,7 @@ def replace_subgraph(
 def modify_node(
     graph, node, func=None, output=None, inputs=None, modifiers=None, inplace=False
 ):
-    """Add modifiers to node
+    """Modify node
 
     The result is a new graph with node object modified.
     :param str output: change the output of the node. If the node is not
@@ -216,6 +157,7 @@ def modify_node(
     """
     if not inplace:
         graph = graph.deepcopy()
+
     func = func or graph.nodes[node]["func"]
     modifiers = modifiers or graph.nodes[node]["modifiers"]
     output = output or graph.nodes[node]["output"]
@@ -224,6 +166,62 @@ def modify_node(
     )
 
     return graph
+
+
+def parse_parameters(parameters):
+    """Parse a list of parameters to signatures
+
+    :param list parameters: Parameters to parse. Element can either be a string
+        as the parameter name or a tuple/list as (parameter, default)
+
+    :return: parameter order and signature
+    """
+
+    param_order = []  # parameters in the correct order
+    sig_list = []  # signature values
+    sig_df_list = []  # default values
+    defultargs = {}  # default arguments dictionary
+    for var in parameters:
+        if isinstance(var, tuple) or isinstance(var, list):
+            var_name, default_value = var
+            param_order.append(var_name)
+            sig_df_list.append(Parameter(var_name, 1, default=default_value))
+            defultargs[var_name] = default_value
+        else:
+            param_order.append(var)
+            sig_list.append(Parameter(var, 1))
+
+    sig = Signature(sig_list + sig_df_list)  # the default values are ordered next
+
+    return sig, param_order, defultargs
+
+
+def param_counter(graph, returns):
+    """Count the number of times a parameter is used for graph execution
+
+    Count all function signature parameters. For extra returns,
+    add one to each count value.
+
+    :param list returns: method returns (include extra returns)
+    :return: dictionary with parameter_name: count pair
+    :rtype: dict
+    """
+
+    value_list = []
+    for sig in nx.get_node_attributes(graph, "sig").values():
+        for key, param in sig.parameters.items():
+
+            if param.default is param.empty:
+                value_list.append(key)
+
+    # add the additional parameter to list
+    value_list += returns
+
+    count = {}
+    for value in value_list:
+        count[value] = count.get(value, 0) + 1
+
+    return count
 
 
 def parse_input(signature, *args, **kwargs):

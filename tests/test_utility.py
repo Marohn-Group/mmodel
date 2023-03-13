@@ -69,7 +69,7 @@ def test_model_signature(mmodel_G, mmodel_signature):
     should have default value.
     """
 
-    assert util.model_signature(mmodel_G) == mmodel_signature
+    assert util.modelgraph_signature(mmodel_G) == mmodel_signature
 
 
 def test_replace_signature(mmodel_signature):
@@ -111,7 +111,7 @@ def test_parse_parameters():
 def test_model_returns(mmodel_G):
     """Test graph_returns"""
 
-    assert util.model_returns(mmodel_G) == ["k", "m"]
+    assert util.modelgraph_returns(mmodel_G) == ["k", "m"]
 
 
 def test_graph_topological_sort(mmodel_G):

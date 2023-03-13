@@ -4,6 +4,12 @@ from mmodel.draw import draw_graph
 from copy import deepcopy
 from mmodel.modifier import signature_modifier, pos_signature_modifier
 from mmodel.filter import subnodes_by_inputs, subnodes_by_outputs
+from mmodel.utility import (
+    modelgraph_signature,
+    modelgraph_returns,
+    replace_subgraph,
+    modify_node,
+)
 import types
 import numpy as np
 
@@ -129,7 +135,6 @@ class ModelGraph(nx.DiGraph):
         """
 
         node_dict = self.nodes[node]
-        sig_list = [str(param) for param in node_dict["sig"].parameters.values()]
         # if it is not a proper function just print the repr
         # Model class instance has the attr __name__
         base_name = getattr(node_dict["_func"], "__name__", repr(callable))
@@ -147,6 +152,23 @@ class ModelGraph(nx.DiGraph):
             ]
         )
 
+    # graph properties
+    @property
+    def signature(self):
+        """Graph signature
+
+        :rtype: inspect.Signature object
+        """
+        return modelgraph_signature(self)
+
+    @property
+    def returns(self):
+        """Graph returns
+
+        :rtype: list
+        """
+        return modelgraph_returns(self)
+
     # graph operations
     def subgraph(self, nodes=None, inputs=None, outputs=None):
         """Extract subgraph by nodes, inputs, output
@@ -162,9 +184,21 @@ class ModelGraph(nx.DiGraph):
         # convert nodes to list because the parent class method accept generator
         # for nodes.
         # may consider not use the same name as the parent class to avoid collision
-        subgraph_nodes = set(list(nodes) + node_inputs + node_outputs) # unique nodes
+        subgraph_nodes = set(list(nodes) + node_inputs + node_outputs)  # unique nodes
 
         return super().subgraph(subgraph_nodes)
+
+    def replace_subgraph(
+        self, subgraph, name, func, output=None, inputs=None, modifiers=None
+    ):
+        """Replace subgraph with a node"""
+        return replace_subgraph(self, subgraph, name, func, output, inputs, modifiers)
+
+    def modify_node(
+        self, node, func=None, output=None, inputs=None, modifiers=None, inplace=False
+    ):
+        """Modify node attributes"""
+        return modify_node(self, node, func, output, inputs, modifiers, inplace)
 
     def draw(self, method=draw_graph, export=None):
         """Draw the graph

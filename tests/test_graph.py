@@ -5,6 +5,7 @@ from functools import wraps
 from networkx import DiGraph
 from inspect import signature
 import os
+import inspect
 
 
 class TestAddEdge:
@@ -383,3 +384,85 @@ class TestMModelGraphOperation:
 
         subgraph = mmodel_G.subgraph(nodes=["subtract"], inputs=["f"], outputs=["m"])
         assert graph_equal(subgraph, mmodel_G)
+
+    def test_replace_subgraph(self, mmodel_G):
+        """Test the replace_subgraph method replaces graph properly inplace or copy
+
+        See utils.replace_subgraph for more tests
+        """
+
+        subgraph = mmodel_G.subgraph(["multiply", "poly"])
+
+        def func(a, b, c, d):
+            return a + b + c + d
+
+        def mod(func, a):
+            @wraps(func)
+            def wrapped(*args, **kwargs):
+                return func(*args, **kwargs) + a
+
+            return wrapped
+
+        graph = mmodel_G.replace_subgraph(
+            subgraph, "test", func, "z", ["c", "e", "x", "y"], [(mod, {"a": 1})]
+        )
+
+        # a copy is created
+        assert graph != mmodel_G
+        assert "test" in graph
+
+        sig = graph.nodes["test"].pop("sig")
+        assert list(sig.parameters) == ["c", "e", "x", "y"]
+
+        modifiers = graph.nodes["test"].pop("modifiers")
+        assert modifiers[0][0].__name__ == "signature_modifier"
+        assert modifiers[1][0].__name__ == "mod"
+
+        graph.nodes["test"].pop("func")
+        assert graph.nodes["test"] == {"_func": func, "output": "z"}
+
+        # Test the edge attributes
+        assert graph.edges["add", "test"]["var"] == "c"
+        assert graph.edges["subtract", "test"]["var"] == "e"
+
+    def test_modify_node(self, mmodel_G):
+        """Test modify_node method
+
+        See utils.modify_node for more tests
+        """
+
+        def mod(func, a):
+            @wraps(func)
+            def wrapped(*args, **kwargs):
+                return func(*args, **kwargs) + a
+
+            return wrapped
+
+        mod_G = mmodel_G.modify_node("subtract", modifiers=[(mod, {"a": 1})])
+
+        # add one to the final value
+        assert mod_G.nodes["subtract"]["func"](1, 2) == 0
+
+
+class TestGraphProperty:
+    """Test graph property"""
+
+    def test_graph_signature(self, mmodel_G, mmodel_signature):
+        """Test graph signature
+
+        Test that the property updates when graph updates
+        """
+        assert mmodel_G.signature == mmodel_signature
+
+        mmodel_G.remove_node("log")
+        assert list(mmodel_G.signature.parameters) == ["a", "d", "f"]
+
+    def test_graph_returns(self, mmodel_G):
+        """Test graph returns
+
+        Test that the property updates when graph updates
+        """
+        assert mmodel_G.returns == ["k", "m"]
+
+        mmodel_G.remove_node("log")
+        assert mmodel_G.returns == ["k"]

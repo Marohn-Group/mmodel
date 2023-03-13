@@ -2,10 +2,8 @@ import inspect
 from mmodel.utility import (
     parse_input,
     is_node_attr_defined,
-    is_edge_attr_defined,
-    model_returns,
+    is_edge_attr_defined
 )
-from mmodel.filter import subnodes_by_outputs
 from mmodel.draw import draw_graph
 import networkx as nx
 from textwrap import wrap as txtwrap
@@ -45,7 +43,7 @@ class Model:
 
         # create a copy of the graph
         self._graph = nx.freeze(graph.deepcopy())
-        self.returns = model_returns(self._graph) # tuples
+        self.returns = self._graph.returns # tuples
         self.modifiers = modifiers or list()
         self.handler = handler
         self.description = description

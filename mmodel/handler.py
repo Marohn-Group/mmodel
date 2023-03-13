@@ -1,5 +1,5 @@
 from collections import UserDict
-from mmodel.utility import model_signature, graph_topological_sort, param_counter
+from mmodel.utility import modelgraph_signature, graph_topological_sort, param_counter
 from datetime import datetime
 import h5py
 import string
@@ -35,7 +35,8 @@ class TopologicalHandler:
     def __init__(self, name, graph, returns: list = [], **datacls_kwargs):
 
         self.__name__ = name
-        self.__signature__ = model_signature(graph)
+        # __signature__ allows inspect module to properly generate signature
+        self.__signature__ = graph.signature
         self.returns = returns
         self.order = graph_topological_sort(graph)
         self.graph = graph
