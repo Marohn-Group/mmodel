@@ -129,6 +129,30 @@ class TestModel:
             h5model
         ).replace("\n", "").replace(" ", "")
 
+    def test_model_returns_order(self, mmodel_G):
+        """Test model with custom returns order
+
+        The return order should be the same as the returns list
+        """
+
+        # less returns
+        model = Model(
+            "model_instance", mmodel_G, (BasicHandler, {}), returns=["m", "k"]
+        )
+
+        assert model.returns == ["m", "k"]
+        assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36)
+
+    def test_model_returns_intermediate(self, mmodel_G):
+        """Test model with custom returns that are more than graph"""
+        # more returns
+        model = Model(
+            "model_instance", mmodel_G, (BasicHandler, {}), returns=["m", "k", "c"]
+        )
+
+        assert model.returns == ["m", "k", "c"]
+        assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36, 12)
+
 
 class TestModifiedModel:
     """Test modified model"""

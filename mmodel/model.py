@@ -34,8 +34,8 @@ class Model:
         graph,
         handler,
         modifiers: list = None,
-        description: str = ""
-        # returns: list = None,
+        description: str = "",
+        returns: list = None
     ):
 
         assert self._is_valid_graph(graph)
@@ -43,7 +43,7 @@ class Model:
 
         # create a copy of the graph
         self._graph = nx.freeze(graph.deepcopy())
-        self.returns = self._graph.returns # tuples
+        self.returns = returns or self._graph.returns # tuples
         self.modifiers = modifiers or list()
         self.handler = handler
         self.description = description
