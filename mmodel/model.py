@@ -1,9 +1,5 @@
 import inspect
-from mmodel.utility import (
-    parse_input,
-    is_node_attr_defined,
-    is_edge_attr_defined
-)
+from mmodel.utility import parse_input, is_node_attr_defined, is_edge_attr_defined
 from mmodel.draw import draw_graph
 import networkx as nx
 from textwrap import wrap as txtwrap
@@ -35,7 +31,7 @@ class Model:
         handler,
         modifiers: list = None,
         description: str = "",
-        returns: list = None
+        returns: list = None,
     ):
 
         assert self._is_valid_graph(graph)
@@ -43,7 +39,7 @@ class Model:
 
         # create a copy of the graph
         self._graph = nx.freeze(graph.deepcopy())
-        self.returns = returns or self._graph.returns # tuples
+        self.returns = returns or self._graph.returns  # tuples
         self.modifiers = modifiers or list()
         self.handler = handler
         self.description = description
@@ -119,7 +115,6 @@ class Model:
     def graph(self):
         """The graph attribute output a copy of the graph"""
         return self._graph.deepcopy()
-
 
     def get_node(self, node):
         """Quick access to node within the model"""

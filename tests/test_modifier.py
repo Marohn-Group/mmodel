@@ -30,7 +30,7 @@ def test_loop_exceptions(example_func):
     """Test loop modifier exception if the input value is not an iterable"""
 
     loop_mod = loop_modifier(example_func, "b")
-    
+
     with pytest.raises(Exception, match="b value is not iterable"):
         loop_mod(a=1, b=1, c=4)
 
@@ -131,6 +131,7 @@ def test_pos_signature_modifiers_ufunc():
     assert list(inspect.signature(arange_mod).parameters.keys()) == ["start", "stop"]
     assert np.array_equal(arange_mod(start=1, stop=4), np.array([1, 2, 3]))
 
+
 def test_pos_signature_modifiers_with_defaults():
     """Test signature modifier on function with keyword arguments
 
@@ -139,14 +140,13 @@ def test_pos_signature_modifiers_with_defaults():
 
     import operator
 
-    mod_func = pos_signature_modifier(operator.pow, ["e", ('power', 2)])
+    mod_func = pos_signature_modifier(operator.pow, ["e", ("power", 2)])
 
     assert mod_func(e=3) == 9
 
-    mod_func = pos_signature_modifier(operator.pow, [('base', 2), "e"])
+    mod_func = pos_signature_modifier(operator.pow, [("base", 2), "e"])
 
     assert mod_func(e=3) == 8
-
 
 
 def test_signature_binding_modifier(example_func):
