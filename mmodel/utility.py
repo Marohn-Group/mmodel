@@ -1,5 +1,6 @@
 from inspect import signature, Signature, Parameter
 import networkx as nx
+import textwrap
 
 # graph properties
 def modelgraph_signature(graph):
@@ -233,6 +234,49 @@ def parse_input(signature, *args, **kwargs):
     values = signature.bind(*args, **kwargs)
     values.apply_defaults()
     return values.arguments
+
+
+def content_wrap(
+    width: int = 80, indent: int = 2, subindent: int = 4, tabsize: int = 2
+):
+    """Wrap metadata content
+
+    The indent specifies the number of whitespace of the initial
+    indentation. The subsequent indent adds on top of it. The width is default
+    to 80 characters.
+    """
+
+    initial_indent = " " * indent
+    subsequent_indent = " " * (indent + subindent)
+    wrap_obj = textwrap.TextWrapper(
+        width=width,
+        initial_indent=initial_indent,
+        subsequent_indent=subsequent_indent,
+        replace_whitespace=False,
+        expand_tabs=True,
+        tabsize=tabsize,
+    )
+
+    return wrap_obj.wrap  # return the function directly
+
+
+def parse_modifier(modifiers):
+    """Parse modifiers parameters to readable strings
+
+    The content is wrapped.
+    """
+
+    if modifiers:
+        modifier_str_list = ["modifiers:"]
+
+        for mod, kwargs in modifiers:
+            str_value = [str(v) for v in kwargs.values()]
+            mod_str = f"\t- {mod.__name__}({', '.join(str_value)})"
+            modifier_str_list.append(mod_str)
+
+        return modifier_str_list
+    else:
+        return []
 
 
 def is_node_attr_defined(graph, attr: str, attr_name: str = None):

@@ -1,8 +1,14 @@
 import inspect
-from mmodel.utility import parse_input, is_node_attr_defined, is_edge_attr_defined
+from mmodel.utility import (
+    parse_input,
+    parse_modifier,
+    content_wrap,
+    is_node_attr_defined,
+    is_edge_attr_defined,
+)
 from mmodel.draw import draw_graph
 import networkx as nx
-from textwrap import wrap as txtwrap
+import textwrap
 
 
 class Model:
@@ -66,27 +72,28 @@ class Model:
     def __str__(self):
         """Output callable information"""
 
-        handler_str = f"{self.handler[0].__name__}, {self.handler[1]}"
+        return self.metadata()
 
-        modifier_str_list = [
-            f"{func.__name__}, {kwargs}" for func, kwargs in self.modifiers
-        ]
-        modifier_str = f"[{', '.join(modifier_str_list)}]"
+    def metadata(self, full=True, wrap_width=80):
+        """Parse metadata string of the Model instance"""
+        twrap = textwrap.TextWrapper(width=wrap_width).wrap  # function title and description
 
-        model_str = [
-            f"{self.__name__}{self.__signature__}",
-            f"  returns: {', '.join(self.returns)}",
-            f"  handler: {handler_str}",
-            f"  modifiers: {modifier_str}",
-            f"{self.description}",
-        ]
+        strlist= twrap(f"{self.__name__}{self.__signature__}\n")
+        
+        handler_list = [f"handler: {self.handler[0].__name__}"
+            f"({', '.join(str(v) for v in self.handler[1].values())})"]
+        returns_list = [f"returns: ({', '.join(self.returns)})"]
+        modifier_list = parse_modifier(self.modifiers)
 
-        # wrap string
-        model_str_wrapped = []
-        for s in model_str:
-            model_str_wrapped.extend(txtwrap(s, 80))
+        content_list = returns_list + handler_list + modifier_list
 
-        return "\n".join(model_str_wrapped).rstrip()
+        for item in content_list:
+            strlist.extend(content_wrap(width=wrap_width)(item))
+
+        if full:
+            strlist.extend(twrap(self.description))
+
+        return "\n".join(strlist).rstrip()
 
     @staticmethod
     def _is_valid_graph(G):

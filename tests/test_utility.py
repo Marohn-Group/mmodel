@@ -7,6 +7,7 @@ from inspect import Parameter
 from tests.conftest import graph_equal
 import networkx as nx
 from functools import wraps
+from textwrap import dedent
 
 
 @pytest.fixture
@@ -250,6 +251,38 @@ def test_modify_node_inplace(mmodel_G):
     # test the original graph
     assert mod_G.nodes["subtract"]["func"](1, 2) == 0
     assert mmodel_G.nodes["subtract"]["func"](1, 2) == 0
+
+
+def test_parse_modifier():
+    """Test pase_modifier outputs the correct string
+
+    Here to test string, list and tuples
+    """
+
+    def mod1(func, parameter):
+        return
+
+    def mod2(func, param1, param2):
+        return
+
+    modifier_str = """\
+      modifiers:
+        - mod1(test)
+        - mod2([1, 2, 3], (1, 2))"""
+
+    modifiers = [
+        (mod1, {"parameter": "test"}),
+        (mod2, {"param1": [1, 2, 3], "param2": (1, 2)}),
+    ]
+
+    modifier_str_list = ["modifiers:", "\t- mod1(test)", "\t- mod2([1, 2, 3], (1, 2))"]
+    assert util.parse_modifier(modifiers) == modifier_str_list
+
+
+def test_parse_modifier_empty():
+    """Test pase_modifier outputs None when there is no modifier"""
+
+    assert util.parse_modifier([]) == []
 
 
 def test_is_node_attr_defined():

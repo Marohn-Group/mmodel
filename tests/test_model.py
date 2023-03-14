@@ -38,9 +38,8 @@ class TestModel:
 
         MODEL_STR = """\
         model_instance(a, b, d, f)
-          returns: k, m
-          handler: BasicHandler, {}
-          modifiers: []
+          returns: (k, m)
+          handler: BasicHandler()
         A long description that tests if model module wraps the Model output string
         description at 90 characters."""
 
@@ -125,9 +124,11 @@ class TestModel:
         assert h5model(a=10, d=15, f=1, b=2) == (-36, math.log(12, 2))
 
         # the output of path is the repr instead of string
-        assert f"handler: H5Handler, {{'fname': {repr(path)}}}".replace(" ", "") in str(
+        assert f"handler: H5Handler({str(path)})".replace(" ", "") in str(
             h5model
         ).replace("\n", "").replace(" ", "")
+
+        
 
     def test_model_returns_order(self, mmodel_G):
         """Test model with custom returns order
@@ -188,9 +189,10 @@ class TestModifiedModel:
         """Test the string representation with modifiers"""
         mod_model_s = """\
         mod_model_instance(a, b, d, f)
-          returns: k, m
-          handler: BasicHandler, {}
-          modifiers: [loop_modifier, {'parameter': 'a'}]
+          returns: (k, m)
+          handler: BasicHandler()
+          modifiers:
+            - loop_modifier(a)
         modified model"""
         assert str(mod_model_instance) == dedent(mod_model_s)
 
