@@ -27,6 +27,8 @@ API Change
   add both as methods in the graph class.
 - Change "returns" to "output", the value should be a string.
 - Parameter "returns" is a Model exclusive parameter that denotes the graph output.
+- Change ``Model.get_node_object`` to ``Model.get_node_func``, the base function is
+  returned.
 
 Fixed
 ^^^^^

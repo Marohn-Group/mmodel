@@ -87,10 +87,10 @@ class TestModel:
 
         assert model_instance.get_node("log") == mmodel_G.nodes["log"]
 
-    def test_get_node_object(self, model_instance, mmodel_G):
-        """Test get_node_object method."""
+    def test_get_node_func(self, model_instance, mmodel_G):
+        """Test get_node_func method."""
 
-        assert model_instance.get_node_object("log") == mmodel_G.nodes["log"]["func"]
+        assert model_instance.get_node_func("log") == mmodel_G.nodes["log"]["_func"]
 
     def test_model_draw(self, model_instance):
         """Test if the draw method of the model_instance.

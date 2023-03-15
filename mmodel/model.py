@@ -133,10 +133,14 @@ class Model:
 
         return self._graph.nodes[node]
 
-    def get_node_object(self, node):
-        """Quick access to node callable within the model."""
+    def get_node_func(self, node):
+        """Quick access to node base callable within the model.
+        
+        The function helps extract the original function within
+        the node.
+        """
 
-        return self._graph.nodes[node]["func"]
+        return self._graph.nodes[node]["_func"]
 
     def node_metadata(self, node, full=True, wrap_width=80):
         """View a specific node."""
