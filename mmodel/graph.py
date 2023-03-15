@@ -15,7 +15,7 @@ from mmodel.parser import parser_engine
 
 class ModelGraph(nx.DiGraph):
 
-    """Create model graphs
+    """Create model graphs.
 
     ModelGraph inherits from `networkx.DiGraph()`, which has all `DiGraph`
     methods.
@@ -26,9 +26,9 @@ class ModelGraph(nx.DiGraph):
 
     The additional graph operations are added:
     - add_grouped_edges and set_node_objects.
-    - Method add_grouped_edges, cannot have both edges to be a list.
-    - Method set_node_object update nodes with the node callable "func" and output.
-    - The method adds callable signature 'sig' to the node attribute
+    - Method ``add_grouped_edges``, cannot have both edges list.
+    - Method ``set_node_object`` updates nodes with the node callable "func" and output.
+    - The method adds callable signature 'sig' to the node attribute.
     """
 
     graph_attr_dict_factory = {"type": "ModelGraph"}.copy
@@ -40,12 +40,12 @@ class ModelGraph(nx.DiGraph):
     def set_node_object(
         self, node, func, output: str, inputs: list = None, modifiers: list = None
     ):
-        """Add or update the functions of existing node
+        """Add or update the functions of an existing node.
 
         In the end, the edge attributes are re-determined
         Modifiers are applied directly onto the node. The parser checks the
-        function type and returns (at least) three dictionary entry:
-        _func, functype, doc
+        function type and returns (at least) three dictionary entries:
+        _func, functype, doc.
         """
 
         node_dict = self.nodes[node]
@@ -57,9 +57,9 @@ class ModelGraph(nx.DiGraph):
         self.update_graph()
 
     def set_node_objects_from(self, node_objects: list):
-        """Update the functions of existing nodes
+        """Update the functions of existing nodes.
 
-        The method is the same as add node object
+        The method is the same as adding a node object.
         """
 
         for node_obj in node_objects:
@@ -67,13 +67,13 @@ class ModelGraph(nx.DiGraph):
             self.set_node_object(*node_obj)
 
     def add_edge(self, u_of_edge, v_of_edge, **attr):
-        """Modify add_edge to update the edge attribute in the end"""
+        """Modify add_edge to update the edge attribute in the end."""
 
         super().add_edge(u_of_edge, v_of_edge, **attr)
         self.update_graph()
 
     def add_edges_from(self, ebunch_to_add, **attr):
-        """Modify add_edges_from to update the edge attributes"""
+        """Modify add_edges_from to update the edge attributes."""
 
         super().add_edges_from(ebunch_to_add, **attr)
         self.update_graph()
@@ -83,7 +83,7 @@ class ModelGraph(nx.DiGraph):
 
         For mmodel, a group edge (u, v) allows u or v
         to be a list of nodes. Represents several nodes
-        flow into one node or the other way around.
+        flowing into one node or the other way around.
         """
 
         if isinstance(u, list) and isinstance(v, list):
@@ -99,13 +99,13 @@ class ModelGraph(nx.DiGraph):
             self.add_edge(u, v)
 
     def add_grouped_edges_from(self, group_edges: list):
-        """Add edges from grouped values"""
+        """Add edges from grouped values."""
 
         for u, v in group_edges:
             self.add_grouped_edge(u, v)
 
     def update_graph(self):
-        """Update edge attributes based on node objects and edges"""
+        """Update edge attributes based on node objects and edges."""
 
         for u, v in self.edges:
             # the edge "var" is not defined if the parent node does not
@@ -118,10 +118,10 @@ class ModelGraph(nx.DiGraph):
                 self.edges[u, v]["var"] = self.nodes[u]["output"]
 
     def node_metadata(self, node: str, full=True, wrap_width=80):
-        """Printout node metadata
+        """Printout node metadata.
 
-        The meta data includes the node information and the node function
-        information. If the node is a mmodel.Model instance, outputs its metadata.
+        The metadata includes the node information and the node function
+        information. If the node is a ``mmodel.Model`` instance; outputs its metadata.
         """
 
         node_dict = self.nodes[node]
@@ -133,7 +133,7 @@ class ModelGraph(nx.DiGraph):
             f"return: {node_dict['output']}",
         ]
 
-        if full: # adds functype, modifiers, and docs
+        if full:  # adds functype, modifiers, and docs
             metadata_list.append(f"functype: {node_dict['functype']}")
             metadata_list.extend(parse_modifiers(node_dict["modifiers"]))
             doc = node_dict["doc"] or ""
@@ -146,7 +146,7 @@ class ModelGraph(nx.DiGraph):
     # graph properties
     @property
     def signature(self):
-        """Graph signature
+        """Graph signature.
 
         :rtype: inspect.Signature object
         """
@@ -154,7 +154,7 @@ class ModelGraph(nx.DiGraph):
 
     @property
     def returns(self):
-        """Graph returns
+        """Graph returns.
 
         :rtype: list
         """
@@ -162,7 +162,7 @@ class ModelGraph(nx.DiGraph):
 
     # graph operations
     def subgraph(self, nodes=None, inputs=None, outputs=None):
-        """Extract subgraph by nodes, inputs, output
+        """Extract subgraph by nodes, inputs, and output.
 
         If multiple parameters are specified, the result is a union
         of the selection.
@@ -172,9 +172,9 @@ class ModelGraph(nx.DiGraph):
         node_inputs = subnodes_by_inputs(self, inputs or [])
         node_outputs = subnodes_by_outputs(self, outputs or [])
 
-        # convert nodes to list because the parent class method accept generator
+        # convert nodes to list because the parent class method accepts generator
         # for nodes.
-        # may consider not use the same name as the parent class to avoid collision
+        # may consider not using the same name as the parent class to avoid collision
         subgraph_nodes = set(list(nodes) + node_inputs + node_outputs)  # unique nodes
 
         return super().subgraph(subgraph_nodes)
@@ -192,23 +192,22 @@ class ModelGraph(nx.DiGraph):
         return modify_node(self, node, func, output, inputs, modifiers, inplace)
 
     def draw(self, style="full", export=None):
-        """Draw the graph
+        """Draw the graph.
 
         Draws the default styled graph.
 
         :param str style: there are three styles, plain, short and full.
             Plain shows nodes only, short shows part of the metadata, and
             long shows all the metadata.
-        :param str export: filename to save the graph as. File extension
+        :param str export: filename to save the graph as. The file extension
             is needed.
 
         """
 
         return draw_graph(self, str(self), style, export)
 
-
     def deepcopy(self):
-        """Deepcopy graph
+        """Deepcopy graph.
 
         The graph.copy method is a shallow copy. Deepcopy creates copy for the
         attributes dictionary.

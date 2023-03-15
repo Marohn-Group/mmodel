@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "mmodel"
 version = "0.5.0"
-description = "Modular modeling framework for nonlinear scientific models"
+description = "Modular modeling framework for scientific modeling and prototyping."
 readme = "README.rst"
 license = "BSD-3-Clause"
 authors = ["Peter Sun <hs859@cornell.edu>"]
@@ -10,7 +10,7 @@ repository = "https://github.com/peterhs73/MModel"
 packages = [{ include = "mmodel" }]
 homepage = "https://peterhs73.github.io/mmodel-docs/"
 documentation = "https://peterhs73.github.io/mmodel-docs/"
-keywords = ["python", "scientific-modeling", "nonlinear-model"]
+keywords = ["python", "scientific-modeling", "prototyping"]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Developers",

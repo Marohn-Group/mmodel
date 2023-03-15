@@ -4,7 +4,7 @@ from textwrap import dedent
 
 
 def test_draw_plain_model(mmodel_G):
-    """Test the model without the node detail"""
+    """Test the model without the node detail."""
 
     dot_source = """\
     digraph test_graph {
@@ -28,30 +28,30 @@ def test_draw_plain_model(mmodel_G):
 
 
 def test_draw_short_graph(mmodel_G):
-    """Test the model with partial node and edge detail"""
+    """Test the model with partial node and edge detail."""
 
     dot_graph = draw_graph(mmodel_G, label="test label", style="short")
     # test if add function is included
     assert (
         "add\l\laddition(a, factor=2)\lreturn: "
-        "c\lfunctype: callable\l\laddition operation" not in dot_graph.source
+        "c\lfunctype: callable\l\lAddition operation." not in dot_graph.source
     )
     assert "add\l\laddition(a, factor=2)\lreturn: c" in dot_graph.source
 
 
 def test_draw_full_graph(mmodel_G):
-    """Test the model with full node and edge detail"""
+    """Test the model with full node and edge detail."""
 
     dot_graph = draw_graph(mmodel_G, label="test label", style="full")
     # test if add function is included
     assert (
         "add\l\laddition(a, factor=2)\lreturn: "
-        "c\lfunctype: callable\l\laddition operation" in dot_graph.source
+        "c\lfunctype: callable\l\lAddition operation." in dot_graph.source
     )
 
 
 def test_draw_partial_graph():
-    """Test draw detailed graph without node object information"""
+    """Test draw detailed graph without node object information."""
 
     dot_source = """\
     digraph test_graph {
@@ -72,7 +72,7 @@ def test_draw_partial_graph():
 
 
 def test_draw_graph_export(mmodel_G, tmp_path):
-    """Test draw graph can export and return a dot graph"""
+    """Test draw graph can export and return a dot graph."""
 
     filename = tmp_path / "test_draw.dot"
     dot_graph = draw_graph(mmodel_G, label="test label", style="short", export=filename)

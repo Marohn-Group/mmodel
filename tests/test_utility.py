@@ -1,13 +1,11 @@
 import inspect
 import pytest
 import random
-import mmodel.utility as util
 from collections import OrderedDict
 from inspect import Parameter
-from tests.conftest import graph_equal
 import networkx as nx
 from functools import wraps
-from textwrap import dedent
+import mmodel.utility as util
 
 
 @pytest.fixture
@@ -31,16 +29,16 @@ def func():
     ],
 )
 def test_param_sorter(parameter, result, func):
-    """Test param_sorter result"""
+    """Test param_sorter result."""
 
     params = inspect.signature(func).parameters
     assert util.param_sorter(params[parameter]) == result
 
 
 def test_param_sorter_order(func):
-    """Test param_sorter sorting order
+    """Test param_sorter sorting order.
 
-    the correct order is a, b, *args, c, **kwargs, d=10
+    The correct order is a, b, *args, c, **kwargs, d=10.s
     """
 
     params = inspect.signature(func).parameters
@@ -63,18 +61,18 @@ def test_param_sorter_order(func):
 
 
 def test_model_signature(mmodel_G, mmodel_signature):
-    """Test graph_signature
+    """Test graph_signature.
 
-    There are two functions in the mmodel_G have parameter
+    Two functions in the mmodel_G have parameter
     'b' - one with default and one without. The final signature
-    should have default value.
+    should have a default value.
     """
 
     assert util.modelgraph_signature(mmodel_G) == mmodel_signature
 
 
 def test_replace_signature(mmodel_signature):
-    """Test replace signature"""
+    """Test replace signature."""
 
     replacement_dict = {"a_rep": ["a"], "f_rep": ["f", "g"]}
     signature = util.replace_signature(mmodel_signature, replacement_dict)
@@ -90,9 +88,9 @@ def test_replace_signature(mmodel_signature):
 
 
 def test_parse_parameters():
-    """Test parse_parameters
+    """Test parse_parameters.
 
-    Here we test when the default value is at the end or in the middle
+    Here we test when the default value is at the end or in the middle.
     """
 
     sig, porder, dargs = util.parse_parameters(["a", "b", ("c", 2)])
@@ -110,19 +108,18 @@ def test_parse_parameters():
 
 
 def test_model_returns(mmodel_G):
-    """Test graph_returns"""
+    """Test graph_returns."""
 
     assert util.modelgraph_returns(mmodel_G) == ["k", "m"]
 
 
 def test_graph_topological_sort(mmodel_G):
-    """Test graph_topological_sort
+    """Test graph_topological_sort.
 
-    The order should be
-    add, subtract, multiply, log, poly
+    The order is: add, subtract, multiply, log, poly.
 
-    each node should be (node, attr), where node is the name
-    of the node, attr is a dictionary of attributes
+    each node should be (node, attr), where the node is the name
+    of the node, attr is a dictionary of attributes.
     """
 
     order = util.graph_topological_sort(mmodel_G)
@@ -146,7 +143,7 @@ def test_graph_topological_sort(mmodel_G):
 
 
 def test_param_counter(mmodel_G):
-    """Test param_counter"""
+    """Test param_counter."""
 
     counter = util.param_counter(mmodel_G, [])
 
@@ -154,7 +151,7 @@ def test_param_counter(mmodel_G):
 
 
 def test_param_counter_add_returns(mmodel_G):
-    """Test param_counter with added returns"""
+    """Test param_counter with added returns."""
 
     counter = util.param_counter(mmodel_G, ["c", "g"])
 
@@ -162,15 +159,15 @@ def test_param_counter_add_returns(mmodel_G):
 
 
 def test_replace_subgraph_terminal(mmodel_G):
-    """Test redirect edges based on subgraph and subgraph node
+    """Test redirect edges based on subgraph and subgraph node.
 
-    This tests specifically the terminal node
+    This tests specifically the terminal node.
     """
 
     subgraph = mmodel_G.subgraph(["multiply", "poly"])
 
     def func(c, e, x, y):
-        """function docstring"""
+        """Function docstring."""
         return
 
     graph = util.replace_subgraph(mmodel_G, subgraph, "test", func)
@@ -185,7 +182,7 @@ def test_replace_subgraph_terminal(mmodel_G):
         "func": func,
         "output": None,
         "sig": inspect.signature(func),
-        "doc": "function docstring",
+        "doc": "Function docstring.",
         "functype": "callable",
     }
 
@@ -195,15 +192,15 @@ def test_replace_subgraph_terminal(mmodel_G):
 
 
 def test_replace_subgraph_middle(mmodel_G):
-    """Test redirect edges based on subgraph and subgraph node
+    """Test redirect edges based on subgraph and subgraph node.
 
-    This test specifically the middle node
+    This test specifically the middle node.
     """
 
     subgraph = mmodel_G.subgraph(["subtract", "poly"])
 
     def func(c, x, y):
-        """function docstring"""
+        """Function docstring."""
         return x + y
 
     # combine the nodes subtract and poly to a "test" node
@@ -219,7 +216,7 @@ def test_replace_subgraph_middle(mmodel_G):
         "func": func,
         "output": "e",
         "sig": inspect.signature(func),
-        "doc": "function docstring",
+        "doc": "Function docstring.",
         "functype": "callable",
     }
 
@@ -230,9 +227,9 @@ def test_replace_subgraph_middle(mmodel_G):
 
 
 def test_modify_node(mmodel_G):
-    """Test modify_node
+    """Test modify_node.
 
-    Test if the node have the correct signature and result
+    Test if the node has the correct signature and result.
     """
 
     def mod(func, a):
@@ -249,7 +246,7 @@ def test_modify_node(mmodel_G):
 
 
 def test_modify_node_inplace(mmodel_G):
-    """Test modify_node to modify in place"""
+    """Test modify_node to modify in place."""
 
     def mod(func, a):
         @wraps(func)
@@ -268,9 +265,9 @@ def test_modify_node_inplace(mmodel_G):
 
 
 def test_parse_modifiers():
-    """Test pase_modifier outputs the correct string
+    """Test pase_modifier outputs the correct string.
 
-    Here to test string, list and tuples
+    Test string, list, and tuples.
     """
 
     def mod1(func, parameter):
@@ -278,11 +275,6 @@ def test_parse_modifiers():
 
     def mod2(func, param1, param2):
         return
-
-    modifier_str = """\
-      modifiers:
-        - mod1(test)
-        - mod2([1, 2, 3], (1, 2))"""
 
     modifiers = [
         (mod1, {"parameter": "test"}),
@@ -294,13 +286,13 @@ def test_parse_modifiers():
 
 
 def test_parse_modifier_empty():
-    """Test pase_modifier outputs None when there is no modifier"""
+    """Test pase_modifier outputs None when there is no modifier."""
 
     assert util.parse_modifiers([]) == []
 
 
 def test_is_node_attr_defined():
-    """Test is_node_attr_defined"""
+    """Test is_node_attr_defined."""
 
     # all nodes defined
     g = nx.DiGraph()
@@ -317,13 +309,13 @@ def test_is_node_attr_defined():
 
     with pytest.raises(
         Exception,
-        match=r"invalid graph: weight \('w'\) is not defined for node\(s\) \[2, 3\]",
+        match=r"invalid graph: weight 'w' is not defined for node\(s\) \[2, 3\]",
     ):
         util.is_node_attr_defined(g, "w", "weight")
 
 
 def test_is_edge_attr_defined():
-    """Test is_edge_attr_defined"""
+    """Test is_edge_attr_defined."""
 
     # all nodes defined
     g = nx.DiGraph()
@@ -341,7 +333,7 @@ def test_is_edge_attr_defined():
     with pytest.raises(
         Exception,
         match=(
-            r"invalid graph: weight \('w'\) is "
+            r"invalid graph: weight 'w' is "
             r"not defined for edge\(s\) \[\(2, 3\), \(3, 4\)\]"
         ),
     ):

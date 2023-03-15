@@ -7,17 +7,16 @@ import math
 import networkx as nx
 from copy import deepcopy
 from textwrap import dedent
-from tests.conftest import graph_equal
 
 
 class TestModel:
-    """Test Model instances"""
+    """Test Model instances."""
 
     @pytest.fixture
     def model_instance(self, mmodel_G):
-        """Construct a model_instance"""
+        """Construct a model_instance."""
         description = (
-            "A long description that tests if model module"
+            "A long description that tests if the model module"
             " wraps the Model output string description at 90 characters."
         )
         return Model(
@@ -25,7 +24,7 @@ class TestModel:
         )
 
     def test_model_attr(self, model_instance, mmodel_signature):
-        """Test the model has the correct name, signature, returns"""
+        """Test the model has the correct name, signature, returns."""
 
         assert model_instance.name == "model_instance"
         assert model_instance.__name__ == "model_instance"
@@ -34,53 +33,53 @@ class TestModel:
         assert model_instance.modifiers == []
 
     def test_model_str(self, model_instance):
-        """Test model representation"""
+        """Test model representation."""
 
         MODEL_STR = """\
         model_instance(a, b, d, f)
         returns: (k, m)
         handler: BasicHandler()
 
-        A long description that tests if model module wraps the Model output string
+        A long description that tests if the model module wraps the Model output string
           description at 90 characters."""
 
         assert str(model_instance) == dedent(MODEL_STR)
 
     def test_model_graph_freeze(self, model_instance):
-        """Test the graph is frozen"""
+        """Test the graph is frozen."""
 
         assert nx.is_frozen(model_instance._graph)
 
     def test_model_original_graph_not_frozen(self, mmodel_G):
-        """Make sure that the original graph is not frozen when define models"""
+        """Make sure that the original graph is not frozen when defining models."""
 
         Model("model_instance", mmodel_G, (BasicHandler, {}))
         assert not nx.is_frozen(mmodel_G)
 
     def test_model_graph_property(self, model_instance):
-        """Test the graph attribute generates copy of the graph every time"""
+        """Test the graph attribute generates a copy of the graph every time."""
 
         assert not nx.is_frozen(model_instance.graph)
         assert model_instance.graph is not model_instance._graph
 
     def test_model_execution(self, model_instance):
-        """Test if the default is correctly used"""
+        """Test if the default is correctly used."""
 
         assert model_instance(10, 2, 15, 1) == (-36, math.log(12, 2))
         assert model_instance(a=1, d=2, f=3, b=4) == (27, math.log(3, 4))
 
     def test_get_node(self, model_instance, mmodel_G):
-        """Test get_node method of the model"""
+        """Test get_node method of the model."""
 
         assert model_instance.get_node("log") == mmodel_G.nodes["log"]
 
     def test_get_node_object(self, model_instance, mmodel_G):
-        """Test get_node_object method"""
+        """Test get_node_object method."""
 
         assert model_instance.get_node_object("log") == mmodel_G.nodes["log"]["func"]
 
     def test_model_draw(self, model_instance):
-        """Test if the draw method of the model_instance
+        """Test if the draw method of the model_instance.
 
         The draw methods are tested in test_draw module. Here we make sure
         the label is correct.
@@ -90,9 +89,9 @@ class TestModel:
         assert str(model_instance).replace("\n", "\l") in dot_graph.source
 
     def test_model_draw_export(self, model_instance, tmp_path):
-        """Test the draw method that export to files
+        """Test the draw method that exports to files.
 
-        Check the model description is in the file content
+        Check the model description is in the file content.
         """
 
         filename = tmp_path / "test_draw.dot"
@@ -106,7 +105,7 @@ class TestModel:
             )
 
     def test_model_node_metadata(self, model_instance):
-        """Test if view node outputs information correctly"""
+        """Test if view node outputs information correctly."""
 
         node_s = """\
         log
@@ -115,30 +114,29 @@ class TestModel:
         return: m
         functype: callable
 
-        logarithm operation"""
+        Logarithm operation."""
 
         assert model_instance.node_metadata("log") == dedent(node_s)
 
     def test_model_with_handler_argument(self, mmodel_G, tmp_path):
-        """Test if argument works with the H5Handler"""
+        """Test if the argument works with the H5Handler."""
 
         path = tmp_path / "h5model_test.h5"
         h5model = Model("h5 model", mmodel_G, (H5Handler, {"fname": path}))
 
         assert h5model(a=10, d=15, f=1, b=2) == (-36, math.log(12, 2))
 
-        # the output of path is the repr instead of string
+        # the output of the path is the repr instead of the string
         assert f"handler: H5Handler({str(path)})".replace(" ", "") in str(
             h5model
         ).replace("\n", "").replace(" ", "")
 
     def test_model_returns_order(self, mmodel_G):
-        """Test model with custom returns order
+        """Test model with custom returns order.
 
-        The return order should be the same as the returns list
+        The return order should be the same as the returns list.
         """
 
-        # less returns
         model = Model(
             "model_instance", mmodel_G, (BasicHandler, {}), returns=["m", "k"]
         )
@@ -147,7 +145,7 @@ class TestModel:
         assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36)
 
     def test_model_returns_intermediate(self, mmodel_G):
-        """Test model with custom returns that are more than graph"""
+        """Test model with custom returns that are more than graph."""
         # more returns
         model = Model(
             "model_instance", mmodel_G, (BasicHandler, {}), returns=["m", "k", "c"]
@@ -162,7 +160,7 @@ class TestModifiedModel:
 
     @pytest.fixture
     def mod_model_instance(self, mmodel_G):
-        """Construct a model_instance with loop modifier"""
+        """Construct a model_instance with loop modifier."""
 
         loop_mod = (loop_modifier, {"parameter": "a"})
 
@@ -171,16 +169,16 @@ class TestModifiedModel:
             mmodel_G,
             (BasicHandler, {}),
             modifiers=[loop_mod],
-            description="modified model",
+            description="Modified model.",
         )
 
     def test_mod_model_attr(self, mod_model_instance):
-        """Test if adding modifier changes the handler attribute (returns)"""
+        """Test if adding modifier changes the handler attribute (returns)."""
 
         assert mod_model_instance.returns == ["k", "m"]
 
     def test_mod_model_execution(self, mod_model_instance):
-        """Test if adding modifier changes the handler attribute (returns)"""
+        """Test if adding modifier changes the handler attribute (returns)."""
 
         assert mod_model_instance(a=[1, 2], b=2, d=3, f=1) == [
             (0, math.log(3, 2)),
@@ -188,7 +186,7 @@ class TestModifiedModel:
         ]
 
     def test_model_str(self, mod_model_instance):
-        """Test the string representation with modifiers"""
+        """Test the string representation with modifiers."""
         mod_model_s = """\
         mod_model_instance(a, b, d, f)
         returns: (k, m)
@@ -196,15 +194,15 @@ class TestModifiedModel:
         modifiers:
           - loop_modifier(a)
         
-        modified model"""
+        Modified model."""
         assert str(mod_model_instance) == dedent(mod_model_s)
 
 
 class TestModelValidation:
-    """Test is_graph_valid method of Model"""
+    """Test is_graph_valid method of Model."""
 
     def test_is_valid_graph_digraph(self):
-        """Test is_graph_valid that correctly identifies non directed graphs"""
+        """Test is_graph_valid that correctly identifies non-directed graphs."""
 
         G = nx.complete_graph(4)
         G.name = "test_graph"
@@ -215,9 +213,9 @@ class TestModelValidation:
             Model._is_valid_graph(G)
 
     def test_is_valid_graph_cycles(self):
-        """Test is_graph_valid that correctly identifies cycles
+        """Test is_graph_valid that correctly identifies cycles.
 
-        Check a self cycle and a non self cycle
+        Check the self-cycle and the nonself cycle.
         """
 
         G = nx.DiGraph(name="test_graph")
@@ -239,9 +237,9 @@ class TestModelValidation:
             Model._is_valid_graph(G)
 
     def test_is_valid_graph_missing_attr(self, standard_G):
-        """Test is_graph_valid that correctly identifies isolated nodes
+        """Test is_graph_valid that correctly identifies isolated nodes.
 
-        Here we add nodes to mmodel_G
+        Here we add nodes to mmodel_G.
         """
 
         def test(a, b):
@@ -254,7 +252,7 @@ class TestModelValidation:
         with pytest.raises(
             Exception,
             match=(
-                r"invalid graph \(test_graph\): callable \('func'\) "
+                r"invalid graph \(test_graph\): callable 'func' "
                 r"is not defined for node\(s\) \['test'\]"
             ),
         ):
@@ -265,7 +263,7 @@ class TestModelValidation:
         with pytest.raises(
             Exception,
             match=(
-                r"invalid graph \(test_graph\): output \('output'\) "
+                r"invalid graph \(test_graph\): output 'output' "
                 r"is not defined for node\(s\) \['test'\]"
             ),
         ):
@@ -276,7 +274,7 @@ class TestModelValidation:
         with pytest.raises(
             Exception,
             match=(
-                r"invalid graph \(test_graph\): signature \('sig'\) "
+                r"invalid graph \(test_graph\): signature 'sig' "
                 r"is not defined for node\(s\) \['test'\]"
             ),
         ):
@@ -287,7 +285,7 @@ class TestModelValidation:
         with pytest.raises(
             Exception,
             match=(
-                r"invalid graph \(test_graph\): variable \('var'\) "
+                r"invalid graph \(test_graph\): variable 'var' "
                 r"is not defined for edge\(s\) \[\('log', 'test'\)\]"
             ),
         ):
@@ -299,17 +297,17 @@ class TestModelValidation:
         assert Model._is_valid_graph(G)
 
     def test_is_valid_graph_passing(self, mmodel_G):
-        """Test is_valid_graph that correctly passing"""
+        """Test is_valid_graph that correctly passing."""
 
         assert Model._is_valid_graph(mmodel_G)
 
 
 class TestModelSpecialFunc:
-    """Test models with builtin or numpy ufunc"""
+    """Test models with builtin or numpy.ufunc."""
 
     @pytest.fixture
     def model(self):
-        """Basic Model with builtin and ufunc nodes"""
+        """Basic Model with builtin and ufunc nodes."""
 
         import numpy as np
         import math
@@ -325,15 +323,15 @@ class TestModelSpecialFunc:
             "model_instance",
             G,
             (BasicHandler, {}),
-            description="model with builtin and ufunc",
+            description="Model with builtin and ufunc.",
         )
 
     def test_model_signature(self, model):
-        """Test model signature"""
+        """Test model signature."""
 
         assert list(inspect.signature(model).parameters.keys()) == ["a", "b"]
 
     def test_model_execution(self, model):
-        """Test model result"""
+        """Test model result."""
 
         assert model(3, 1.9) == 5

@@ -12,14 +12,14 @@ import inspect
 @pytest.fixture
 def example_func():
     def func(a, b, c=2):
-        """Test docstring"""
+        """Test docstring."""
         return a + b + c
 
     return func
 
 
 def test_loop(example_func):
-    """Test loop modifier"""
+    """Test loop modifier."""
 
     loop_mod = loop_modifier(example_func, "b")
 
@@ -27,7 +27,7 @@ def test_loop(example_func):
 
 
 def test_loop_exceptions(example_func):
-    """Test loop modifier exception if the input value is not an iterable"""
+    """Test loop modifier exception if the input value is not iterable."""
 
     loop_mod = loop_modifier(example_func, "b")
 
@@ -36,7 +36,7 @@ def test_loop_exceptions(example_func):
 
 
 def test_zip_loop_list(example_func):
-    """Test zip loop modifier with list input"""
+    """Test zip loop modifier with list input."""
 
     loop_mod = zip_loop_modifier(example_func, ["a", "b"])
 
@@ -44,7 +44,7 @@ def test_zip_loop_list(example_func):
 
 
 def test_signature_modifiers(example_func):
-    """Test signature_modifier changes signature and executes function correctly
+    """Test signature_modifier changes signature and executes function correctly.
 
     Three cases are tested:
     1. len(signature_parameter) < len(func_signature)
@@ -64,9 +64,9 @@ def test_signature_modifiers(example_func):
 
 
 def test_signature_modifiers_kwargs():
-    """Test signature modifier on function with keyword arguments
+    """Test signature modifier on function with keyword arguments.
 
-    The signature modification replaces "**kwargs" to arguments
+    The signature modification replaces "**kwargs" with arguments.
     """
 
     def func(a, b, **kwargs):
@@ -78,9 +78,9 @@ def test_signature_modifiers_kwargs():
 
 
 def test_signature_modifiers_with_defaults():
-    """Test signature modifier on function with keyword arguments
+    """Test signature modifier on function with keyword arguments.
 
-    The signature modification replaces "**kwargs" to arguments
+    The signature modification replaces "**kwargs" with arguments.
     """
 
     def func(a, b, c):
@@ -93,7 +93,7 @@ def test_signature_modifiers_with_defaults():
 
 
 def test_pos_signature_modifiers_builtin():
-    """Test pos_signature_modifiers on builtin functions"""
+    """Test pos_signature_modifiers on builtin functions."""
 
     import math
     import operator
@@ -114,9 +114,9 @@ def test_pos_signature_modifiers_builtin():
 
 
 def test_pos_signature_modifiers_ufunc():
-    """Test pos_signature_modifiers on numpy functions
+    """Test pos_signature_modifiers on numpy.ufunc.
 
-    Here we test if the replacement function with different number of input parameters
+    Test if the replacement function with a different number of input parameters.
     """
 
     import numpy as np
@@ -133,9 +133,9 @@ def test_pos_signature_modifiers_ufunc():
 
 
 def test_pos_signature_modifiers_with_defaults():
-    """Test signature modifier on function with keyword arguments
+    """Test signature modifier on function with keyword arguments.
 
-    The signature modification replaces "**kwargs" to arguments
+    The signature modification replaces "**kwargs" with arguments.
     """
 
     import operator
@@ -150,9 +150,9 @@ def test_pos_signature_modifiers_with_defaults():
 
 
 def test_signature_binding_modifier(example_func):
-    """Test signature binding modifier on a regular function
+    """Test signature binding modifier on a regular function.
 
-    The result function should behave the same as before
+    The result function should behave the same as before.
     """
 
     mod_func = signature_binding_modifier(example_func)
@@ -169,10 +169,10 @@ def test_signature_binding_modifier(example_func):
 
 
 def test_signature_binding_modifier_on_wrapper(example_func):
-    """Test signature binding modifier on a wrapped function
+    """Test signature binding modifier on a wrapped function.
 
     Use signature modifier to change the function signature
-    and use signature binding modifier to parse the positional and
+    and use the signature binding modifier to parse the positional and
     keyword argument input.
     """
 

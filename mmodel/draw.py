@@ -13,16 +13,14 @@ DEFAULT_SETTINGS = {
 
 
 def draw_graph(G, label, style, export=None):
-    """Draw detailed graph
+    """Draw a detailed graph with options.
 
     :param str name: name of the graph
     :param str label: title of the graph
     :param str style: there are three valid styles, plain
-        short and full. Each corresponds to node only,
-        function only, and detailed note metadata
+        short and full. Each style corresponds to node-only,
+        function-only, and detailed note metadata graph
     :param str export: filename to export to
-
-    Each node shows node label (name + signature + output)
     """
 
     label = label.replace("\n", "\l") + "\l"

@@ -4,7 +4,7 @@ from mmodel.utility import parse_input, parse_parameters
 
 
 def loop_modifier(func, parameter: str):
-    """Loop - iterates one given parameter
+    """Modify function to iterate one given parameter.
 
     :param list parameter: target parameter to loop
     """
@@ -15,7 +15,7 @@ def loop_modifier(func, parameter: str):
         loop_values = kwargs.pop(parameter)
 
         try:
-         # make sure the parameter input is iterable
+            # make sure the parameter input is iterable
             iter(loop_values)
         except TypeError:
             raise Exception(f"{parameter} value is not iterable")
@@ -26,10 +26,10 @@ def loop_modifier(func, parameter: str):
 
 
 def zip_loop_modifier(func, parameters: list):
-    """Pairwise loop - iterates the values from loop
+    """Modify function to iterate the parameters pairwise.
 
     :param list parameters: list of the parameter to loop
-        only one parameter is allowed. If string of parameters are
+        only one parameter is allowed. If the string of parameters is
         provided, the parameters should be delimited by ", ".
     """
 
@@ -51,7 +51,7 @@ def zip_loop_modifier(func, parameters: list):
 
 
 def signature_modifier(func, parameters):
-    """Replace node object signature
+    """Replace node object signature.
 
     :param list parameters: signature parameters to replace the original
         signature. The parameters are assumed to be "POSITIONAL_OR_KEYWORD", and no
@@ -60,9 +60,9 @@ def signature_modifier(func, parameters):
 
     .. Note::
 
-        The modifier does not work with functions that have positional only
-        input parameters, or functions do not have a signature (builtin and numpy ufunc).
-        Use pos_signature_modifier instead.
+        The modifier does not work with functions that have positional-only
+        input parameters; or functions do not have a signature
+        (built-in and numpy.ufunc). Use pos_signature_modifier instead.
 
     """
     sig, param_order, defaultargs = parse_parameters(parameters)
@@ -78,7 +78,7 @@ def signature_modifier(func, parameters):
 
     @wraps(func)
     def wrapped(**kwargs):
-        # assume there's no repeated signature name that are not overlapping
+        # assume there are no repeated signature names that are not overlapping
         # replace a, b with b, c is not allowed in the following step
         kwargs.update(defaultargs)
         for old, new in param_pair:
@@ -90,15 +90,15 @@ def signature_modifier(func, parameters):
 
 
 def pos_signature_modifier(func, parameters):
-    """Replace node object signature with position arguments
+    """Replace node object signature with position arguments.
 
-    For functions that do not have a signature or only allowing positional only
-    inputs. The modifier is specifically used to change the "signature" of builtin
-    function or numpy ufunc.
+    For functions that do not have a signature or only allow positional only
+    inputs. The modifier is specifically used to change the "signature" of the builtin
+    function or numpy.ufunc.
 
     .. note::
 
-        The modifier is only tested against builtin function or ufunc.
+        The modifier is only tested against built-in function or numpy.ufunc.
     """
     sig, param_order, defaultargs = parse_parameters(parameters)
 
@@ -115,7 +115,7 @@ def pos_signature_modifier(func, parameters):
 
 
 def signature_binding_modifier(func):
-    """Add parameter binding and checking for function
+    """Add parameter binding and checking for function.
 
     The additional wrapper is unnecessary, but to keep a consistent
     modifier syntax. The modifier can be used on wrapped functions

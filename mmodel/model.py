@@ -10,19 +10,21 @@ import networkx as nx
 
 
 class Model:
-    """Create model executable
+    """Create model executable.
 
     :param str name: Model name
     :param object graph: ModelGraph instance (digraph)
-    :param class handler: Handler class that handles model execution and the keyword
-        arguments. The parameter format is (HandlerClass, {})
+    :param class handler: Handler class that handles model execution and
+        the keyword arguments. The parameter format is (HandlerClass, {})
         By default, the handler takes the graph as the first parameter.
-        For additional arguments, add argument to dictionary afterwards.
+        For additional arguments, add an argument to the dictionary afterward.
     :param list modifiers: modifiers used for the whole graph model executable.
-        Optional, defaults to an empty list. For each modifier, the format is
-        (modifier, {}). All modifiers should have function as the first argument
+        The parameter is Optional and defaults to an empty list. For each modifier,
+        the format is (modifier, {}). All modifiers should have the function as
+        the first argument.
     :param str description: model description
-    :param list returns: the order of returns of the model, defaults to the topological search
+    :param list returns: The order of returns of the model; defaults to the
+        topological search.
     """
 
     def __init__(
@@ -65,12 +67,12 @@ class Model:
         return self.executor(**inputs)
 
     def __str__(self):
-        """Output callable information"""
+        """Output callable information."""
 
         return self.metadata()
 
     def metadata(self, full=True, wrap_width=80):
-        """Parse metadata string of the Model instance"""
+        """Parse metadata string of the Model instance."""
 
         metadata_list = [
             f"{self.__name__}{self.__signature__}",
@@ -90,18 +92,18 @@ class Model:
 
     @staticmethod
     def _is_valid_graph(G):
-        """Check if model graph is valid to build an executable
+        """Check if the model graph is valid to build an executable.
 
         ``mmodel`` does not allow cycle graphs, graphs with isolated nodes,
         and all nodes have callable attributes defined.
-        The method is bound to Model class because the features
+        The method is bound to the Model class because the features
         are specific to ``Model`` class.
         """
 
-        assert nx.is_directed(G), f"invalid graph ({G.name}): undirected graph"
+        assert nx.is_directed(G), f"invalid graph ({G.name}): undirected graph."
         assert not nx.recursive_simple_cycles(
             G
-        ), f"invalid graph ({G.name}): graph contains cycles"
+        ), f"invalid graph ({G.name}): graph contains cycles."
 
         assert is_node_attr_defined(G, "func", "callable")
         # the following might occur when the node object is incorrectly constructed
@@ -113,36 +115,35 @@ class Model:
 
     @property
     def graph(self):
-        """The graph attribute output a copy of the graph"""
+        """The graph attribute output a copy of the graph."""
         return self._graph.deepcopy()
 
     def get_node(self, node):
-        """Quick access to node within the model"""
+        """Quick access to node within the model."""
 
         return self._graph.nodes[node]
 
     def get_node_object(self, node):
-        """Quick access to node callable within the model"""
+        """Quick access to node callable within the model."""
 
         return self._graph.nodes[node]["func"]
 
     def node_metadata(self, node, full=True, wrap_width=80):
-        """View a specific node"""
+        """View a specific node."""
 
         return self._graph.node_metadata(node, full=True, wrap_width=80)
 
     def draw(self, style="full", export=None):
-        """Draw the graph of the model
+        """Draw the graph of the model.
 
         Draws the default styled graph.
 
         :param str style: there are three styles, plain, short and full.
-            Plain shows nodes only, short shows part of the metadata, and 
-            long shows all the metadata
-        :param str export: filename to save the graph as. File extension
-            is needed
+            Plain shows nodes only, short shows part of the metadata, and
+            long shows all the metadata.
+        :param str export: filename to save the graph as. The file extension
+            is needed.
 
         """
 
         return draw_graph(self._graph, str(self), style, export)
-

@@ -4,12 +4,12 @@ import textwrap
 
 # graph properties
 def modelgraph_signature(graph):
-    """Obtain the signature from the model graph
+    """Obtain the signature from the model graph.
 
     :param DiGraph graph: networkx.Digraph() object,
-        with 'signature', 'output' defined for nodes
+        with 'signature', and 'output' defined for nodes
         and "parameters" for edges.
-        The args are a dictionary of inspected signature
+        The args are a dictionary of inspected signature.
     """
 
     parameters = {}
@@ -26,10 +26,10 @@ def modelgraph_signature(graph):
 
 
 def modelgraph_returns(graph):
-    """Obtain the return parameter from the model graph
+    """Obtain the return parameter from the model graph.
 
     The assumption is that all return parameter names are unique.
-    The function checks all returns value and all intermediate value (edge values)
+    The function checks all returns values and all intermediate values (edge values)
 
     :returns: list of variable names based on note outputs
     :rtype: list
@@ -49,9 +49,9 @@ def modelgraph_returns(graph):
 
 
 def param_sorter(parameter):
-    """Sorter for argument parameter
+    """Sorter for argument parameter.
 
-    The values in the tuple are compared in sequential order
+    The values in the tuple are compared in sequential order:
     1. Order by parameter kind
     2. Default parameter rank at the end of its kind
     3. Alphabetical order
@@ -67,7 +67,7 @@ def param_sorter(parameter):
 
 
 def replace_signature(signature, replacement_dict):
-    """Replace signature with a dictionary of (key, pair)
+    """Replace signature with a dictionary of (key, pair).
 
     The function is used to replace several input parameters with an object.
     The signature is the original signature. The dictionary key should be the
@@ -87,14 +87,14 @@ def replace_signature(signature, replacement_dict):
 
 
 def graph_topological_sort(graph):
-    """Determine the topological order
+    """Determine the topological order.
 
     `nx.topological_generations` outputs a generator with each node list generation.
     However, it does not carry the node attributes. The method
     outputs a list of nodes for each generation.
 
     :return: topological order of the graph. Returns a list of nodes and its
-        attribute
+        attribute.
     :rtype: list
 
     """
@@ -110,18 +110,18 @@ def graph_topological_sort(graph):
 def replace_subgraph(
     graph, subgraph, name, func, output=None, inputs=None, modifiers=None
 ):
-    """Replace subgraph with a node
+    """Replace subgraph with a node.
 
     Find all parent nodes, not in the subgraph but child nodes in the
     subgraph. (All child nodes of subgraph nodes are in the subgraph).
     The edge attribute is passed down to the new edge. Here a new graph is
-    created by deep copy the original graph
+    created by deep copy the original graph.
 
-    :param graph model_graph: model_graph to modify
+    :param graph model_graph: model_graph to modify.
     :param graph subgraph: subgraph that is being replaced by a node
-        subgraph is a view of the original graph
-    :param str subgraph_name: name of the subgraph
-    :param str output: output parameter name
+        subgraph is a view of the original graph.
+    :param str subgraph_name: name of the subgraph.
+    :param str output: output parameter name.
     """
 
     graph = graph.deepcopy()
@@ -149,12 +149,12 @@ def replace_subgraph(
 def modify_node(
     graph, node, func=None, output=None, inputs=None, modifiers=None, inplace=False
 ):
-    """Modify node
+    """Modify node.
 
-    The result is a new graph with node object modified.
+    The result is a new graph with the node object modified.
     :param str output: change the output of the node. If the node is not
         terminal, the output should not be changed.
-    :param bool inplace: if True, the original graph is modified
+    :param bool inplace: if True, the original graph is modified.
     """
     if not inplace:
         graph = graph.deepcopy()
@@ -172,10 +172,9 @@ def modify_node(
 def parse_parameters(parameters):
     """Parse a list of parameters to signatures
 
-    :param list parameters: Parameters to parse. Element can either be a string
-        as the parameter name or a tuple/list as (parameter, default)
-
-    :return: parameter order and signature
+    :param list parameters: Parameters to parse. The element can either be a string
+        as the parameter name or a tuple/list as (parameter, default).
+    :return: parameter order and signature.
     """
 
     param_order = []  # parameters in the correct order
@@ -198,7 +197,7 @@ def parse_parameters(parameters):
 
 
 def param_counter(graph, returns):
-    """Count the number of times a parameter is used for graph execution
+    """Count the number of times a parameter is used for graph execution.
 
     Count all function signature parameters. For extra returns,
     add one to each count value.
@@ -226,7 +225,7 @@ def param_counter(graph, returns):
 
 
 def parse_input(signature, *args, **kwargs):
-    """parse argument based on signature and input
+    """parse argument based on signature and input.
 
     The default value is automatically filled.
     """
@@ -237,10 +236,10 @@ def parse_input(signature, *args, **kwargs):
 
 
 def content_wrap(content_list: list, width: int = 80, indent: int = 2):
-    """Wrap metadata content
+    """Wrap metadata content.
 
-    The width is default to 80 characters. The content is a list of
-    strings represent each lines. The resulting wrapping has no
+    The width defaults to 80 characters. The content is a list of
+    strings representing each line. The resulting wrapping has no
     initial indentation. The indent parameter is the subsequent indent
     parameter in the wrap function. The tabsize is the same as
     the indent.
@@ -265,7 +264,7 @@ def content_wrap(content_list: list, width: int = 80, indent: int = 2):
 
 
 def parse_modifiers(modifiers):
-    """Parse modifiers parameters to readable strings"""
+    """Parse modifiers parameters to readable strings."""
 
     if modifiers:
         modifier_str_list = ["modifiers:"]
@@ -281,9 +280,12 @@ def parse_modifiers(modifiers):
 
 
 def is_node_attr_defined(graph, attr: str, attr_name: str = None):
-    """Check if all graph nodes have the target attribute defined
+    """Check if all graph nodes have the attribute defined.
 
-    Raise exception if the attribute is undefined
+    :param str attr: attribute string.
+    :param str attr_name: the detailed name of the attribute.
+
+    Raise an exception if the attribute is undefined.
     """
     attr_name = attr_name or attr
 
@@ -300,16 +302,16 @@ def is_node_attr_defined(graph, attr: str, attr_name: str = None):
     if node_list:
         raise Exception(
             f"invalid {graph_str}: {attr_name} "
-            f"('{attr}') is not defined for node(s) {node_list}"
+            f"{repr(attr)} is not defined for node(s) {node_list}."
         )
 
     return True
 
 
 def is_edge_attr_defined(graph, attr: str, attr_name: str = None):
-    """Check if all graph edges have the target attribute defined
+    """Check if all graph edges have the target attribute defined.
 
-    Raise exception if the attribute is undefined
+    Raise an exception if the attribute is undefined.
     """
     attr_name = attr_name or attr
 
@@ -324,8 +326,8 @@ def is_edge_attr_defined(graph, attr: str, attr_name: str = None):
             edge_list.append((u, v))
     if edge_list:
         raise Exception(
-            f"invalid {graph_str}: {attr_name} ('{attr}')"
-            f" is not defined for edge(s) {edge_list}"
+            f"invalid {graph_str}: {attr_name} {repr(attr)}"
+            f" is not defined for edge(s) {edge_list}."
         )
 
     return True

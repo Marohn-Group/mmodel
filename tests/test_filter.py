@@ -1,9 +1,8 @@
-from tests.conftest import graph_equal
 from mmodel.filter import subnodes_by_inputs, subnodes_by_outputs
 
 
 def test_subgraph_by_inputs(mmodel_G):
-    """Test if the subgraph returns all nodes (including child nodes)"""
+    """Test if the subgraph returns all nodes (including child nodes)."""
 
     subgraph_nodes = subnodes_by_inputs(mmodel_G, ["f"])
     assert set(subgraph_nodes) == {"poly", "multiply"}
@@ -18,7 +17,7 @@ def test_subgraph_by_inputs(mmodel_G):
 
 
 def test_subgraph_by_outputs(mmodel_G):
-    """Test if the subgraph returns all nodes (including parent nodes)"""
+    """Test if the subgraph returns all nodes (including parent nodes)."""
 
     # return the original graph
     subgraph_nodes = subnodes_by_outputs(mmodel_G, ["k", "m"])

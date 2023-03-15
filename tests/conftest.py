@@ -16,38 +16,38 @@ import math
 
 
 # define the global functions for two graph
-# both graphs references the same set of functions in nodes
+# both graphs reference the same set of functions in nodes
 # in graph testing they should be equal
 
 
 def addition(a, factor=2):
-    """addition operation"""
+    """Addition operation."""
     return a + factor
 
 
 def subtraction(c, d):
-    """subtraction operation"""
+    """Subtraction operation."""
     return c - d
 
 
 def polynomial(c, f):
-    """polynomial operation"""
+    """Polynomial operation."""
     return c**f
 
 
 def multiplication(e, g):
-    """multiplication operation"""
+    """Multiplication operation."""
     return e * g
 
 
 def logarithm(c, b):
-    """logarithm operation"""
+    """Logarithm operation."""
     return math.log(c, b)
 
 
 @pytest.fixture()
 def standard_G():
-    """Standard test graph generated using DiGraph
+    """Standard test graph generated using DiGraph.
 
     The results are:
     k = (a + 2 - d)(a + 2)^f
@@ -63,7 +63,7 @@ def standard_G():
                 "output": "c",
                 "sig": signature(addition),
                 "modifiers": [],
-                "doc": "addition operation",
+                "doc": "Addition operation.",
                 "functype": "callable"
             },
         ),
@@ -75,7 +75,7 @@ def standard_G():
                 "output": "e",
                 "sig": signature(subtraction),
                 "modifiers": [],
-                "doc": "subtraction operation",
+                "doc": "Subtraction operation.",
                 "functype": "callable"
             },
         ),
@@ -87,7 +87,7 @@ def standard_G():
                 "output": "g",
                 "sig": signature(polynomial),
                 "modifiers": [],
-                "doc": "polynomial operation",
+                "doc": "Polynomial operation.",
                 "functype": "callable"
             },
         ),
@@ -99,7 +99,7 @@ def standard_G():
                 "output": "k",
                 "sig": signature(multiplication),
                 "modifiers": [],
-                "doc": "multiplication operation",
+                "doc": "Multiplication operation.",
                 "functype": "callable"
             },
         ),
@@ -111,7 +111,7 @@ def standard_G():
                 "output": "m",
                 "sig": signature(logarithm),
                 "modifiers": [],
-                "doc": "logarithm operation",
+                "doc": "Logarithm operation.",
                 "functype": "callable"
             },
         ),
@@ -136,7 +136,7 @@ def standard_G():
 
 @pytest.fixture()
 def mmodel_G():
-    """Mock test graph generated using ModelGraph
+    """Mock test graph generated using ModelGraph.
 
     The results are:
     k = (a + 2 - d)(a + b)^f
@@ -164,7 +164,7 @@ def mmodel_G():
 
 @pytest.fixture(scope="module")
 def mmodel_signature():
-    """The default signature of the mmodel_G models"""
+    """The default signature of the mmodel_G models."""
 
     param_list = [
         Parameter("a", 1),
@@ -177,9 +177,9 @@ def mmodel_signature():
 
 
 def graph_equal(G1, G2):
-    """Test if graphs have the same nodes, edges and attributes
+    """Test if graphs have the same nodes, edges, and attributes.
 
-    Dictionary comparison does not care about key orders
+    Dictionary comparison does not care about key orders.
     """
 
     assert dict(G1.nodes) == dict(G2.nodes)
