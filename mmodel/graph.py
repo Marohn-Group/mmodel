@@ -33,12 +33,17 @@ class ModelGraph(nx.DiGraph):
 
     graph_attr_dict_factory = {"type": "ModelGraph"}.copy
 
-    def __init__(self, parser=parser_engine, *args, **kwargs):
+    def __init__(self, *args, parser=parser_engine, **kwargs):
         super().__init__(*args, **kwargs)
         self._parser = parser
 
     def set_node_object(
-        self, node, func, output: str, inputs: list = None, modifiers: list = None
+        self,
+        node,
+        func,
+        output: str = None,
+        inputs: list = None,
+        modifiers: list = None,
     ):
         """Add or update the functions of an existing node.
 

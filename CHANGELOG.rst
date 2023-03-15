@@ -34,6 +34,7 @@ Fixed
 - Fix the issue in tests that node attributes are not compared in `graph_equal()`.
 - Fix the issue that the original graph freezes when a model is created.
 - Fix the inconsistency between node and model metadata.
+- Fix the issue that "None" is included in the returns list.
 
 Changed
 ^^^^^^^^

@@ -39,7 +39,8 @@ def modelgraph_returns(graph):
     intermediate = []
 
     for node in graph.nodes():
-        returns.append(graph.nodes[node]["output"])
+        if graph.nodes[node]["output"]:  # skip None
+            returns.append(graph.nodes[node]["output"])
     for edge in graph.edges():
         intermediate.append(graph.edges[edge]["var"])
 
@@ -155,6 +156,16 @@ def modify_node(
     :param str output: change the output of the node. If the node is not
         terminal, the output should not be changed.
     :param bool inplace: if True, the original graph is modified.
+
+    .. Note::
+
+        If the original node has output, the node cannot be modified to None.
+        If the original node has inputs, the modification cannot remove the
+        original input (set to [] does not change anything).
+
+        For the above two cases, a copy of the graph should be created and run
+        ``set_node_object`` again to reset the node object.
+
     """
     if not inplace:
         graph = graph.deepcopy()

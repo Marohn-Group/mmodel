@@ -1,12 +1,14 @@
 import inspect
 import pytest
-from mmodel.model import Model
-from mmodel.handler import BasicHandler, H5Handler
-from mmodel.modifier import loop_modifier
 import math
 import networkx as nx
 from copy import deepcopy
 from textwrap import dedent
+
+from mmodel.model import Model
+from mmodel.handler import BasicHandler, H5Handler
+from mmodel.modifier import loop_modifier
+from mmodel.graph import ModelGraph
 
 
 class TestModel:
@@ -67,6 +69,18 @@ class TestModel:
 
         assert model_instance(10, 2, 15, 1) == (-36, math.log(12, 2))
         assert model_instance(a=1, d=2, f=3, b=4) == (27, math.log(3, 4))
+
+    def test_metadata_without_no_return(self):
+        """Test metadata that doesn't have a return
+
+        The function has an output and execution should ignore the output
+        """
+        G = ModelGraph()
+        G.add_node("Test")
+        G.set_node_object("Test", lambda x: x, output=None)
+        model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
+
+        assert model(1) == None  # test if the return is None
 
     def test_get_node(self, model_instance, mmodel_G):
         """Test get_node method of the model."""
@@ -153,6 +167,65 @@ class TestModel:
 
         assert model.returns == ["m", "k", "c"]
         assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36, 12)
+
+
+class TestModelMetaData:
+    """Test the model instance metadata"""
+
+    @pytest.fixture
+    def func(self):
+        """A test function."""
+
+        def _func(a, b):
+            return a + b
+
+        return _func
+
+    @pytest.fixture
+    def G(self):
+        """An graph with one node."""
+
+        G = ModelGraph()
+        G.add_node("Test")
+        return G
+
+    def test_metadata_without_no_return(self, func, G):
+        """Test metadata that doesn't have return"""
+        G.set_node_object("Test", func, output=None)
+        model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
+
+        node_s = """\
+        test_model(a, b)
+        returns: None
+        handler: BasicHandler()
+
+        Test model."""
+        assert model.metadata() == dedent(node_s)
+
+    def test_metadata_without_ome_return(self, func, G):
+        """Test metadata that doesn't have return"""
+        G.set_node_object("Test", func, output="c")
+        model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
+
+        node_s = """\
+        test_model(a, b)
+        returns: c
+        handler: BasicHandler()
+
+        Test model."""
+        assert model.metadata() == dedent(node_s)
+
+    def test_metadata_short(self, func, G):
+        """Test metadata that has one return"""
+        G.set_node_object("Test", func, output="c")
+        model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
+
+        node_s = """\
+        test_model(a, b)
+        returns: c
+        handler: BasicHandler()"""
+
+        assert model.metadata(full=False) == dedent(node_s)
 
 
 class TestModifiedModel:

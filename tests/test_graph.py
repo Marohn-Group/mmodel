@@ -262,6 +262,22 @@ class TestModelGraphBasics:
 
         assert mmodel_G.node_metadata("test_node") == dedent(node_s)
 
+    def test_node_metadata_with_no_returns(self):
+        """If the node doesn't have returns, metadata should output None."""
+
+        G = ModelGraph()
+        G.add_node("Test")
+        G.set_node_object("Test", lambda x: None)
+
+        node_s = """\
+        Test
+
+        <lambda>(x)
+        return: None
+        functype: callable"""
+
+        assert G.node_metadata("Test") == dedent(node_s)
+
     def test_draw(self, mmodel_G):
         """Test the draw method of ModelGraph instance.
 

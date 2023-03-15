@@ -74,9 +74,19 @@ class Model:
     def metadata(self, full=True, wrap_width=80):
         """Parse metadata string of the Model instance."""
 
+        # use tuple if there are multiple returns
+        # else use returns directly.
+        return_len = len(self.returns)
+        if return_len == 0:
+            returns_str = "None"
+        elif return_len == 1:
+            returns_str = self.returns[0]
+        else:
+            returns_str = f"({', '.join(self.returns)})"
+
         metadata_list = [
             f"{self.__name__}{self.__signature__}",
-            f"returns: ({', '.join(self.returns)})",
+            f"returns: {returns_str}",
             f"handler: {self.handler[0].__name__}"
             f"({', '.join(str(v) for v in self.handler[1].values())})",
         ]
@@ -138,7 +148,7 @@ class Model:
 
         Draws the default styled graph.
 
-        :param str style: there are three styles, plain, short and full.
+        :param str style: there are three styles, plain, short, and full.
             Plain shows nodes only, short shows part of the metadata, and
             long shows all the metadata.
         :param str export: filename to save the graph as. The file extension

@@ -60,7 +60,7 @@ def test_param_sorter_order(func):
     assert sorted(shuffled_params.values(), key=util.param_sorter) == param_list
 
 
-def test_model_signature(mmodel_G, mmodel_signature):
+def test_modelgraph_signature(mmodel_G, mmodel_signature):
     """Test graph_signature.
 
     Two functions in the mmodel_G have parameter
@@ -107,10 +107,22 @@ def test_parse_parameters():
     assert dargs == {"b": 3, "c": 2}
 
 
-def test_model_returns(mmodel_G):
+def test_modelgraph_returns(mmodel_G):
     """Test graph_returns."""
 
     assert util.modelgraph_returns(mmodel_G) == ["k", "m"]
+
+
+def test_modelgraph_returns_None():
+    """Test graph_returns if node functions don't have output."""
+
+    from mmodel.graph import ModelGraph
+
+    G = ModelGraph()
+    G.add_node("Test")
+    G.set_node_object("Test", lambda x: None, output=None)
+
+    assert util.modelgraph_returns(G) == []
 
 
 def test_graph_topological_sort(mmodel_G):

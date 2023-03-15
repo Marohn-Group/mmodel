@@ -68,7 +68,8 @@ class TopologicalHandler:
             # execute
             func_result = node_attr["func"](**kwargs)
             output = node_attr["output"]
-            data[output] = func_result
+            if output:  # skip the None
+                data[output] = func_result
 
         except:  # exception occurred while running the node
             try:  # if the data class needs to be closed
@@ -87,7 +88,9 @@ class TopologicalHandler:
     def finish(self, data, returns):
         """Finish execution."""
 
-        if len(returns) == 1:
+        if len(returns) == 0:
+            result = None
+        elif len(returns) == 1:
             result = data[returns[0]]
         else:
             result = tuple(data[rt] for rt in returns)
