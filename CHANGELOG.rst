@@ -45,7 +45,8 @@ Changed
 - change ``view_node`` to ``node_metadata``
 - specified inputs no longer added to the modifier list, the base function is
   modified
-
+- model and graph drawing no longer takes method as input. Instead, three style
+  options are given, plain, short and full.
 
 Added
 ^^^^^^

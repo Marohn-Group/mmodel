@@ -12,72 +12,61 @@ DEFAULT_SETTINGS = {
 }
 
 
-def update_settings(label: str):
-    """Update graphviz settings
-
-    Creates a copy of the default dictionary
-    and update the graph label in the graph attribute.
-    """
-
-    # copy() is shallow, does not copy the nested dict
-    new_settings = deepcopy(DEFAULT_SETTINGS)
-    new_settings["graph_attr"].update({"label": label})
-
-    return new_settings
-
-
-def draw_plain_graph(G, label=""):
-    """Draw plain graph
-
-    :param str name: name of the graph
-    :param str label: title of the graph
-
-    Plain graph contains the graph label (name + doc)
-    Each node only shows the node name
-    """
-
-    settings = update_settings(label)
-    dot_graph = graphviz.Digraph(name=G.name, **settings)
-
-    for node in G.nodes:
-        dot_graph.node(node)
-
-    for u, v in G.edges:
-        dot_graph.edge(u, v)
-
-    return dot_graph
-
-
-def draw_graph(G, label: str = ""):
+def draw_graph(G, label, style, export=None):
     """Draw detailed graph
 
     :param str name: name of the graph
     :param str label: title of the graph
+    :param str style: there are three valid styles, plain
+        short and full. Each corresponds to node only,
+        function only, and detailed note metadata
+    :param str export: filename to export to
 
     Each node shows node label (name + signature + output)
     """
 
-    settings = update_settings(label)
+    label = label.replace("\n", "\l") + "\l"
+    settings = deepcopy(DEFAULT_SETTINGS)
+    settings["graph_attr"].update({"label": label})
 
     dot_graph = graphviz.Digraph(name=G.name, **settings)
 
-    for node, ndict in G.nodes(data=True):
+    if style == "plain":
+        for node in G.nodes:
+            dot_graph.node(node)
 
-        if "func" in ndict:
-            # full description and wrapped at 30 characters
-            label = G.node_metadata(node, wrap_width=30).replace('\n', '\l')
-            label += '\l'
-        else:
-            label = node
-        dot_graph.node(node, label=label)
+        for u, v in G.edges:
+            dot_graph.edge(u, v)
 
-    for u, v, edict in G.edges(data=True):
+    else:
+        if style == "short":
+            for node, ndict in G.nodes(data=True):
+                if "func" in ndict:
+                    nlabel = G.node_metadata(node, False, 30).replace("\n", "\l") + "\l"
+                else:
+                    nlabel = node
 
-        if "var" in edict:
-            xlabel = edict["var"]
-        else:
-            xlabel = ""
+                dot_graph.node(node, label=nlabel)
 
-        dot_graph.edge(u, v, xlabel=xlabel)
+        elif style == "full":
+            for node, ndict in G.nodes(data=True):
+                if "func" in ndict:
+                    nlabel = G.node_metadata(node, True, 30).replace("\n", "\l") + "\l"
+                else:
+                    nlabel = node
+
+                dot_graph.node(node, label=nlabel)
+
+        for u, v, edict in G.edges(data=True):
+
+            if "var" in edict:
+                xlabel = edict["var"]
+            else:
+                xlabel = ""
+
+            dot_graph.edge(u, v, xlabel=xlabel)
+
+    if export:
+        dot_graph.render(outfile=export)
 
     return dot_graph

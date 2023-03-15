@@ -191,24 +191,21 @@ class ModelGraph(nx.DiGraph):
         """Modify node attributes"""
         return modify_node(self, node, func, output, inputs, modifiers, inplace)
 
-    def draw(self, method=draw_graph, export=None):
+    def draw(self, style="full", export=None):
         """Draw the graph
 
-        :param str export: filename to export to, extension name required.
+        Draws the default styled graph.
 
-        A drawing is provided. Defaults to ``draw_graph``
-        '\l' forces the label to align left when it is defined after the line.
-        Returns the dot_graph (can be rendered in Jupyter notebook).
-        If the export parameter is specified, the dot file is saved to file.
-        See graphviz.render() for more rendering options.
+        :param str style: there are three styles, plain, short and full.
+            Plain shows nodes only, short shows part of the metadata, and
+            long shows all the metadata.
+        :param str export: filename to save the graph as. File extension
+            is needed.
+
         """
 
-        dot_graph = method(self, str(self).replace("\n", "\l") + "\l")
+        return draw_graph(self, str(self), style, export)
 
-        if export:
-            dot_graph.render(outfile=export)
-
-        return dot_graph
 
     def deepcopy(self):
         """Deepcopy graph
