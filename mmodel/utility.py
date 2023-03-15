@@ -281,7 +281,7 @@ def parse_modifiers(modifiers):
         modifier_str_list = ["modifiers:"]
 
         for mod, kwargs in modifiers:
-            str_value = [str(v) for v in kwargs.values()]
+            str_value = [repr(v) for v in kwargs.values()]
             mod_str = f"\t- {mod.__name__}({', '.join(str_value)})"
             modifier_str_list.append(mod_str)
 

@@ -88,7 +88,7 @@ class Model:
             f"{self.__name__}{self.__signature__}",
             f"returns: {returns_str}",
             f"handler: {self.handler[0].__name__}"
-            f"({', '.join(str(v) for v in self.handler[1].values())})",
+            f"({', '.join(repr(v) for v in self.handler[1].values())})",
         ]
 
         metadata_list.extend(parse_modifiers(self.modifiers))

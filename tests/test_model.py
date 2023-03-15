@@ -141,7 +141,7 @@ class TestModel:
         assert h5model(a=10, d=15, f=1, b=2) == (-36, math.log(12, 2))
 
         # the output of the path is the repr instead of the string
-        assert f"handler: H5Handler({str(path)})".replace(" ", "") in str(
+        assert f"handler: H5Handler({repr(path)})".replace(" ", "") in str(
             h5model
         ).replace("\n", "").replace(" ", "")
 
@@ -265,7 +265,7 @@ class TestModifiedModel:
         returns: (k, m)
         handler: BasicHandler()
         modifiers:
-          - loop_modifier(a)
+          - loop_modifier('a')
         
         Modified model."""
         assert str(mod_model_instance) == dedent(mod_model_s)

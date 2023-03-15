@@ -293,7 +293,7 @@ def test_parse_modifiers():
         (mod2, {"param1": [1, 2, 3], "param2": (1, 2)}),
     ]
 
-    modifier_str_list = ["modifiers:", "\t- mod1(test)", "\t- mod2([1, 2, 3], (1, 2))"]
+    modifier_str_list = ["modifiers:", "\t- mod1('test')", "\t- mod2([1, 2, 3], (1, 2))"]
     assert util.parse_modifiers(modifiers) == modifier_str_list
 
 
