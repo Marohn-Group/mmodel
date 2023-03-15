@@ -47,13 +47,36 @@ class NodeParser:
                 return attr_dict
 
 
+def parse_docstring(docstring):
+    """Parse docstring from built-in function and numpy.ufunc.
+
+    The built-in and ufunv type docstring location is not consistent
+    some module/function has the repr at the first line, and some don't.
+    Here we try to grab the first line that starts with an upper case
+    and ends with a period.
+    """
+
+    doc = ""
+    for line in docstring.splitlines():
+        if line and line[0].isupper() and line.endswith("."):
+            doc = line
+            break
+    return doc
+
+
 def default_parser(node, func, output, inputs, modifiers):
-    """Return the default function dictionary."""
+    """Return the default function dictionary.
+
+    Grab the first line of the docstring.
+    """
     if callable(func):
         func_dict = {}
 
-        if hasattr(func, "__doc__"):
-            func_dict["doc"] = func.__doc__
+        doc = ""
+        if hasattr(func, "__doc__") and func.__doc__ and func.__doc__.splitlines():
+            doc = func.__doc__.splitlines()[0]
+
+        func_dict['doc'] = doc
 
         if inputs:
             func = signature_modifier(func, inputs)
@@ -66,20 +89,10 @@ def default_parser(node, func, output, inputs, modifiers):
 
 
 def builtin_parser(node, func, output, inputs, modifiers):
-    """Check if the function is a built-in function.
-
-    The built-in type docstring location is not consistent
-    some module/function has the repr at the first line, and some don't.
-    Here we try to grab the first line that starts with an upper case
-    and ends with a period.
-    """
+    """Check if the function is a built-in function."""
     if isinstance(func, types.BuiltinFunctionType):
 
-        doc = ""
-        for line in func.__doc__.splitlines():
-            if line and line[0].isupper() and line.endswith("."):
-                doc = line
-                break
+        doc = parse_docstring(func.__doc__)
 
         if inputs:
             func = pos_signature_modifier(func, inputs)
@@ -117,7 +130,9 @@ def model_parser(node, func, output, inputs, modifiers):
 
     if isinstance(func, Model):
 
-        doc = func.description.splitlines()[0]
+        doc = ""
+        if func.description.splitlines():
+            doc = func.description.splitlines()[0]
 
         if inputs:
             func = signature_modifier(func, inputs)

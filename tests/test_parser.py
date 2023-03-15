@@ -20,7 +20,10 @@ class TestDefaultParser:
         """Construct a callable function."""
 
         def func(a, b):
-            """Sum of a and b."""
+            """Sum of a and b.
+            
+            The detailed docstring.
+            """
             return a + b
 
         return func
@@ -31,6 +34,16 @@ class TestDefaultParser:
         assert default_parser("test", callable_func, "c", [], []) == {
             "_func": callable_func,
             "doc": "Sum of a and b.",
+            "functype": "callable",
+        }
+
+    def test_default_parser_without_doc(self):
+        """Test default parser correctly parse function without doc."""
+
+        func = lambda x: x
+        assert default_parser("test", func, "c", [], []) == {
+            "_func": func,
+            "doc": "",
             "functype": "callable",
         }
 
@@ -119,7 +132,7 @@ class TestModelParser:
         )
 
     def test_model_parser(self, func):
-        """Test ufunc parser correctly parse callable."""
+        """Test ufunc parser correctly parse model instances."""
 
         func_dict = model_parser("test", func, "c", [], [])
         assert func_dict == {
@@ -129,8 +142,20 @@ class TestModelParser:
         }
         assert list(inspect.signature(func).parameters) == ["a", "b", "d", "f"]
 
+    def test_model_parser(self, func):
+        """Test ufunc parser correctly parse model instances."""
+
+        func.description = ""
+        func_dict = model_parser("test", func, "c", [], [])
+        assert func_dict == {
+            "_func": func,
+            "doc": "",
+            "functype": "mmodel.Model",
+        }
+        assert list(inspect.signature(func).parameters) == ["a", "b", "d", "f"]
+
     def test_model_parser_inputs(self, func):
-        """Test ufunc parser correctly parse callable with inputs."""
+        """Test ufunc parser correctly parse model instances with inputs."""
 
         func_dict = model_parser("test", func, "c", ["x", "y", "z", "xy"], [])
         func = func_dict.pop("_func")
