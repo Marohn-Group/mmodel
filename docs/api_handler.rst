@@ -26,6 +26,6 @@ Handler Data class and TopologicalHandler
 ------------------------------------------
 Handler data stores the input value and all return values of the node execution.
 To define a custom handler a Data class should be defined, 
-and it should have `__getitem__` and `__setitem__` method.
+and it should have `__getitem__` and `__setitem__` methods.
 If the Model inherits the TopologicalHandler, the class DataClass should be
 defined as the Handler data class.
