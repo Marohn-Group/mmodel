@@ -66,9 +66,10 @@ def test_draw_partial_graph():
     G = nx.DiGraph(name="test_graph")
     G.add_edge("a", "b")
 
-    dot_graph = draw_graph(G, label="test label", style="short")
-
-    assert dot_graph.source.replace("\t", "") == dedent(dot_source)
+    dot_graph_short = draw_graph(G, label="test label", style="short")
+    dot_graph_full = draw_graph(G, label="test label", style="full")
+    assert dot_graph_short.source.replace("\t", "") == dedent(dot_source)
+    assert dot_graph_full.source.replace("\t", "") == dedent(dot_source)
 
 
 def test_draw_graph_export(mmodel_G, tmp_path):
