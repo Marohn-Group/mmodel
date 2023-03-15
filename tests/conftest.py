@@ -64,7 +64,7 @@ def standard_G():
                 "sig": signature(addition),
                 "modifiers": [],
                 "doc": "Addition operation.",
-                "functype": "callable"
+                "functype": "callable",
             },
         ),
         (
@@ -76,7 +76,7 @@ def standard_G():
                 "sig": signature(subtraction),
                 "modifiers": [],
                 "doc": "Subtraction operation.",
-                "functype": "callable"
+                "functype": "callable",
             },
         ),
         (
@@ -88,7 +88,7 @@ def standard_G():
                 "sig": signature(polynomial),
                 "modifiers": [],
                 "doc": "Polynomial operation.",
-                "functype": "callable"
+                "functype": "callable",
             },
         ),
         (
@@ -100,7 +100,7 @@ def standard_G():
                 "sig": signature(multiplication),
                 "modifiers": [],
                 "doc": "Multiplication operation.",
-                "functype": "callable"
+                "functype": "callable",
             },
         ),
         (
@@ -112,7 +112,7 @@ def standard_G():
                 "sig": signature(logarithm),
                 "modifiers": [],
                 "doc": "Logarithm operation.",
-                "functype": "callable"
+                "functype": "callable",
             },
         ),
     ]
