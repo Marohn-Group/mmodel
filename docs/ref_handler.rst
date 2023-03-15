@@ -5,7 +5,7 @@ Handler executing in topological order
 ---------------------------------------
 
 Currently all handler executes in topological order. The handler provides
-detailed message when exception occur during individual node execution.
+detailed message when exceptions occur during individual node execution.
 
 .. autosummary::
 
@@ -24,7 +24,7 @@ executes each node and stores the result in a custom dictionary ``MemData``.
 The number of times a value is used in the graph is initialized with MemData object.
 Each time a key is accessed (used as input for a node), the object calculates the
 remaining number. If it is zero (no longer needed for the sequent nodes),
-the value of the key is deleted. The behavior has small overhead and reduces
+the value of the key is deleted. The behavior has a very small overhead and reduces
 peak memory usage.
 
 .. autosummary::
@@ -40,7 +40,7 @@ unique for each instance run.
 
 .. note::
 
-    For values that are object type and cannot be stored as h5 database, the string
+    For values that are object type and cannot be stored as H5 database, the string
     of the object is stored as an attribute.
 
 :mod:`handler` module

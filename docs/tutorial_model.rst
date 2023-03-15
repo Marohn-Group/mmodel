@@ -25,7 +25,7 @@ Extra return variables
 ----------------------------
 
 The default return of the model is the output of the terminal nodes. To
-output some intermediate variables, use "extra_returns" to define additional
+output intermediate variables, use "returns" to define additional
 output for the model. All other handler parameters can be directly passed
 as keyword arguments.
 
