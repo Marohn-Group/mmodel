@@ -9,6 +9,7 @@ and this project adheres to
 
 [0.5.0] 
 ------------------------
+The package is moved to `Marohn Group <https://github.com/Marohn-Group/mmodel>`_.
 
 API Change
 ^^^^^^^^^^
@@ -65,6 +66,7 @@ Added
 - Add export to graph and model's ``draw`` method.
 - Add a "parser" module that parses functions based on different types.
 - Add function documentation in metadata.
+- Add Python 3.11 testing with tox.
 
 [0.4.0] - 2022-10-3
 ------------------------

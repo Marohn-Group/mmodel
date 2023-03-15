@@ -65,7 +65,7 @@ filterwarnings = [
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py38, py39, py310, coverage, docs
+envlist = py38, py39, py310, py311, coverage, docs
 isolated_build = True
 
 [gh-actions]
@@ -73,6 +73,7 @@ python =
     3.8: py38, docs
     3.9: py39, docs
     3.10: py310, docs
+    3.11: py311, docs
 
 [testenv:py38]
 deps =
@@ -85,6 +86,11 @@ deps =
 commands = pytest
 
 [testenv:py310]
+deps =
+    pytest >= 7.1.1
+commands = pytest
+
+[testenv:py311]
 deps =
     pytest >= 7.1.1
 commands = pytest
