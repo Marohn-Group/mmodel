@@ -18,7 +18,7 @@ There are three required elements of a handler class/instance:
    arguments.
 2. The handler should define ``__signature__`` with ``inspect.Signature`` object
    to allow signature detection with ``inspect.signature``.
-3.Tthe resulting handler object should be callable.
+3. The resulting handler object should be callable.
 
 Modify the ``Model`` class if these conditions cannot be satisfied.
 
