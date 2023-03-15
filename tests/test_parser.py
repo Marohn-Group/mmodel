@@ -4,6 +4,7 @@ from mmodel.parser import (
     ufunc_parser,
     model_parser,
     builtin_parser,
+    parse_docstring,
 )
 from mmodel.model import Model
 from mmodel.handler import BasicHandler
@@ -11,7 +12,28 @@ import pytest
 import math
 import inspect
 import numpy as np
+import operator
 from functools import wraps
+
+
+def test_parse_docstring():
+    """Test parse_docstring against some of the built-in and numpy.ufunc."""
+
+    assert parse_docstring(np.sum.__doc__) == "Sum of array elements over a given axis."
+    assert parse_docstring(np.add.__doc__) == "Add arguments element-wise."
+    assert (
+        parse_docstring(math.log.__doc__)
+        == "Return the logarithm of x to the given base."
+    )
+    assert (
+        parse_docstring(math.acos.__doc__)
+        == "Return the arc cosine (measured in radians) of x."
+    )
+    assert (
+        parse_docstring(print.__doc__)
+        == "Prints the values to a stream, or to sys.stdout by default."
+    )
+    assert parse_docstring(operator.add.__doc__) == "Same as a + b."
 
 
 class TestDefaultParser:
@@ -21,7 +43,7 @@ class TestDefaultParser:
 
         def func(a, b):
             """Sum of a and b.
-            
+
             The detailed docstring.
             """
             return a + b

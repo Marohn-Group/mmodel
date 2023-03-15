@@ -58,6 +58,7 @@ def parse_docstring(docstring):
 
     doc = ""
     for line in docstring.splitlines():
+        line = line.strip()
         if line and line[0].isupper() and line.endswith("."):
             doc = line
             break
