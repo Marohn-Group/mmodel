@@ -64,10 +64,9 @@ def draw_graph(G, label: str = ""):
     for node, ndict in G.nodes(data=True):
 
         if "func" in ndict:
-            label = (
-                f"{node}\l\n{ndict['func'].__name__}"
-                f"{ndict['sig']}\lreturn {ndict['output']}\l"
-            )
+            # full description and wrapped at 30 characters
+            label = G.node_metadata(node, wrap_width=30).replace('\n', '\l')
+            label += '\l'
         else:
             label = node
         dot_graph.node(node, label=label)

@@ -172,9 +172,12 @@ class HandlerTester:
         Exception occurred for node 'log':
         --- node info ---
         log
-          callable: logarithm\\(c, b\\)
-          return: m
-          modifiers: \\[\\]
+        
+        logarithm\\(c, b\\)
+        return: m
+        functype: callable
+
+        logarithm operation
         --- input info ---
         c = 0
         b = 2"""

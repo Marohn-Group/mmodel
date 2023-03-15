@@ -131,7 +131,15 @@ def test_graph_topological_sort(mmodel_G):
 
     for node, attr in order:
         assert isinstance(attr, dict)
-        assert sorted(list(attr)) == ["_func", "func", "modifiers", "output", "sig"]
+        assert sorted(list(attr)) == [
+            "_func",
+            "doc",
+            "func",
+            "functype",
+            "modifiers",
+            "output",
+            "sig",
+        ]
         nodes.append(node)
 
     assert nodes == ["add", "subtract", "poly", "log", "multiply"]
@@ -162,6 +170,7 @@ def test_replace_subgraph_terminal(mmodel_G):
     subgraph = mmodel_G.subgraph(["multiply", "poly"])
 
     def func(c, e, x, y):
+        """function docstring"""
         return
 
     graph = util.replace_subgraph(mmodel_G, subgraph, "test", func)
@@ -176,6 +185,8 @@ def test_replace_subgraph_terminal(mmodel_G):
         "func": func,
         "output": None,
         "sig": inspect.signature(func),
+        "doc": "function docstring",
+        "functype": "callable",
     }
 
     # Test the edge attributes
@@ -191,22 +202,25 @@ def test_replace_subgraph_middle(mmodel_G):
 
     subgraph = mmodel_G.subgraph(["subtract", "poly"])
 
-    def mock_obj(c, x, y):
+    def func(c, x, y):
+        """function docstring"""
         return x + y
 
     # combine the nodes subtract and poly to a "test" node
-    graph = util.replace_subgraph(mmodel_G, subgraph, "test", mock_obj, "e")
+    graph = util.replace_subgraph(mmodel_G, subgraph, "test", func, "e")
 
     # a copy is created
     assert graph != mmodel_G
     assert "test" in graph
 
     assert graph.nodes["test"] == {
-        "_func": mock_obj,
+        "_func": func,
         "modifiers": [],
-        "func": mock_obj,
+        "func": func,
         "output": "e",
-        "sig": inspect.signature(mock_obj),
+        "sig": inspect.signature(func),
+        "doc": "function docstring",
+        "functype": "callable",
     }
 
     # Test the edge attributes
@@ -253,7 +267,7 @@ def test_modify_node_inplace(mmodel_G):
     assert mmodel_G.nodes["subtract"]["func"](1, 2) == 0
 
 
-def test_parse_modifier():
+def test_parse_modifiers():
     """Test pase_modifier outputs the correct string
 
     Here to test string, list and tuples
@@ -276,13 +290,13 @@ def test_parse_modifier():
     ]
 
     modifier_str_list = ["modifiers:", "\t- mod1(test)", "\t- mod2([1, 2, 3], (1, 2))"]
-    assert util.parse_modifier(modifiers) == modifier_str_list
+    assert util.parse_modifiers(modifiers) == modifier_str_list
 
 
 def test_parse_modifier_empty():
     """Test pase_modifier outputs None when there is no modifier"""
 
-    assert util.parse_modifier([]) == []
+    assert util.parse_modifiers([]) == []
 
 
 def test_is_node_attr_defined():

@@ -17,6 +17,7 @@ Fixed
 - fix the issue where modify subgraph cannot add inputs or modifiers
 - fix the issue in tests that node attributes are not compared in `graph_equal()`
 - fix the issue that original graph freezes when a model is created
+- fix the inconsistency between node and model metadata
 
 Changed
 ^^^^^^^^
@@ -41,6 +42,10 @@ Changed
 - change node attribute "base_func" to "_func"
 - change model attribute "base_graph" to "graph"
 - change edge attribute "var" to "val"
+- change ``view_node`` to ``node_metadata``
+- specified inputs no longer added to the modifier list, the base function is
+  modified
+
 
 Added
 ^^^^^^
@@ -52,6 +57,8 @@ Added
 - graph node inputs allows default value with a (parameter, default) tuple
 - add name attribute to Model
 - add export to graph and model's ``draw`` method
+- add "parser" module that parses function based on different types
+- add function documentation in metadata
 
 [0.4.0] - 2022-10-3
 ------------------------

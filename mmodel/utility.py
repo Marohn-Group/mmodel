@@ -236,35 +236,36 @@ def parse_input(signature, *args, **kwargs):
     return values.arguments
 
 
-def content_wrap(
-    width: int = 80, indent: int = 2, subindent: int = 4, tabsize: int = 2
-):
+def content_wrap(content_list: list, width: int = 80, indent: int = 2):
     """Wrap metadata content
 
-    The indent specifies the number of whitespace of the initial
-    indentation. The subsequent indent adds on top of it. The width is default
-    to 80 characters.
+    The width is default to 80 characters. The content is a list of
+    strings represent each lines. The resulting wrapping has no
+    initial indentation. The indent parameter is the subsequent indent
+    parameter in the wrap function. The tabsize is the same as
+    the indent.
     """
 
-    initial_indent = " " * indent
-    subsequent_indent = " " * (indent + subindent)
-    wrap_obj = textwrap.TextWrapper(
+    wrapper = textwrap.TextWrapper(
         width=width,
-        initial_indent=initial_indent,
-        subsequent_indent=subsequent_indent,
+        subsequent_indent=" " * indent,
         replace_whitespace=False,
         expand_tabs=True,
-        tabsize=tabsize,
+        tabsize=indent,
     )
 
-    return wrap_obj.wrap  # return the function directly
+    wrapped_list = []
+    for item in content_list:
+        if item:
+            wrapped_list.extend(wrapper.wrap(item))
+        else:
+            wrapped_list.append("")
+
+    return wrapped_list  # return the wrapped list
 
 
-def parse_modifier(modifiers):
-    """Parse modifiers parameters to readable strings
-
-    The content is wrapped.
-    """
+def parse_modifiers(modifiers):
+    """Parse modifiers parameters to readable strings"""
 
     if modifiers:
         modifier_str_list = ["modifiers:"]

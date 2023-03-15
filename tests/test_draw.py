@@ -50,7 +50,10 @@ def test_draw_graph(mmodel_G):
 
     dot_graph = draw_graph(mmodel_G, label="test label")
     # test if add function is included
-    assert "add\l\naddition(a, factor=2)\lreturn c\l" in dot_graph.source
+    assert (
+        "add\l\laddition(a, factor=2)\lreturn: "
+        "c\lfunctype: callable\l\laddition operation" in dot_graph.source
+    )
 
 
 def test_draw_partial_graph():

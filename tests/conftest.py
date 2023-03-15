@@ -21,22 +21,27 @@ import math
 
 
 def addition(a, factor=2):
+    """addition operation"""
     return a + factor
 
 
 def subtraction(c, d):
+    """subtraction operation"""
     return c - d
 
 
 def polynomial(c, f):
+    """polynomial operation"""
     return c**f
 
 
 def multiplication(e, g):
+    """multiplication operation"""
     return e * g
 
 
 def logarithm(c, b):
+    """logarithm operation"""
     return math.log(c, b)
 
 
@@ -58,6 +63,8 @@ def standard_G():
                 "output": "c",
                 "sig": signature(addition),
                 "modifiers": [],
+                "doc": "addition operation",
+                "functype": "callable"
             },
         ),
         (
@@ -68,6 +75,8 @@ def standard_G():
                 "output": "e",
                 "sig": signature(subtraction),
                 "modifiers": [],
+                "doc": "subtraction operation",
+                "functype": "callable"
             },
         ),
         (
@@ -78,6 +87,8 @@ def standard_G():
                 "output": "g",
                 "sig": signature(polynomial),
                 "modifiers": [],
+                "doc": "polynomial operation",
+                "functype": "callable"
             },
         ),
         (
@@ -88,6 +99,8 @@ def standard_G():
                 "output": "k",
                 "sig": signature(multiplication),
                 "modifiers": [],
+                "doc": "multiplication operation",
+                "functype": "callable"
             },
         ),
         (
@@ -98,6 +111,8 @@ def standard_G():
                 "output": "m",
                 "sig": signature(logarithm),
                 "modifiers": [],
+                "doc": "logarithm operation",
+                "functype": "callable"
             },
         ),
     ]

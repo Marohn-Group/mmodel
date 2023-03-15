@@ -38,10 +38,11 @@ class TestModel:
 
         MODEL_STR = """\
         model_instance(a, b, d, f)
-          returns: (k, m)
-          handler: BasicHandler()
+        returns: (k, m)
+        handler: BasicHandler()
+
         A long description that tests if model module wraps the Model output string
-        description at 90 characters."""
+          description at 90 characters."""
 
         assert str(model_instance) == dedent(MODEL_STR)
 
@@ -104,16 +105,19 @@ class TestModel:
                 "\\", ""
             )
 
-    def test_model_view_node(self, model_instance):
+    def test_model_node_metadata(self, model_instance):
         """Test if view node outputs information correctly"""
 
         node_s = """\
         log
-          callable: logarithm(c, b)
-          return: m
-          modifiers: []"""
 
-        assert model_instance.view_node("log") == dedent(node_s)
+        logarithm(c, b)
+        return: m
+        functype: callable
+
+        logarithm operation"""
+
+        assert model_instance.node_metadata("log") == dedent(node_s)
 
     def test_model_with_handler_argument(self, mmodel_G, tmp_path):
         """Test if argument works with the H5Handler"""
@@ -127,8 +131,6 @@ class TestModel:
         assert f"handler: H5Handler({str(path)})".replace(" ", "") in str(
             h5model
         ).replace("\n", "").replace(" ", "")
-
-        
 
     def test_model_returns_order(self, mmodel_G):
         """Test model with custom returns order
@@ -189,10 +191,11 @@ class TestModifiedModel:
         """Test the string representation with modifiers"""
         mod_model_s = """\
         mod_model_instance(a, b, d, f)
-          returns: (k, m)
-          handler: BasicHandler()
-          modifiers:
-            - loop_modifier(a)
+        returns: (k, m)
+        handler: BasicHandler()
+        modifiers:
+          - loop_modifier(a)
+        
         modified model"""
         assert str(mod_model_instance) == dedent(mod_model_s)
 

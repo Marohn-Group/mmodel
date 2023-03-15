@@ -1,21 +1,18 @@
-import inspect
 from mmodel.utility import (
     parse_input,
-    parse_modifier,
+    parse_modifiers,
     content_wrap,
     is_node_attr_defined,
     is_edge_attr_defined,
 )
 from mmodel.draw import draw_graph
 import networkx as nx
-import textwrap
 
 
 class Model:
     """Create model executable
 
     :param str name: Model name
-    :param str description: Model description
     :param object graph: ModelGraph instance (digraph)
     :param class handler: Handler class that handles model execution and the keyword
         arguments. The parameter format is (HandlerClass, {})
@@ -25,9 +22,7 @@ class Model:
         Optional, defaults to an empty list. For each modifier, the format is
         (modifier, {}). All modifiers should have function as the first argument
     :param str description: model description
-    :param list returns: the order of returns of the model defaults to the topological search
-    :param str output: output name of the model, defaults to terminal node name
-        if there are multiple terminal name, defaults to "combined_output"
+    :param list returns: the order of returns of the model, defaults to the topological search
     """
 
     def __init__(
@@ -76,24 +71,22 @@ class Model:
 
     def metadata(self, full=True, wrap_width=80):
         """Parse metadata string of the Model instance"""
-        twrap = textwrap.TextWrapper(width=wrap_width).wrap  # function title and description
 
-        strlist= twrap(f"{self.__name__}{self.__signature__}\n")
-        
-        handler_list = [f"handler: {self.handler[0].__name__}"
-            f"({', '.join(str(v) for v in self.handler[1].values())})"]
-        returns_list = [f"returns: ({', '.join(self.returns)})"]
-        modifier_list = parse_modifier(self.modifiers)
+        metadata_list = [
+            f"{self.__name__}{self.__signature__}",
+            f"returns: ({', '.join(self.returns)})",
+            f"handler: {self.handler[0].__name__}"
+            f"({', '.join(str(v) for v in self.handler[1].values())})",
+        ]
 
-        content_list = returns_list + handler_list + modifier_list
-
-        for item in content_list:
-            strlist.extend(content_wrap(width=wrap_width)(item))
+        metadata_list.extend(parse_modifiers(self.modifiers))
 
         if full:
-            strlist.extend(twrap(self.description))
+            metadata_list.extend(["", self.description])
 
-        return "\n".join(strlist).rstrip()
+        wrapped_list = content_wrap(metadata_list, width=wrap_width)
+
+        return "\n".join(wrapped_list).rstrip()
 
     @staticmethod
     def _is_valid_graph(G):
@@ -133,10 +126,10 @@ class Model:
 
         return self._graph.nodes[node]["func"]
 
-    def view_node(self, node):
+    def node_metadata(self, node, full=True, wrap_width=80):
         """View a specific node"""
 
-        return self._graph.view_node(node)
+        return self._graph.node_metadata(node, full=True, wrap_width=80)
 
     def draw(self, method: callable = draw_graph, export=None):
         """Draw the graph of the model

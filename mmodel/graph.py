@@ -1,17 +1,16 @@
-import inspect
 import networkx as nx
 from mmodel.draw import draw_graph
 from copy import deepcopy
-from mmodel.modifier import signature_modifier, pos_signature_modifier
 from mmodel.filter import subnodes_by_inputs, subnodes_by_outputs
 from mmodel.utility import (
     modelgraph_signature,
     modelgraph_returns,
     replace_subgraph,
     modify_node,
+    parse_modifiers,
+    content_wrap,
 )
-import types
-import numpy as np
+from mmodel.parser import parser_engine
 
 
 class ModelGraph(nx.DiGraph):
@@ -34,37 +33,27 @@ class ModelGraph(nx.DiGraph):
 
     graph_attr_dict_factory = {"type": "ModelGraph"}.copy
 
+    def __init__(self, parser=parser_engine, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._parser = parser
+
     def set_node_object(
         self, node, func, output: str, inputs: list = None, modifiers: list = None
     ):
         """Add or update the functions of existing node
 
         In the end, the edge attributes are re-determined
-        Modifiers are applied directly onto the node.
+        Modifiers are applied directly onto the node. The parser checks the
+        function type and returns (at least) three dictionary entry:
+        _func, functype, doc
         """
 
         node_dict = self.nodes[node]
-        # store the base object
-        node_dict["_func"] = func
+
         modifiers = modifiers or list()
-        if inputs:
-            # if function is built-in or ufunc
-            if isinstance(func, types.BuiltinFunctionType) or isinstance(
-                func, np.ufunc
-            ):
-                modifiers = [
-                    (pos_signature_modifier, {"parameters": inputs})
-                ] + modifiers
-            else:
-                modifiers = [(signature_modifier, {"parameters": inputs})] + modifiers
+        attr_dict = self._parser(node, func, output, inputs, modifiers)
+        node_dict.update(attr_dict)
 
-        for mdf, kwargs in modifiers:
-            func = mdf(func, **kwargs)
-
-        sig = inspect.signature(func)
-        node_dict.update(
-            {"func": func, "sig": sig, "output": output, "modifiers": modifiers}
-        )
         self.update_graph()
 
     def set_node_objects_from(self, node_objects: list):
@@ -128,29 +117,31 @@ class ModelGraph(nx.DiGraph):
             if "output" in self.nodes[u] and self.nodes[u]["output"] in v_sig:
                 self.edges[u, v]["var"] = self.nodes[u]["output"]
 
-    def view_node(self, node: str):
-        """view node information
+    def node_metadata(self, node: str, full=True, wrap_width=80):
+        """Printout node metadata
 
-        The node information is kept consistent with the graph information.
+        The meta data includes the node information and the node function
+        information. If the node is a mmodel.Model instance, outputs its metadata.
         """
 
         node_dict = self.nodes[node]
-        # if it is not a proper function just print the repr
-        # Model class instance has the attr __name__
-        base_name = getattr(node_dict["_func"], "__name__", repr(callable))
-        modifier_str_list = [
-            f"{func.__name__}, {kwargs}" for func, kwargs in node_dict["modifiers"]
-        ]
-        modifier_str = f"[{', '.join(modifier_str_list)}]"
 
-        return "\n".join(
-            [
-                f"{node}",
-                f"  callable: {base_name}{node_dict['sig']}",
-                f"  return: {node_dict['output']}",
-                f"  modifiers: {modifier_str}",
-            ]
-        )
+        metadata_list = [
+            node,
+            "",
+            f"{node_dict['func'].__name__}{node_dict['sig']}",
+            f"return: {node_dict['output']}",
+        ]
+
+        if full: # adds functype, modifiers, and docs
+            metadata_list.append(f"functype: {node_dict['functype']}")
+            metadata_list.extend(parse_modifiers(node_dict["modifiers"]))
+            doc = node_dict["doc"] or ""
+            metadata_list.extend(["", doc])
+
+        wrapped_list = content_wrap(metadata_list, width=wrap_width)
+
+        return "\n".join(wrapped_list).rstrip()
 
     # graph properties
     @property

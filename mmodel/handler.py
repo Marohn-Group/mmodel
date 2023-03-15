@@ -77,7 +77,7 @@ class TopologicalHandler:
                 pass
 
             # format the error message
-            node_str = self.graph.view_node(node)
+            node_str = self.graph.node_metadata(node)
             input_str = "\n".join(
                 [f"{key} = {repr(value)}" for key, value in kwargs.items()]
             )

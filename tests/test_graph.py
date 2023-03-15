@@ -4,6 +4,7 @@ import pytest
 from functools import wraps
 from networkx import DiGraph
 from inspect import signature
+from textwrap import dedent
 import os
 import inspect
 
@@ -146,15 +147,12 @@ class TestSetNodeObject:
     def test_set_node_object_modifiers(self, base_G):
         """Test node modifiers are applied and in correct order"""
 
-        assert (
-            base_G.nodes["func_a"]["modifiers"][0][0].__name__ == "signature_modifier"
-        )
-        assert base_G.nodes["func_a"]["modifiers"][1][0].__name__ == "modifier"
+        assert base_G.nodes["func_a"]["modifiers"][0][0].__name__ == "modifier"
 
     def test_set_node_object_base_func(self, base_G):
-        """Test that the base function is not changed"""
+        """Test that the input of base function has updated"""
 
-        assert base_G.nodes["func_a"]["_func"](m=1, n=2) == 3
+        assert base_G.nodes["func_a"]["_func"](a=1, b=2) == 3
 
     def test_set_node_object_modified_func(self, base_G):
         """Test the final node function has the correct signature and output"""
@@ -223,14 +221,21 @@ class TestModelGraphBasics:
 
         assert str(mmodel_G) == "ModelGraph named 'test_graph' with 5 nodes and 5 edges"
 
-    def test_view_node(self, mmodel_G):
+    def test_node_metadata(self, mmodel_G):
         """Test if view node outputs node information correctly"""
 
-        log_s = "log\n  callable: logarithm(c, b)\n  return: m\n  modifiers: []"
+        node_s = """\
+        log
 
-        assert mmodel_G.view_node("log") == log_s
+        logarithm(c, b)
+        return: m
+        functype: callable
 
-    def test_view_node_with_modifiers(self, mmodel_G):
+        logarithm operation"""
+
+        assert mmodel_G.node_metadata("log") == dedent(node_s)
+
+    def test_node_metadata_with_modifiers(self, mmodel_G):
         """Test if view node outputs node information correctly"""
 
         def func(a, b):
@@ -248,10 +253,17 @@ class TestModelGraphBasics:
             [(modifier, {"value": 1}), (modifier, {"value": 2})],
         )
 
-        assert (
-            "modifiers: [modifier, {'value': 1}, modifier, {'value': 2}]"
-            in mmodel_G.view_node("test_node")
-        )
+        node_s = """\
+        test_node
+
+        func(a, b)
+        return: c
+        functype: callable
+        modifiers:
+          - modifier(1)
+          - modifier(2)"""
+
+        assert mmodel_G.node_metadata("test_node") == dedent(node_s)
 
     def test_draw(self, mmodel_G):
         """Test the draw method of ModelGraph instance
@@ -411,15 +423,20 @@ class TestMModelGraphOperation:
         assert graph != mmodel_G
         assert "test" in graph
 
-        sig = graph.nodes["test"].pop("sig")
+        node_dict = graph.nodes["test"]
+        sig = node_dict.pop("sig")
         assert list(sig.parameters) == ["c", "e", "x", "y"]
 
-        modifiers = graph.nodes["test"].pop("modifiers")
-        assert modifiers[0][0].__name__ == "signature_modifier"
-        assert modifiers[1][0].__name__ == "mod"
+        modifiers = node_dict.pop("modifiers")
+        assert modifiers[0][0].__name__ == "mod"
+        assert node_dict["output"] == "z"
 
-        graph.nodes["test"].pop("func")
-        assert graph.nodes["test"] == {"_func": func, "output": "z"}
+        base_func = node_dict["_func"]
+        mod_func = node_dict["func"]
+
+        assert base_func(c=1, e=2, x=3, y=4) == 10  # add all values together
+        assert mod_func(c=1, e=2, x=3, y=4) == 11
+        # assert graph.nodes["test"] == {"_func": func, "output": "z"}
 
         # Test the edge attributes
         assert graph.edges["add", "test"]["var"] == "c"
