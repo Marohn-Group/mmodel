@@ -85,7 +85,7 @@ class TestDefaultParser:
 
 class TestBuiltinParser:
     def test_builtin_parser(self):
-        """Test default parser correctly parse callable."""
+        """Test default parser correctly parse built-in function."""
 
         func_dict = builtin_parser("test", math.pow, "c", ["a", "b"], [])
         func = func_dict.pop("_func")
@@ -96,7 +96,7 @@ class TestBuiltinParser:
         assert list(inspect.signature(func).parameters) == ["a", "b"]
 
     def test_builtin_parser_long_doc(self):
-        """Test builtin_parser correctly parse callable."""
+        """Test builtin_parser correctly parse built-in function."""
 
         func_dict = builtin_parser("test", print, "c", ["a"], [])
         func = func_dict.pop("_func")
@@ -107,7 +107,7 @@ class TestBuiltinParser:
         assert list(inspect.signature(func).parameters) == ["a"]
 
     def test_builtin_parser_raises(self):
-        """Test if the function is not a callable an exception is raised."""
+        """Test if an exception is raised when the inputs parameters is not defined."""
 
         with pytest.raises(
             Exception,
@@ -121,7 +121,7 @@ class TestufuncParser:
     """Test numpy ufunc_parser"""
 
     def test_ufunc_parser(self):
-        """Test ufunc parser correctly parse callable."""
+        """Test ufunc parser correctly parse numpy.ufunc."""
 
         func_dict = ufunc_parser("test", np.add, "c", ["a", "b"], [])
         func = func_dict.pop("_func")
@@ -131,8 +131,8 @@ class TestufuncParser:
         }
         assert list(inspect.signature(func).parameters) == ["a", "b"]
 
-    def test_builtin_parser_raises(self):
-        """Test if the function is not a callable an exception is raised."""
+    def test_ufunc_parser_raises(self):
+        """Test exception is raised when inputs parameters are not defined."""
 
         with pytest.raises(
             Exception,

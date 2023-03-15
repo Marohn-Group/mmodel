@@ -68,14 +68,15 @@ def parse_docstring(docstring):
 def default_parser(node, func, output, inputs, modifiers):
     """Return the default function dictionary.
 
-    Grab the first line of the docstring.
+    The function needs to have the start uppercase and end period style of
+    docstring.
     """
     if callable(func):
         func_dict = {}
 
         doc = ""
-        if hasattr(func, "__doc__") and func.__doc__ and func.__doc__.splitlines():
-            doc = func.__doc__.splitlines()[0]
+        if hasattr(func, "__doc__") and func.__doc__:
+            doc = parse_docstring(func.__doc__)
 
         func_dict['doc'] = doc
 
@@ -113,7 +114,7 @@ def ufunc_parser(node, func, output, inputs, modifiers):
     """
     if isinstance(func, np.ufunc):
 
-        doc = func.__doc__.splitlines()[2]
+        doc = parse_docstring(func.__doc__)
 
         if inputs:
             func = pos_signature_modifier(func, inputs)
