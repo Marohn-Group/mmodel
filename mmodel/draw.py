@@ -12,7 +12,7 @@ DEFAULT_SETTINGS = {
 }
 
 
-def draw_graph(G, label, style, export=None):
+def draw_graph(G, label, style, export=None, wrap_width=30):
     """Draw a detailed graph with options.
 
     :param str name: name of the graph
@@ -40,7 +40,10 @@ def draw_graph(G, label, style, export=None):
         if style == "short":
             for node, ndict in G.nodes(data=True):
                 if "func" in ndict:
-                    nlabel = G.node_metadata(node, False, 30).replace("\n", "\l") + "\l"
+                    nlabel = (
+                        G.node_metadata(node, False, wrap_width).replace("\n", "\l")
+                        + "\l"
+                    )
                 else:
                     nlabel = node
 
@@ -49,7 +52,10 @@ def draw_graph(G, label, style, export=None):
         elif style == "full":
             for node, ndict in G.nodes(data=True):
                 if "func" in ndict:
-                    nlabel = G.node_metadata(node, True, 30).replace("\n", "\l") + "\l"
+                    nlabel = (
+                        G.node_metadata(node, True, wrap_width).replace("\n", "\l")
+                        + "\l"
+                    )
                 else:
                     nlabel = node
 

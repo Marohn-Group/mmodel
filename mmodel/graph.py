@@ -196,7 +196,7 @@ class ModelGraph(nx.DiGraph):
         """Modify node attributes"""
         return modify_node(self, node, func, output, inputs, modifiers, inplace)
 
-    def draw(self, style="full", export=None):
+    def draw(self, style="full", export=None, wrap_width=30):
         """Draw the graph.
 
         Draws the default styled graph.
@@ -209,7 +209,7 @@ class ModelGraph(nx.DiGraph):
 
         """
 
-        return draw_graph(self, str(self), style, export)
+        return draw_graph(self, str(self), style, export, wrap_width)
 
     def deepcopy(self):
         """Deepcopy graph.

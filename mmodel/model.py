@@ -143,7 +143,7 @@ class Model:
 
         return self._graph.node_metadata(node, full=True, wrap_width=80)
 
-    def draw(self, style="full", export=None):
+    def draw(self, style="full", export=None, wrap_width=30):
         """Draw the graph of the model.
 
         Draws the default styled graph.
@@ -156,4 +156,4 @@ class Model:
 
         """
 
-        return draw_graph(self._graph, str(self), style, export)
+        return draw_graph(self._graph, self.metadata(), style, export, wrap_width)
