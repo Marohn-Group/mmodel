@@ -105,10 +105,9 @@ Example: Using modifier and graph to loop the nodes that require the "log_base" 
         handler=(MemHandler, {}),
         modifiers=[(loop_modifier, {"parameter": "log_base"})],
     )
-    looped_G = G.replace_subgraph(
-        H, "loop_node", loop_node, output="looped_z"
-    )
+    looped_G = G.replace_subgraph(H, "loop_node", loop_node, output="looped_z")
     looped_model = Model("looped_model", looped_G, loop_node.handler)
+
 
 We can inspect the loop node as well as the new model.
 
