@@ -53,4 +53,5 @@ Indices and tables
    ref_handler
    ref_modifier
    ref_filter
+   ref_parser
    

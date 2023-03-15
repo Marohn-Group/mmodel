@@ -7,6 +7,69 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
+[0.5.0] 
+------------------------
+The package is moved to `Marohn Group <https://github.com/Marohn-Group/mmodel>`_.
+
+API Change
+^^^^^^^^^^
+
+- Change graph API where individual nodes can only have a single output.
+- Change node attribute "base_func" to "_func".
+- Change model attribute "base_graph" to "graph".
+- Change edge attribute "val" to "var".
+- Change ``view_node`` to ``node_metadata``.
+- Change ``util.modify_subgraph`` function to ``util.replace_subgraph``.
+- Change ``subgraph_by_parameters`` and ``subgraph_by_returns`` to
+  ``subnodes_by_inputs`` and ``subnodes_by_outputs``.
+- Change ``model_signature`` and ``model_returns`` to
+  ``modelgraph_signature`` and ``modelgraph_returns``
+  add both as methods in the graph class.
+- Change "returns" to "output", the value should be a string.
+- Parameter "returns" is a Model exclusive parameter that denotes the graph output.
+- Change ``Model.get_node_object`` to ``Model.get_node_func``, the base function is
+  returned.
+
+Fixed
+^^^^^
+
+- Fix the issue where modify subgraph cannot add inputs or modifiers.
+- Fix the issue in tests that node attributes are not compared in `graph_equal()`.
+- Fix the issue that the original graph freezes when a model is created.
+- Fix the inconsistency between node and model metadata.
+- Fix the issue that "None" is included in the returns list.
+
+Changed
+^^^^^^^^
+
+- Model string output wraps each line at 80 characters.
+- ``signature_modifier`` can modify the function with "kwargs".
+- Default keyword argument does not show up in the model signature.
+- Model's graph checking generates more detailed exception messages.
+- Allow isolated graphs in the model (for single-node models).
+- The subgraph method of the graph is modified to create a subgraph with
+  inputs and outputs.
+- ``model.graph`` is a property method, a new copy of the graph is created
+  every time.
+- Specified inputs are no longer added to the modifier list, and the base function is
+  modified.
+- Model and graph drawing no longer take method as input. Instead, three style
+  options are given, plain, short, and full.
+
+Added
+^^^^^^
+
+- Add graph modification when less than graph returns are specified.
+- Add "__name__" attribute to handler instance.
+- ``pos_signature_modifier`` allows for node objects to have positional-only parameters.
+- Graph node definition allows for built-in and numpy.ufunc functions.
+- Graph node inputs allow default value with a (parameter, default) tuple.
+- Add name attribute to Model.
+- Add export to graph and model's ``draw`` method.
+- Add a "parser" module that parses functions based on different types.
+- Add function documentation in metadata.
+- Add Python 3.11 testing with tox.
+
 [0.4.0] - 2022-10-3
 ------------------------
 
@@ -14,115 +77,116 @@ Handler API is rewritten.
 
 Fixed
 ^^^^^
-- object str label aligns to the left for the graph and model
-- H5Handler can write objects to file
-- fix bug middle nodes output not included in the final output
+- Fix object str label alignment, to the left for the graph and model.
+- Fix an H5Handler issue that prevents it from writing objects.
+- Fix a bug that intermediate nodes output is not included in the final output.
 
 Changed
 ^^^^^^^
-- ``set_node_object()`` allows for "inputs" parameter for adjusting node
+- The ``set_node_object()`` allows for "inputs" parameters for adjusting node
   function input parameters.
-- modifier functions from decorator to closure (both works)
-- modifier list contains the arguments when supplied
-- handler arguments are supplied with the handler class
-- draw graph method no longer has a default value
-- model docstring is tied to the model instead of the graph, use 'description'
+- Modifier functions from decorator to closure (both works).
+- Modifier list contains the arguments when supplied.
+- Handler arguments are supplied with the handler class.
+- The draw graph method no longer has a default value.
+- Model docstring is tied to the model instead of the graph, use "description"
   for long docstring.
-- 'name' attribute required for Model instances
-- node execute exception message now includes node information
-- add "returns" parameter to Model
+- The 'name' attribute is required for Model instances.
+- Include note information in node execute exception.
+
 
 Added
 ^^^^^
 
-- custom dictionary `MemData`` as MemHandler's data instance
-- custom class `H5Data` as H5Handler's data instance
+- Add custom dictionary `MemData`` as MemHandler's data instance.
+- Add custom class `H5Data` as H5Handler's data instance.
+- Add "returns" parameter to Model.
 
 Removed
 ^^^^^^^
 
-- 'info' attribute no longer used in modifiers and handlers.
-- "model" and "node" no longer appended to model and node string output.
+- The 'info' attribute is no longer used in modifiers and handlers.
+- the "model" and "node" are no longer appended to the model and node string output.
 
 [0.3.1] - 2022-06-12
 --------------------
 Fixed
 ^^^^^
-- Python minimum requirement to 3.8
-- duplicated test name
+- Fix duplicated test name.
 
 Added
 ^^^^^
-- add circleci as the CI tool
+- Add Github action as the CI tool.
 
 Changed
 ^^^^^^^
-- node and model string output
+- Node and model string output.
+- Change Python minimum requirement to 3.8
 
 [0.3.0] - 2022-06-12
 ---------------------
 Added
 ^^^^^
-- ``subgraph_by_returns`` filters graph by node returns
-- ``_is_valid_model`` method graph for Model class to validate graph for
-  building model executable
-- ``draw`` method to ``ModelGraph`` and ``Model`` classes
-- add ``get_node`` and ``get_node_object`` methods to ``Model`` class
-- add ``view_node``to ``ModelGraph`` and ``Model`` classes
-- add ``deepcopy`` method to ``ModelGraph`` because ``graph.copy`` method
-  is a shallow copy
+- Add ``subgraph_by_returns`` filters graph by node returns.
+- Add ``_is_valid_model`` method graph for Model class to validate graph for
+  building model executable.
+- Add ``draw`` method to ``ModelGraph`` and ``Model`` classes.
+- Add ``get_node`` and ``get_node_object`` methods to ``Model`` class.
+- Add ``view_node``to ``ModelGraph`` and ``Model`` classes.
+- Add ``deepcopy`` method to ``ModelGraph`` because ``graph.copy`` method
+  is a shallow copy.
 
 Changed
 ^^^^^^^
-- move ``subgraph_by_nodes`` and ``subgraph_by_parameters`` to ``filter``
+- Move ``subgraph_by_nodes`` and ``subgraph_by_parameters`` to ``filter``
   module
-- ``Model`` and handlers parameter "model_graph" to "graph"
-- ``Model`` no longer accept handler arguments (unify behavior of modifiers
-  and handlers)
-- ``Model`` instance str now shows modifier information
-- modifiers with parameters require to have the "info" attribute set to the
-  wrapper (the closure that takes func as a parameter). The "info" is used
-  to show the modifier information in the model instance
-- ``modify_subgraph`` no longer store the subgraph information as a node
-  attribute
-- ``Model._graph`` is a copy of the original graph and is frozen. The same graph
+- Change ``Model`` and handlers parameter "model_graph" to "graph".
+- Change ``Model`` no longer accept handler arguments (unify behavior of modifiers
+  and handlers).
+- Change ``Model`` instance str now shows modifier information.
+- Modifiers with parameters required to have the "info" attribute set to the
+  wrapper (the closure that takes the function as the first parameter). 
+  The "info" is used to show the modifier information in the model instance.
+- The ``modify_subgraph`` no longer store the subgraph information as a node
+  attribute.
+- The ``Model._graph`` is a copy of the original graph and is frozen. The same graph
   is used to create the handler object.
-- graph ``add_node_object`` and ``add_node_objects_from`` to ``set_node_object``
-  and ``set_node_object_from``
+- Change graph ``add_node_object`` and ``add_node_objects_from`` to ``set_node_object``
+  and ``set_node_object_from``.
 
 Fixed
 ^^^^^
-- ``modify_subgraph`` changes original graph attributes
-- ``ModelGraph`` shares the same class attribute across instances
+- Fix ``modify_subgraph`` changes original graph attributes.
+- Fix ``ModelGraph`` shares the same class attribute across instances.
 
 
 [0.2.2] - 2022-05-06
 --------------------------
 Added
 ^^^^^
-- add ``modifiers`` input argument to ``ModelGraph.set_node_object``, allowing
-  modifiers to be applied to nodes
-- add ``signature_modifier`` that changes function signature
-- add ``signature_binding_modifier`` that adds binding and checking to wrapped
-  function
+- Add ``modifiers`` input argument to ``ModelGraph.set_node_object``, allowing
+  modifiers to be applied to nodes.
+- Add ``signature_modifier`` that changes the function signature.
+- Add ``signature_binding_modifier`` that adds binding and checking to the wrapped
+  function.
 
 [0.2.1] - 2022-05-02
 ---------------------
 Added
 ^^^^^
-- add ``add_grouped_edges_from``
-- add ``add_returns`` as additional input to model. The parameter is used to
+- Add ``add_grouped_edges_from`` that adds edges in groups.
+- Add ``add_returns`` as additional input to the model. The parameter is used to
   output intermediate values in the returns.
-- add ``tox`` command for different python version test environments: py38,
+- Add ``tox`` command for different python version test environments: py38,
   py39, coverage, and docs. The latter two check test coverage and build
   sphinx docs.
 
 Changed
 ^^^^^^^
-- node attribute ``rts`` to ``returns``.
-- ``add_linked_edge`` to ``add_grouped_edge``
-- ``add_edge`` and ``add_edges_from`` updates graph edge attributes
-- move ``mmodel`` build method from ``setuptools`` to ``poetry``
+- Change node attribute ``rts`` to ``returns``.
+- Change ``add_linked_edge`` to ``add_grouped_edge``.
+- Change ``add_edge`` and ``add_edges_from`` updates graph edge attributes.
+- Move ``mmodel`` build method from ``setuptools`` to ``poetry``.
 
 [0.2.0] - 2022-04-27
 --------------------
@@ -132,50 +196,50 @@ Version 0.2.0 changed the model building from inheritance to composition.
 
 Added
 ^^^^^
-- add ``zip_loop_modifier`` modifier that zips multiple arguments for loop
+- Add ``zip_loop_modifier`` modifier that zips multiple arguments for loop.
 
 Changed
 ^^^^^^^
-- API for creating executable
-- loop construction changed as a modifier
-- ``MGraph`` to ``ModelGraph``
-- model graph allows node definition without node object
-- model graph allows linked edges to simplify graph definition
-  with ``add_linked_edges_from``
-- model graph node attributes do not need to provide
-  key with ``update_node_object`` and ``update_node_objects_from``
+
+- Change loop construction to a modifier.
+- Change ``MGraph`` to ``ModelGraph``.
+- Model graph allows node definition without node object.
+- Model graph allows linked edges to simplify graph definition
+  with ``add_linked_edges_from``.
+- Model graph node attributes do not need to provide.
+  key with ``update_node_object`` and ``update_node_objects_from``.
 
 [0.1.1] - 2022-04-06
 --------------------
 Added
 ^^^^^
-- ``doc`` attribute for ``MGraph``
-- ``draw_graph()`` method to ``MGraph`` and model classes
-- ``__repr__`` for ``MGraph`` and model classes
+- Add ``doc`` attribute for ``MGraph``.
+- Add ``draw_graph()`` method to ``MGraph`` and model classes.
+- Add ``__repr__`` for ``MGraph`` and model classes.
 
 Changed
 ^^^^^^^
-- remove ``name`` input for ``Model`` and ``loop_parameter``
-- generate model names and looped subgraph names automatically
-- remove ``title`` input for ``draw_graph``
-- change model attribute ``graph`` to ``G``, to avoid confusion on the graph's
-  inherent attribute ``graph``
-- separate ``draw_plain_graph()`` and ``draw_graph()``, the former shows
-  a simplified version of the graph, and the latter shows all graph details
-- graph title outputs detailed descriptions of the model instance and
-  graph instance
-- node attribute "return_params" to "returns"
-- edge attribute "interm_params" to "parameters"
+- Remove ``name`` input for ``Model`` and ``loop_parameter``.
+- Generate model names and looped subgraph names automatically.
+- Remove ``title`` input for ``draw_graph``.
+- Change model attribute ``graph`` to ``G``, to avoid confusion on the graph's
+  inherent attribute ``graph``.
+- Separate ``draw_plain_graph()`` and ``draw_graph()``, the former shows
+  a simplified version of the graph, and the latter shows all graph details.
+- Graph title outputs detailed descriptions of the model instance and
+  graph instance.
+- Node attribute "return_params" to "returns".
+- Edge attribute "interm_params" to "parameters".
 
 [0.1.0] - 2022-04-02
 --------------------
 Added
 ^^^^^
-- class ``MGraph`` for constructing default graphs
-- class ``PlainModel`` for constructing executable from graphs
-- class ``Model`` for constructing executable from graphs with
-  memory management
-- class ``H5Model`` for constructing executable from graphs with
-  h5 data storage
-- function wrapper ``basic_loop`` that creates a basic loop for models
-- function ``draw_graph`` for drawing DAG graphs
+- Add class ``MGraph`` for constructing default graphs.
+- Add class ``PlainModel`` for constructing callable from graphs.
+- Add class ``Model`` for constructing callable from graphs with
+  memory management.
+- Add class ``H5Model`` for constructing callable from graphs with
+  h5 data storage.
+- Add function wrapper ``basic_loop`` that creates a basic loop for models.
+- Add function ``draw_graph`` for drawing DAG graphs.

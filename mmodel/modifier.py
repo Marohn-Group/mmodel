@@ -1,10 +1,10 @@
 from functools import wraps
 import inspect
-from mmodel.utility import parse_input
+from mmodel.utility import parse_input, parse_parameters
 
 
 def loop_modifier(func, parameter: str):
-    """Loop - iterates one given parameter
+    """Modify function to iterate one given parameter.
 
     :param list parameter: target parameter to loop
     """
@@ -13,16 +13,23 @@ def loop_modifier(func, parameter: str):
     def loop_wrapped(**kwargs):
 
         loop_values = kwargs.pop(parameter)
+
+        try:
+            # make sure the parameter input is iterable
+            iter(loop_values)
+        except TypeError:
+            raise Exception(f"{parameter} value is not iterable")
+
         return [func(**kwargs, **{parameter: value}) for value in loop_values]
 
     return loop_wrapped
 
 
 def zip_loop_modifier(func, parameters: list):
-    """Pairwise loop - iterates the values from loop
+    """Modify function to iterate the parameters pairwise.
 
     :param list parameters: list of the parameter to loop
-        only one parameter is allowed. If string of parameters are
+        only one parameter is allowed. If the string of parameters is
         provided, the parameters should be delimited by ", ".
     """
 
@@ -44,7 +51,7 @@ def zip_loop_modifier(func, parameters: list):
 
 
 def signature_modifier(func, parameters):
-    """Replace node object signature
+    """Replace node object signature.
 
     :param list parameters: signature parameters to replace the original
         signature. The parameters are assumed to be "POSITIONAL_OR_KEYWORD", and no
@@ -53,42 +60,62 @@ def signature_modifier(func, parameters):
 
     .. Note::
 
-        The modifier does not work with functions that have positional only
-        input parameters. When the signature_parameter length is smaller than the
-        list of original signatures, there are two cases:
-        1. The additional parameters have a default value - they do not show up
-        in the signature, but the default values are applied to function
-        2. The additional parameters do not have a default value - error is thrown
-        for missing input
-
-        ``mmodel`` allows the first case scenario, no checking is performed.
+        The modifier does not work with functions that have positional-only
+        input parameters; or functions do not have a signature
+        (built-in and numpy.ufunc). Use pos_signature_modifier instead.
 
     """
-    sig = inspect.Signature([inspect.Parameter(var, 1) for var in parameters])
+    sig, param_order, defaultargs = parse_parameters(parameters)
 
-    old_parameters = list(inspect.signature(func).parameters.keys())
-
-    if len(parameters) > len(old_parameters):
-        raise Exception(
-            "The number of signature modifier parameters "
-            "exceeds that of function's parameters"
-        )
+    # if there's "kwargs" in the parameter, ignore the parameter
+    old_parameters = []
+    for name, param in inspect.signature(func).parameters.items():
+        if param.kind < 4:
+            old_parameters.append(name)
 
     # once unzipped to return iterators, the original variable returns none
-    param_pair = list(zip(old_parameters, parameters))
+    param_pair = list(zip(old_parameters, param_order))
 
     @wraps(func)
     def wrapped(**kwargs):
-        # replace keys
-        replace_kwargs = {old: kwargs[new] for old, new in param_pair}
-        return func(**replace_kwargs)
+        # assume there are no repeated signature names that are not overlapping
+        # replace a, b with b, c is not allowed in the following step
+        kwargs.update(defaultargs)
+        for old, new in param_pair:
+            kwargs[old] = kwargs.pop(new)
+        return func(**kwargs)
+
+    wrapped.__signature__ = sig
+    return wrapped
+
+
+def pos_signature_modifier(func, parameters):
+    """Replace node object signature with position arguments.
+
+    For functions that do not have a signature or only allow positional only
+    inputs. The modifier is specifically used to change the "signature" of the builtin
+    function or numpy.ufunc.
+
+    .. note::
+
+        The modifier is only tested against built-in function or numpy.ufunc.
+    """
+    sig, param_order, defaultargs = parse_parameters(parameters)
+
+    @wraps(func)
+    def wrapped(**kwargs):
+        kwargs.update(defaultargs)
+        # extra the variables in order
+        inputs = [kwargs[key] for key in param_order]
+
+        return func(*inputs)
 
     wrapped.__signature__ = sig
     return wrapped
 
 
 def signature_binding_modifier(func):
-    """Add parameter binding and checking for function
+    """Add parameter binding and checking for function.
 
     The additional wrapper is unnecessary, but to keep a consistent
     modifier syntax. The modifier can be used on wrapped functions

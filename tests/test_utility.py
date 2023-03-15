@@ -1,18 +1,20 @@
 import inspect
 import pytest
 import random
-import mmodel.utility as util
 from collections import OrderedDict
 from inspect import Parameter
-from tests.conftest import graph_equal
 import networkx as nx
 from functools import wraps
+import mmodel.utility as util
+
 
 @pytest.fixture
 def func():
     def example_func(a, c, b=2, *args, d, e=10, **kwargs):
         return
+
     return example_func
+
 
 @pytest.mark.parametrize(
     "parameter, result",
@@ -27,16 +29,16 @@ def func():
     ],
 )
 def test_param_sorter(parameter, result, func):
-    """Test param_sorter result"""
+    """Test param_sorter result."""
 
     params = inspect.signature(func).parameters
     assert util.param_sorter(params[parameter]) == result
 
 
 def test_param_sorter_order(func):
-    """Test param_sorter sorting order
+    """Test param_sorter sorting order.
 
-    the correct order is a, b, *args, c, **kwargs, d=10
+    The correct order is a, b, *args, c, **kwargs, d=10.s
     """
 
     params = inspect.signature(func).parameters
@@ -58,46 +60,78 @@ def test_param_sorter_order(func):
     assert sorted(shuffled_params.values(), key=util.param_sorter) == param_list
 
 
-def test_model_signature(mmodel_G, mmodel_signature):
-    """Test graph_signature
+def test_modelgraph_signature(mmodel_G, mmodel_signature):
+    """Test graph_signature.
 
-    There are two functions in the mmodel_G have parameter
+    Two functions in the mmodel_G have parameter
     'b' - one with default and one without. The final signature
-    should have default value.
+    should have a default value.
     """
 
-    assert util.model_signature(mmodel_G) == mmodel_signature
+    assert util.modelgraph_signature(mmodel_G) == mmodel_signature
 
 
 def test_replace_signature(mmodel_signature):
-    """Test replace signature"""
+    """Test replace signature."""
 
-    replacement_dict = {"a_rep": ["a"], "f_rep": ["f"]}
+    replacement_dict = {"a_rep": ["a"], "f_rep": ["f", "g"]}
     signature = util.replace_signature(mmodel_signature, replacement_dict)
 
     assert "a_rep" in signature.parameters
     assert "a" not in signature.parameters
     assert "f_rep" in signature.parameters
     assert "f" not in signature.parameters
+    assert "g" not in signature.parameters
 
     # make sure the original signature is not modified
     assert "a_rep" not in mmodel_signature.parameters
 
 
-def test_model_returns(mmodel_G):
-    """Test graph_returns"""
+def test_parse_parameters():
+    """Test parse_parameters.
 
-    assert util.model_returns(mmodel_G) == ["k", "m", "p"]
+    Here we test when the default value is at the end or in the middle.
+    """
+
+    sig, porder, dargs = util.parse_parameters(["a", "b", ("c", 2)])
+    assert porder == ["a", "b", "c"]
+    assert list(sig.parameters.keys()) == ["a", "b", "c"]
+    assert sig.parameters["c"].default == 2
+    assert dargs == {"c": 2}
+
+    sig, porder, dargs = util.parse_parameters(["a", ("b", 3), ("c", 2), "d"])
+    assert porder == ["a", "b", "c", "d"]
+    assert list(sig.parameters.keys()) == ["a", "d", "b", "c"]
+    assert sig.parameters["b"].default == 3
+    assert sig.parameters["c"].default == 2
+    assert dargs == {"b": 3, "c": 2}
+
+
+def test_modelgraph_returns(mmodel_G):
+    """Test graph_returns."""
+
+    assert util.modelgraph_returns(mmodel_G) == ["k", "m"]
+
+
+def test_modelgraph_returns_None():
+    """Test graph_returns if node functions don't have output."""
+
+    from mmodel.graph import ModelGraph
+
+    G = ModelGraph()
+    G.add_node("Test")
+    G.set_node_object("Test", lambda x: None, output=None)
+
+    assert util.modelgraph_returns(G) == []
 
 
 def test_graph_topological_sort(mmodel_G):
-    """Test graph_topological_sort
+    """Test graph_topological_sort.
 
-    The order should be
-    add, subtract, multiply, log, poly
+    The order is: add, subtract, multiply, log, poly.
 
-    each node should be (node, attr), where node is the name
-    of the node, attr is a dictionary of attributes
+    each node should be (node, attr), where the node is the name
+    of the node, attr is a dictionary of attributes.
     """
 
     order = util.graph_topological_sort(mmodel_G)
@@ -106,156 +140,171 @@ def test_graph_topological_sort(mmodel_G):
 
     for node, attr in order:
         assert isinstance(attr, dict)
-        assert sorted(list(attr)) == ["base_obj", "func", "modifiers", "returns", "sig"]
+        assert sorted(list(attr)) == [
+            "_func",
+            "doc",
+            "func",
+            "functype",
+            "modifiers",
+            "output",
+            "sig",
+        ]
         nodes.append(node)
 
     assert nodes == ["add", "subtract", "poly", "log", "multiply"]
 
 
 def test_param_counter(mmodel_G):
-    """Test param_counter"""
+    """Test param_counter."""
 
     counter = util.param_counter(mmodel_G, [])
 
-    assert counter == {"a": 1, "b": 2, "c": 3, "d": 1, "e": 1, "f": 1, "g": 1}
+    assert counter == {"a": 1, "b": 1, "c": 3, "d": 1, "e": 1, "f": 1, "g": 1}
 
 
 def test_param_counter_add_returns(mmodel_G):
-    """Test param_counter with added returns"""
+    """Test param_counter with added returns."""
 
     counter = util.param_counter(mmodel_G, ["c", "g"])
 
-    assert counter == {"a": 1, "b": 2, "c": 4, "d": 1, "e": 1, "f": 1, "g": 2}
+    assert counter == {"a": 1, "b": 1, "c": 4, "d": 1, "e": 1, "f": 1, "g": 2}
 
 
-def test_modify_subgraph_terminal(mmodel_G):
-    """Test redirect edges based on subgraph and subgraph node
+def test_replace_subgraph_terminal(mmodel_G):
+    """Test redirect edges based on subgraph and subgraph node.
 
-    This test specifically the terminal node
+    This tests specifically the terminal node.
     """
 
     subgraph = mmodel_G.subgraph(["multiply", "poly"])
 
-    def mock_obj(c, x, y):
+    def func(c, e, x, y):
+        """Function docstring."""
         return
 
-    graph = util.modify_subgraph(mmodel_G, subgraph, "test", mock_obj, [])
+    graph = util.replace_subgraph(mmodel_G, subgraph, "test", func)
 
     # a copy is created
     assert graph != mmodel_G
     assert "test" in graph
 
     assert graph.nodes["test"] == {
-        "base_obj": mock_obj,
+        "_func": func,
         "modifiers": [],
-        "func": mock_obj,
-        "returns": [],
-        "sig": inspect.signature(mock_obj),
+        "func": func,
+        "output": None,
+        "sig": inspect.signature(func),
+        "doc": "Function docstring.",
+        "functype": "callable",
     }
 
     # Test the edge attributes
-    assert graph.edges["add", "test"]["val"] == ["c"]
-    assert graph.edges["subtract", "test"]["val"] == []
+    assert graph.edges["add", "test"]["var"] == "c"
+    assert graph.edges["subtract", "test"]["var"] == "e"
 
 
-def test_modify_subgraph_middle(mmodel_G):
-    """Test redirect edges based on subgraph and subgraph node
+def test_replace_subgraph_middle(mmodel_G):
+    """Test redirect edges based on subgraph and subgraph node.
 
-    This test specifically the middle node
+    This test specifically the middle node.
     """
 
     subgraph = mmodel_G.subgraph(["subtract", "poly"])
 
-    def mock_obj(c, x, y):
+    def func(c, x, y):
+        """Function docstring."""
         return x + y
 
     # combine the nodes subtract and poly to a "test" node
-    graph = util.modify_subgraph(mmodel_G, subgraph, "test", mock_obj, ["e"])
+    graph = util.replace_subgraph(mmodel_G, subgraph, "test", func, "e")
 
     # a copy is created
     assert graph != mmodel_G
     assert "test" in graph
 
     assert graph.nodes["test"] == {
-        "base_obj": mock_obj,
+        "_func": func,
         "modifiers": [],
-        "func": mock_obj,
-        "returns": ["e"],
-        "sig": inspect.signature(mock_obj),
+        "func": func,
+        "output": "e",
+        "sig": inspect.signature(func),
+        "doc": "Function docstring.",
+        "functype": "callable",
     }
 
     # Test the edge attributes
-    assert graph.edges["add", "test"]["val"] == ["c"]
+    assert graph.edges["add", "test"]["var"] == "c"
     # test node is connected to multiply node
-    assert graph.edges["test", "multiply"]["val"] == ["e"]
-
-
-def test_modify_subgraph_none_returns(mmodel_G):
-    """Test subgraph modification when returns are not specified
-
-    This test specifically the middle node
-    """
-
-    subgraph = mmodel_G.subgraph(["poly", "multiply"])
-
-    def mock_obj(c, x, y):
-        return
-
-    mock_obj.returns = ["e"]
-
-    graph = util.modify_subgraph(mmodel_G, subgraph, "test", mock_obj)
-
-    assert graph.nodes["test"] == {
-        "base_obj": mock_obj,
-        "modifiers": [],
-        "func": mock_obj,
-        "returns": ["e"],
-        "sig": inspect.signature(mock_obj),
-    }
-
-
-def test_modify_subgraph_none_returns_fails(mmodel_G):
-    """Test subgraph modification when returns are not specified
-
-    The method fails when the subgraph node does not have a
-    return attribute
-    """
-
-    subgraph = mmodel_G.subgraph(["poly", "multiply"])
-
-    def mock_obj(c, x, y):
-        return
-
-    with pytest.raises(Exception, match="'subgraph_returns' not defined"):
-        util.modify_subgraph(mmodel_G, subgraph, "test", mock_obj)
+    assert graph.edges["test", "multiply"]["var"] == "e"
 
 
 def test_modify_node(mmodel_G):
-    """Test modify_node
+    """Test modify_node.
 
-    Test if the node have the correct signature and result
+    Test if the node has the correct signature and result.
     """
 
-    def mock_obj(c, x, y):
-        return x + y
-
-    def mod(func):
+    def mod(func, a):
         @wraps(func)
         def wrapped(*args, **kwargs):
-            return func(*args, **kwargs) + 1
+            return func(*args, **kwargs) + a
 
         return wrapped
 
-    mod_G = util.modify_node(mmodel_G, "subtract", [(mod, {})], ["g"])
+    mod_G = util.modify_node(mmodel_G, "subtract", modifiers=[(mod, {"a": 1})])
 
     # add one to the final value
     assert mod_G.nodes["subtract"]["func"](1, 2) == 0
-    # make sure the edge value is updated
-    assert mod_G["subtract"]["multiply"]["val"] == ["g"]
+
+
+def test_modify_node_inplace(mmodel_G):
+    """Test modify_node to modify in place."""
+
+    def mod(func, a):
+        @wraps(func)
+        def wrapped(*args, **kwargs):
+            return func(*args, **kwargs) + a
+
+        return wrapped
+
+    mod_G = util.modify_node(
+        mmodel_G, "subtract", modifiers=[(mod, {"a": 1})], inplace=True
+    )
+
+    # test the original graph
+    assert mod_G.nodes["subtract"]["func"](1, 2) == 0
+    assert mmodel_G.nodes["subtract"]["func"](1, 2) == 0
+
+
+def test_parse_modifiers():
+    """Test pase_modifier outputs the correct string.
+
+    Test string, list, and tuples.
+    """
+
+    def mod1(func, parameter):
+        return
+
+    def mod2(func, param1, param2):
+        return
+
+    modifiers = [
+        (mod1, {"parameter": "test"}),
+        (mod2, {"param1": [1, 2, 3], "param2": (1, 2)}),
+    ]
+
+    modifier_str_list = ["modifiers:", "\t- mod1('test')", "\t- mod2([1, 2, 3], (1, 2))"]
+    assert util.parse_modifiers(modifiers) == modifier_str_list
+
+
+def test_parse_modifier_empty():
+    """Test pase_modifier outputs None when there is no modifier."""
+
+    assert util.parse_modifiers([]) == []
 
 
 def test_is_node_attr_defined():
-    """Test is_node_attr_defined"""
+    """Test is_node_attr_defined."""
 
     # all nodes defined
     g = nx.DiGraph()
@@ -266,14 +315,19 @@ def test_is_node_attr_defined():
 
     # missing attribute
     g = nx.DiGraph()
-    g.add_node(1, weight=0.5)
+    g.add_node(1, w=0.5)
     g.add_node(2)
+    g.add_node(3)
 
-    assert not util.is_node_attr_defined(g, "weight")
+    with pytest.raises(
+        Exception,
+        match=r"invalid graph: weight 'w' is not defined for node\(s\) \[2, 3\]",
+    ):
+        util.is_node_attr_defined(g, "w", "weight")
 
 
 def test_is_edge_attr_defined():
-    """Test is_edge_attr_defined"""
+    """Test is_edge_attr_defined."""
 
     # all nodes defined
     g = nx.DiGraph()
@@ -284,7 +338,15 @@ def test_is_edge_attr_defined():
 
     # missing attribute
     g = nx.DiGraph()
-    g.add_edge(1, 2, weight=0.5)
+    g.add_edge(1, 2, w=0.5)
     g.add_edge(2, 3)
+    g.add_edge(3, 4)
 
-    assert not util.is_edge_attr_defined(g, "weight")
+    with pytest.raises(
+        Exception,
+        match=(
+            r"invalid graph: weight 'w' is "
+            r"not defined for edge\(s\) \[\(2, 3\), \(3, 4\)\]"
+        ),
+    ):
+        util.is_edge_attr_defined(g, "w", "weight")

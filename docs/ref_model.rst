@@ -4,7 +4,7 @@ Model
 ``MModel`` model building favors composition over inheritance.
 The ``Model`` class takes three components: graph, handler, and
 modifiers. A handler takes care of the graph calculation and data
-flow, and a modifier is a wrapper that applies simple modification
+flow, and a modifier is a wrapper that applies simple modifications
 to the callable. For each handler and modifier, a tuple of (class, kwargs)
 or (func, kwargs) should be supplied.
 The resulting ``Model`` instance is a callable that behaves like a function.

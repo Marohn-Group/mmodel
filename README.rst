@@ -4,7 +4,7 @@ MModel
 |GitHub version| |PyPI version shields.io| |PyPI pyversions| |Unittests|
 |Docs|
 
-MModel is a lightweight and modular model building framework
+MModel is a lightweight and modular model-building framework
 for small-scale and nonlinear models. The package aims to solve
 scientific program prototyping and distribution difficulties, making
 it easier to create modular, fast, and user-friendly packages.
@@ -20,83 +20,124 @@ To create a nonlinear model that has the result of
 
     from mmodel import ModelGraph, Model, MemHandler
     import math
+    import numpy as np
 
-    def func_a(x, y):
-        return x + y
+    def func(sum_xy, log_xy):
+        """Function that adds a value to the multiplied inputs."""
+        return sum_xy * log_xy + 6
 
-    def func_b(sum_xy, base):
-        return math.log(sum_xy, base)
-
-    def func_c(sum_xy, log_xy):
-        return sum_xy * log_xy
-
-    # create graph links
-
-    grouped_edges = [
-        ("func a", ["func b", "func c"]),
-        ("func b", "func c"),
-    ]
-
-    node_objects = [
-        ("func a", func_a, ["sum_xy"]),
-        ("func b", func_b, ["log_xy"]),
-        ("func c", func_c, ["result"]),
-    ]
-
-    graph = ModelGraph(name="example_graph")
-    graph.add_grouped_edges_from(grouped_edges)
-    graph.set_node_objects_from(node_objects)
-
-    example_model = Model("example_model", graph, handler=(MemHandler, {}))
-
-    >>> print(example_model)
-    example_model(base, x, y)
-      signature: 
-      returns: result
-      handler: MemHandler, {}
-      modifiers: none
-
-    >>> example_model(2, 5, 3) # (5 + 3)log(5 + 3, 2)
-    24.0
-
-The resulting ``example_func`` is callable.
-
-One key feature of ``mmodel`` is modifiers, which modify callables post
-definition. To loop the "base" parameter.
-
-.. code-block:: python 
-
-    from mmodel import subgraph_by_parameters, modify_subgraph, loop_modifier
-
-    subgraph = subgraph_by_parameters(graph, ["base"])
-    loop_node = Model(
-        "loop_node",
-        subgraph,
-        (MemHandler, {}),
-        modifiers=[(loop_modifier, {"parameter": "base"})],
-    )
-    looped_graph = modify_subgraph(graph, subgraph, "loop node", loop_node)
-    looped_model = Model("loop_model", looped_graph, loop_node.handler)
-
-    >>> print(looped_model)
-    loop_model(base, x, y)
-        returns: result
-        handler: MemHandler, {}
-        modifiers: []
-    
-    >>> looped_model([2, 4], 5, 3) # (5 + 3)log(5 + 3, 2)
-    [24.0, 12.0]
-
-
-Modifiers can also be added to the whole model or a single node.
-
-To draw the graph or the underlying graph of the model:
+The graph is defined using grouped edges (the ``networkx`` syntax of edge
+the definition also works.)
 
 .. code-block:: python
 
-    from mmodel import draw_plain_graph
-    graph.draw(method=draw_plain_graph)
-    example_model.draw(method=draw_plain_graph)
+    # create graph edges
+    grouped_edges = [
+        ("add", ["log", "function node"]),
+        ("log", "function node"),
+    ]
+
+The functions are then added to node attributes. The order of definition
+is node_name, node_func, output, input (if different from original function),
+and modifiers.
+
+.. code-block:: python
+
+    # define note objects
+    node_objects = [
+        ("add", np.add, "sum_xy", ["x", "y"]),
+        ("log", math.log, "log_xy", ["sum_xy", "log_base"]),
+        ("function node", func, "result"),
+    ]
+
+    G = ModelGraph(name="example_graph")
+    G.add_grouped_edges_from(grouped_edges)
+    G.set_node_objects_from(node_objects)
+
+To define the model, the name, graph, and handler need to be specified. Additional
+parameters include modifiers, descriptions, and returns lists. The input parameters
+of the model are determined based on the node information.
+
+.. code-block:: python
+
+    example_model = Model("example_model", G, handler=(MemHandler, {}), description="Test model.")
+
+The model behaves like a Python function, with additional metadata. The graph can
+be plotted using the ``draw`` method.
+
+.. code-block:: python
+
+    >>> print(example_model)
+    example_model(log_base, x, y)
+    returns: z
+    handler: MemHandler()
+
+    Test model.
+
+    >>> example_model(2, 5, 3) # (5 + 3)log(5 + 3, 2) + 6
+    30.0
+
+    >>> example_model.draw()
+
+The resulting graph contains the model metadata and detailed node information.
+
+.. .. |br| raw:: html
+    
+..     <br/>
+
+.. .. image:: example.png
+..   :width: 300
+..   :alt: example model graph
+
+One key feature of ``mmodel`` that differs from other workflow is modifiers, 
+which modify callables post definition. Modifiers work on both the node level and model level.
+
+Example: Using modifier and graph to loop the nodes that require the "log_base" parameter.
+
+.. code-block:: python 
+
+    from mmodel import loop_modifier
+
+    H = G.subgraph(inputs=["log_base"])
+    loop_node = Model(
+        "loop_submodel",
+        H,
+        handler=(MemHandler, {}),
+        modifiers=[(loop_modifier, {"parameter": "log_base"})],
+    )
+    looped_G = G.replace_subgraph(H, "loop_node", loop_node, output="looped_z")
+    looped_model = Model("looped_model", looped_G, loop_node.handler)
+
+
+We can inspect the loop node as well as the new model.
+
+.. code-block:: python 
+
+    >>> print(loop_node)
+    loop_submodel(log_base, sum_xy)
+    returns: z
+    handler: MemHandler()
+    modifiers:
+      - loop_modifier('log_base')
+
+    >>> print(looped_model)
+    looped_model(log_base, x, y)
+    returns: looped_z
+    handler: MemHandler()
+    
+    >>> looped_model([2, 4], 5, 3) # (5 + 3)log(5 + 3, 2) + 6
+    [30.0, 18.0]
+
+
+Use the ``draw`` method to draw the graph. There are three styles
+"plain", "short", and "full", which differ by the level of detail of the
+node information. A graph output is displayed in Jupyter Notebook
+or can be saved using the export option.
+
+.. code-block:: python
+
+    G.draw(style="short")
+    example_model.draw(style="plain", export="example.pdf") # default to draw_graph
 
 Installation
 ------------
@@ -127,7 +168,7 @@ To install test and docs, despondencies run::
     pip install .[test] .[docs]
 
 To run the tests in different python environments and cases 
-(py38, py39, py310, coverage and docs)::
+(py38, py39, py310, py311, coverage and docs)::
 
     tox
 
@@ -137,15 +178,15 @@ To create the documentation, run under the "/docs" directory::
 
 
 .. |GitHub version| image:: https://badge.fury.io/gh/peterhs73%2FMModel.svg
-   :target: https://github.com/peterhs73/MModel
+   :target: https://github.com/Marohn-Group/mmodel
 
 .. |PyPI version shields.io| image:: https://img.shields.io/pypi/v/mmodel.svg
    :target: https://pypi.python.org/pypi/mmodel/
 
 .. |PyPI pyversions| image:: https://img.shields.io/pypi/pyversions/mmodel.svg
 
-.. |Unittests| image:: https://github.com/peterhs73/MModel/actions/workflows/tox.yml/badge.svg
-    :target: https://github.com/peterhs73/MModel/actions
+.. |Unittests| image:: https://github.com/Marohn-Group/mmodel/actions/workflows/tox.yml/badge.svg
+    :target: https://github.com/Marohn-Group/mmodel/actions
 
 .. |Docs| image:: https://img.shields.io/badge/Documentation--brightgreen.svg
-    :target: https://peterhs73.github.io/mmodel-docs/
+    :target: https://github.com/Marohn-Group/mmodel-docs/

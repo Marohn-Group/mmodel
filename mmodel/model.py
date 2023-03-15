@@ -1,56 +1,61 @@
-import inspect
 from mmodel.utility import (
     parse_input,
+    parse_modifiers,
+    content_wrap,
     is_node_attr_defined,
     is_edge_attr_defined,
-    model_returns,
 )
 from mmodel.draw import draw_graph
 import networkx as nx
 
 
 class Model:
-    """Create model executable
+    """Create model executable.
 
     :param str name: Model name
-    :param str description: Model description
     :param object graph: ModelGraph instance (digraph)
-    :param class handler: Handler class that handles model execution and the keyword
-        arguments. The parameter format is (HandlerClass, {})
+    :param class handler: Handler class that handles model execution and
+        the keyword arguments. The parameter format is (HandlerClass, {})
         By default, the handler takes the graph as the first parameter.
-        For additional arguments, add argument to dictionary afterwards.
+        For additional arguments, add an argument to the dictionary afterward.
     :param list modifiers: modifiers used for the whole graph model executable.
-        Optional, defaults to an empty list. For each modifier, the format is
-        (modifier, {}). All modifiers should have function as the first argument
+        The parameter is Optional and defaults to an empty list. For each modifier,
+        the format is (modifier, {}). All modifiers should have the function as
+        the first argument.
     :param str description: model description
-    :param list returns: the returns of the model defaults to the graph returns.
+    :param list returns: The order of returns of the model; defaults to the
+        topological search.
     """
 
     def __init__(
-        self, name, graph, handler, modifiers=None, description: str = "", returns=None
+        self,
+        name,
+        graph,
+        handler,
+        modifiers: list = None,
+        description: str = "",
+        returns: list = None,
     ):
 
         assert self._is_valid_graph(graph)
-        self.__name__ = name
+        self.name = self.__name__ = name
 
-        # store only the copy of the graph, note this is not the same copy
-        # used by the handler
-        # modify self.graph does not change the model itself
-        # self.graph = nx.freeze(graph.deepcopy())
-        self.graph = nx.freeze(graph)
+        # create a copy of the graph
+        self._graph = nx.freeze(graph.deepcopy())
+        self.returns = returns or self._graph.returns  # tuples
         self.modifiers = modifiers or list()
         self.handler = handler
         self.description = description
 
         handler_class, handler_kwargs = handler
-        returns = returns or model_returns(graph)
-        executor = handler_class(self.graph, returns, **handler_kwargs)
+
+        executor = handler_class(name, self._graph, self.returns, **handler_kwargs)
 
         for mdf, kwargs in self.modifiers:
             executor = mdf(executor, **kwargs)
 
         self.__signature__ = executor.__signature__
-        self.returns = executor.returns
+
         # final callable
         self.executor = executor
 
@@ -62,79 +67,97 @@ class Model:
         return self.executor(**inputs)
 
     def __str__(self):
-        """Output callable information"""
+        """Output callable information."""
 
-        handler_str = f"{self.handler[0].__name__}, {self.handler[1]}"
+        return self.metadata()
 
-        modifier_str_list = [
-            f"{func.__name__}, {kwargs}" for func, kwargs in self.modifiers
+    def metadata(self, full=True, wrap_width=80):
+        """Parse metadata string of the Model instance."""
+
+        # use tuple if there are multiple returns
+        # else use returns directly.
+        return_len = len(self.returns)
+        if return_len == 0:
+            returns_str = "None"
+        elif return_len == 1:
+            returns_str = self.returns[0]
+        else:
+            returns_str = f"({', '.join(self.returns)})"
+
+        metadata_list = [
+            f"{self.__name__}{self.__signature__}",
+            f"returns: {returns_str}",
+            f"handler: {self.handler[0].__name__}"
+            f"({', '.join(repr(v) for v in self.handler[1].values())})",
         ]
-        modifier_str = f"[{', '.join(modifier_str_list)}]"
 
-        return "\n".join(
-            [
-                f"{self.__name__}{self.__signature__}",
-                f"  returns: {', '.join(self.returns)}",
-                f"  handler: {handler_str}",
-                f"  modifiers: {modifier_str}",
-                f"{self.description}",
-            ]
-        ).rstrip()
+        metadata_list.extend(parse_modifiers(self.modifiers))
+
+        if full:
+            metadata_list.extend(["", self.description])
+
+        wrapped_list = content_wrap(metadata_list, width=wrap_width)
+
+        return "\n".join(wrapped_list).rstrip()
 
     @staticmethod
     def _is_valid_graph(G):
-        """Check if model graph is valid to build an executable
+        """Check if the model graph is valid to build an executable.
 
         ``mmodel`` does not allow cycle graphs, graphs with isolated nodes,
         and all nodes have callable attributes defined.
-        The method is bound to Model class because the features
+        The method is bound to the Model class because the features
         are specific to ``Model`` class.
         """
 
-        assert nx.is_directed(G), "invalid graph: undirected graph"
-        assert not nx.recursive_simple_cycles(G), "invalid graph: graph contains cycles"
-        assert not list(nx.isolates(G)), "invalid graph: graph contains isolated nodes"
+        assert nx.is_directed(G), f"invalid graph ({G.name}): undirected graph."
+        assert not nx.recursive_simple_cycles(
+            G
+        ), f"invalid graph ({G.name}): graph contains cycles."
 
-        assert is_node_attr_defined(
-            G, "func"
-        ), "invalid graph: graph contains nodes with undefined callables"
-
+        assert is_node_attr_defined(G, "func", "callable")
         # the following might occur when the node object is incorrectly constructed
-        assert is_node_attr_defined(G, "returns"), (
-            "invalid graph: graph contains nodes with undefined callables returns, "
-            "recommend using ModelGraph set_node_object method to add node object"
-        )
-        assert is_node_attr_defined(G, "sig"), (
-            "invalid graph: graph contains nodes with undefined callables signatures, "
-            "recommend using ModelGraph set_node_object method to add node object"
-        )
-        assert is_edge_attr_defined(G, "val"), (
-            "invalid graph: graph contains edges with undefined variable attributes, "
-            "recommend using ModelGraph set_node_object method to add node object"
-        )
+        assert is_node_attr_defined(G, "output")
+        assert is_node_attr_defined(G, "sig", "signature")
+        assert is_edge_attr_defined(G, "var", "variable")
 
         return True
 
+    @property
+    def graph(self):
+        """The graph attribute output a copy of the graph."""
+        return self._graph.deepcopy()
+
     def get_node(self, node):
-        """Quick access to node within the model"""
+        """Quick access to node within the model."""
 
-        return self.graph.nodes[node]
+        return self._graph.nodes[node]
 
-    def get_node_object(self, node):
-        """Quick access to node callable within the model"""
-
-        return self.graph.nodes[node]["func"]
-
-    def view_node(self, node):
-        """View a specific node"""
-
-        return self.graph.view_node(node)
-
-    def draw(self, method: callable = draw_graph):
-        """Draw the graph of the model
-
-        A drawing is provided. Defaults to ``draw_graph``.
-        '\l' forces the label to align left when it is defined after the line.
+    def get_node_func(self, node):
+        """Quick access to node base callable within the model.
+        
+        The function helps extract the original function within
+        the node.
         """
 
-        return method(self.graph, label=str(self).replace("\n", "\l") + "\l")
+        return self._graph.nodes[node]["_func"]
+
+    def node_metadata(self, node, full=True, wrap_width=80):
+        """View a specific node."""
+
+        return self._graph.node_metadata(node, full=True, wrap_width=80)
+
+    def draw(self, style="full", export=None, wrap_width=30):
+        """Draw the graph of the model.
+
+        Draws the default styled graph.
+
+        :param str style: there are three styles, plain, short, and full.
+            Plain shows nodes only, short shows part of the metadata, and
+            long shows all the metadata.
+        :param str export: filename to save the graph as. The file extension
+            is needed.
+
+        """
+
+        return draw_graph(self._graph, self.metadata(), style, export, wrap_width)

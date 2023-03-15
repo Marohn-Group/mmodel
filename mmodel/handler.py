@@ -1,12 +1,12 @@
 from collections import UserDict
-from mmodel.utility import model_signature, graph_topological_sort, param_counter
+from mmodel.utility import modelgraph_signature, graph_topological_sort, param_counter
 from datetime import datetime
 import h5py
 import string
 import random
 
 ERROR_FORMAT = """\
-Exception occurred for node '{node}':
+An exception occurred for node '{node}':
 --- node info ---
 {node_str}
 --- input info ---
@@ -15,20 +15,35 @@ Exception occurred for node '{node}':
 
 
 class TopologicalHandler:
-    """Base class for executing graph nodes in topological order"""
+    """Base class for executing graph nodes in topological order.
+
+    "Returns" specifies the output order. If there is only one return
+    the value is outputted, otherwise a tuple is outputted. This
+    behavior is similar to the Python function.
+
+    The topological handler assumes each node has exactly one output.
+
+    :param str name: name of the handler (same as the model instance)
+    :param networkx.digraph graph: graph
+    :param list returns: handler returns order
+        The list should have the same or more elements than the graph returns.
+        See Model constructor definition.
+    """
 
     DataClass = None
 
-    def __init__(self, graph, returns: list = [], **datacls_kwargs):
+    def __init__(self, name, graph, returns: list = [], **datacls_kwargs):
 
-        self.__signature__ = model_signature(graph)
+        self.__name__ = name
+        # __signature__ allows the inspect module to properly generate the signature
+        self.__signature__ = graph.signature
         self.returns = returns
         self.order = graph_topological_sort(graph)
         self.graph = graph
         self.datacls_kwargs = datacls_kwargs
 
     def __call__(self, **kwargs):
-        """Execute graph model by layer"""
+        """Execute graph model by layer."""
 
         data = self.DataClass(kwargs, **self.datacls_kwargs)
 
@@ -40,26 +55,30 @@ class TopologicalHandler:
         return result
 
     def run_node(self, data, node, node_attr):
-        """Run individual node"""
+        """Run the individual node."""
 
-        parameters = node_attr["sig"].parameters
-        kwargs = {key: data[key] for key in parameters}
+        # Only parameters without defaults are applied
+
+        kwargs = {
+            key: data[key]
+            for key, param in node_attr["sig"].parameters.items()
+            if (param.default is param.empty)
+        }
         try:
             # execute
-            func_output = node_attr["func"](**kwargs)
-            returns = node_attr["returns"]
-            if len(returns) == 1:
-                data[returns[0]] = func_output
-            else:
-                data.update(dict(zip(returns, func_output)))
-        except:
-            try:  # if the data class need to be closed
+            func_result = node_attr["func"](**kwargs)
+            output = node_attr["output"]
+            if output:  # skip the None
+                data[output] = func_result
+
+        except:  # exception occurred while running the node
+            try:  # if the data class needs to be closed
                 data.close()
             except:
                 pass
 
             # format the error message
-            node_str = self.graph.view_node(node)
+            node_str = self.graph.node_metadata(node)
             input_str = "\n".join(
                 [f"{key} = {repr(value)}" for key, value in kwargs.items()]
             )
@@ -67,14 +86,16 @@ class TopologicalHandler:
             raise Exception(msg)
 
     def finish(self, data, returns):
-        """Finish execution"""
+        """Finish execution."""
 
-        if len(returns) == 1:
+        if len(returns) == 0:
+            result = None
+        elif len(returns) == 1:
             result = data[returns[0]]
         else:
             result = tuple(data[rt] for rt in returns)
 
-        try:  # if the data class need to be closed
+        try:  # if the data class needs to be closed
             data.close()
         except:
             pass
@@ -83,24 +104,24 @@ class TopologicalHandler:
 
 
 class MemData(UserDict):
-    """Modify dictionary that checks the counter every time a value is accessed"""
+    """Modified dictionary that checks the counter every time a value is accessed."""
 
     def __init__(self, data, counter):
-        """Counter is a copy of the counter dictionary"""
+        """Counter is a copy of the counter dictionary."""
         self.counter = counter.copy()
         super().__init__(data)
 
     def __getitem__(self, key):
-        """When a key is accessed, reduce the counter
+        """When a key is accessed, reduce the counter.
 
-        If counter has reached the zero, pop the value (key is deleted)
-        elsewise return the key.
+        If the counter has reached zero, pop the value (key is deleted)
+        else wise return the key.
         """
 
         self.counter[key] -= 1
 
         if self.counter[key] == 0:
-            # return the value and delete the key in dictionary
+            # return the value and delete the key in the dictionary
             value = super().__getitem__(key)
             del self[key]
             return value
@@ -110,9 +131,9 @@ class MemData(UserDict):
 
 
 class H5Data:
-    """Data class to interact with underlying h5 file
+    """Data class to interact with underlying h5 file.
 
-    The timestamp-uuid is used to ensure unique entries to group.
+    The "timestamp-uuid" is used to ensure unique entries to the H5 group.
     The randomly generated short uuid has 36^5, which is roughly 2e9
     possibilities (picoseconds range).
     """
@@ -130,12 +151,12 @@ class H5Data:
         self.update(data)
 
     def update(self, data):
-        """Write key values in bulk"""
+        """Write key values in bulk."""
         for key, value in data.items():
             self[key] = value
 
     def __getitem__(self, key):
-        """Read dataset/attribute by group
+        """Read dataset/attribute by the group.
 
         :param str key: value name
         :param h5py.group group: open h5py group object
@@ -144,11 +165,11 @@ class H5Data:
         return self.group[key][()]
 
     def __setitem__(self, key, value):
-        """Write h5 dataset/attribute by group
+        """Write h5 dataset/attribute by the group.
 
         If the object type cannot be recognized by HDF5, the string representation
-        of the object is written as attribute
-        :param dict value_dict: dictionary of values to write
+        of the object is written as an attribute
+        :param dict value_dict: the dictionary of values to write
         :param h5py.group group: open h5py group object
         """
         try:
@@ -163,30 +184,30 @@ class H5Data:
 
 
 class BasicHandler(TopologicalHandler):
-    """Basic handler, use dictionary as data class"""
+    """Basic handler, use the dictionary as a data class."""
 
     DataClass = dict
 
 
 class MemHandler(TopologicalHandler):
-    """Memory optimized handler, delete intermediate values when necessary
+    """Memory optimized handler, delete intermediate values when necessary.
 
-    The process works by keep a record of parameter counter. See MemData class
-    for more details.
+    The process works by keeping a record of the parameter counter.
+    See MemData class for more details.
     """
 
     DataClass = MemData
 
-    def __init__(self, graph, returns: list = []):
+    def __init__(self, name, graph, returns: list = []):
         """Add counter to the object"""
 
         counter = param_counter(graph, returns)
 
-        super().__init__(graph, returns, counter=counter)
+        super().__init__(name, graph, returns, counter=counter)
 
 
 class H5Handler(TopologicalHandler):
-    """H5 Handler, saves all calculation values to a h5 file
+    """H5 Handler, saves all calculation values to an h5 file.
 
     :param str fname: h5 file name
     :param str gname: group name for the data entry
@@ -194,5 +215,5 @@ class H5Handler(TopologicalHandler):
 
     DataClass = H5Data
 
-    def __init__(self, graph, returns, fname: str, gname: str = ""):
-        super().__init__(graph, returns, fname=fname, gname=gname)
+    def __init__(self, name, graph, returns, fname: str, gname: str = ""):
+        super().__init__(name, graph, returns, fname=fname, gname=gname)

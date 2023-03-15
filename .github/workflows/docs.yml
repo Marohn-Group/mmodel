@@ -14,5 +14,5 @@ jobs:
         uses: peterhs73/sphinx-docs-action@v0.0.2
         with:
           docs-source: docs/
-          external-repo: peterhs73/mmodel-docs
+          external-repo: Marohn-Group/mmodel-docs
           deploy-token: ${{ secrets.PRIVATE_TOKEN}}

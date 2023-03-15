@@ -17,7 +17,7 @@ The class inherits from ``networkx.DiGraph``, which is compatible with all
 To create and modify the graph,
 see the documentation for adding 
 `nodes <https://networkx.org/documentation/stable/tutorial.html#nodes>`_
-and adding `edges <https://networkx.org/documentation/stable/tutorial.html#edges>`_
+and adding `edges <https://networkx.org/documentation/stable/tutorial.html#edges>`_.
 
 Aside from the ``networkx`` operations,
 ``mmodel`` provides ``add_grouped_edge`` and ``add_grouped_edges_from`` to add edges.
@@ -53,67 +53,210 @@ Similarly, with multiple grouped edges
 Set node objects
 -----------------
 
-Each node in the graph represents an execution, and the edges represents the data
+Each node in the graph represents an execution, and the edges represent the data
 flow. Therefore we need to link the node to its execution method. In ``mmodel``
 a node object is a combination of:
 
-1. callable, function or function-like ("func")
-2. callable return variable names ("returns")
-3. callable parameter
+1. callable, function, or function-like ("func")
+2. callable return variable name ("output")
+3. callable input parameter list ("inputs")
+4. modifications list ("modifiers")
 
 For linking the node object to the node, two methods are provided:
 ``set_node_object`` and ``set_node_objects_from``. 
-The latter accepts a list of node objects.
+The latter accepts a list of node objects. 
 
 .. code-block:: python
-    
-    def test_func(a, b):
-        return a + b
 
-    G.set_node_object(node='a', func=test_func, returns=['c'])
+    def add(x, y):
+        """The sum of x and y."""
+        return x + y
+
+
+    def subtract(x, y):
+        """The difference between x and y."""
+        return x - y
+
+
+    G.set_node_object(node="a", func=add, output="z")
+
+
+    >>> print(G.node_metadata("a"))
+    a
+
+    add(x, y)
+    return: z
+    functype: callable
+
+    The sum of x and y.
 
     # or with multiple node objects
+    # both nodes add input values but outputs in different parameter
     node_objects = [
-        ('a', test_func, ['c']),
-        ('b', test_func, ['c']),
+        ("a", add, "z"),
+        ("b", subtract, "m"),
     ]
-
     G.set_node_objects_from(node_objects)
 
-In most cases, only the callable and the returns are needed because the parameters
-can be extracted from the function signature. However, there are several cases
-the method does not work:
+    >>> print(G.node_metadata("b"))
+    b
 
-1. python's built-in functions
-2. functions without clear signature (``numpy`` universal functions)
-3. parameters that are different from defined parameter names
+    subtract(x, y)
+    return: m
+    functype: callable
 
-In this cases, "inputs" parameter can be specified, the signature is changed
-using the signature modifiers:
-
-.. code-block:: python
-    
-    import numpy as np
-    G.set_node_object(node='b', func=np.sum, returns=['c'], inputs=["a", "b"])
-
-    >>> print(G.view_node('b'))
-    b node
-      callable: sum(a, b)
-      returns: c
-      modifiers: [signature_modifier, {'parameters': ['a', 'b']}]
+    The difference between x and y.
 
 .. Note::
+
     The object is stored as a node attribute and the function signature
     (`inspect.Signature`) is stored. The parameter values are converted
     to signature objects.
 
+.. Note:: 
+
+    To have the docstring properly displayed in node's metadata, it needs to start
+    with an upper case letter and ends with a period.
+
 The name of the parameters that pass through each edge is determined and stored
-in the edge attribute "val". 
+in the edge attribute "var". 
+
+.. note::
+    
+    The note output is a single variable. If the node outputs the multiple variables
+    the return tuple is assigned to the defined output variable.
+
+Change function input parameters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To avoid re-defining functions using different input parameters, or for functions
+that only allow positional arguments (built-in functions and numpy.ufunc), the
+"inputs" parameter of the ``set_node_object`` can change the node signature.
+The signature replacement is a thin wrapper with a very small performance overhead.
+The signature change only occurs at the node level, the original function is
+not affected.
+
+.. code-block:: python
+    
+    def add(a, b):
+        """Sum of x and y."""
+        return a + b
+
+    G.set_node_object(node="a", func=add, output="z", inputs=["m", "n"])
+
+    >>> print(G.view_node("a"))
+    a
+
+    add(m, n)
+    return: z
+    functype: callable
+
+    Sum of x and y.
+
+.. Note:: 
+
+    The graph variable flows restricts to keyword arguments only for function parameters.
+    They can be modified by changing the inputs of the function, and the modified
+    function allows keyword arguments.
+
+Built-in functions and functions without signature
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There are different types of functions that ``inspect.signature`` cannot extract
+the parameters from, namely:
+
+1. python's built-in functions
+2. ``numpy`` ufuncs
+
+mmodel can identify the above functions, and replace the signature:
+
+.. code-block:: python
+
+    from operator import add
+
+    G.set_node_object(node="a", func=add, output="z", inputs=["m", "n"])
+
+    import numpy as np
+
+    G.set_node_object(node="b", func=np.sum, output="z", inputs=["m", "n"])
+
+
+    >>> print(G.node_metadata("a"))
+    a
+
+    add(m, n)
+    return: z
+    functype: builtin
+
+    Same as a + b.
+
+
+    >>> print(G.view_node('b'))
+    b
+
+    sum(m, n)
+    return: z
+    functype: callable
+
+    Sum of array elements over a given axis.
+
+Function with variable length of arguments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In mmodel graph, the argument length of a node is fixed. For a function with variable
+length of arguments, additional arguments can be provided using the input function.
+
+
+.. code-block:: python
+
+    def test_func_kwargs(a, b, **kwargs):
+        return a + b, kwargs
+
+
+    G.set_node_object(node="a", func=test_func_kwargs, output="z", inputs=["m", "n", "p"])
+
+    >>> print(G.node_metadata("a"))
+    a
+
+    test_func_kwargs(m, n, p)
+    return: z
+    functype: callable
+
+    >>> G.nodes["a"]["func"](m=1, n=2, p=4)
+    (3, {'p': 4})
+
+Function with default arguments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For functions with default arguments, the inputs can be shorter than the total number
+of parameters.
+
+.. code-block:: python
+
+    def test_func_defaults(m, n, p=2):
+        return m + n + p
+    
+    G.set_node_object(node="a", func=test_func_defaults, output="z", inputs=["m", "n"])
+
+    >>> print(G.node_metadata("a"))
+    a
+
+    test_func_defaults(m, n)
+    return: z
+    functype: callable
+    
+    >>> G.nodes["a"]["func"](m=1, n=2)
+    5
+
+.. Note::
+
+    To avoid performance overhead, signature_modifier modifies the signature in order.
+    Currently, it is not possible to replace selected parameters.
 
 Name and docstring
 ----------------------
 
-The name and graph string behaves as the networkx graphs. To add name to graph:
+The name and graph string behaves as the networkx graphs. To add the name to the graph:
 
 
 .. code-block:: python

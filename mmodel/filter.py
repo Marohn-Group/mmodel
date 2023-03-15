@@ -2,52 +2,43 @@
 import networkx as nx
 
 
-def subgraph_by_parameters(graph, parameters: list):
-    """Construct subgraph based on parameters
+def subnodes_by_inputs(graph, inputs: list) -> list:
+    """Obtain a list of subgraph nodes based on node inputs
 
     If a parent node is included, so are the child nodes.
 
-    :return: subgraph view of the filtered graph
+    :return: list of node names
     """
 
     subgraph_nodes = []
 
     for node, sig in nx.get_node_attributes(graph, "sig").items():
         sig_params = sig.parameters
-        for param in parameters:
+        for param in inputs:
             if param in sig_params:
                 subgraph_nodes.append(node)
                 subgraph_nodes.extend(nx.descendants(graph, node))
 
-    return graph.subgraph(subgraph_nodes)
+    return subgraph_nodes
 
 
-def subgraph_by_nodes(graph, nodes: list):
-    """Construct subgraph based on nodes
+def subnodes_by_outputs(graph, outputs: list) -> list:
+    """Obtain a list of subgraph nodes based on node outputs.
 
-    :return: subgraph view of the filtered graph
-    """
-
-    return graph.subgraph(nodes)
-
-
-def subgraph_by_returns(graph, returns: list):
-    """Construct subgraph based on node returns
-
-    :return: subgraph view of the filtered graph
-
-    For mmodel graphs, returns from all the internal nodes are unique.
+    For mmodel graphs, outputs from all the internal nodes are unique.
     Therefore the function only checks if function nodes overlap with
     the target return list. If a child node is included, so are the
     parent nodes.
+
+    :return: list of node names
     """
 
     subgraph_nodes = []
+    for node, output in nx.get_node_attributes(graph, "output").items():
 
-    for node, rts in nx.get_node_attributes(graph, "returns").items():
+        if output in outputs:
 
-        if not set(rts).isdisjoint(returns):  # check if they overlap
             subgraph_nodes.append(node)
             subgraph_nodes.extend(nx.ancestors(graph, node))
 
-    return graph.subgraph(subgraph_nodes)
+    return subgraph_nodes

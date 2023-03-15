@@ -6,23 +6,29 @@ Filtering subgraph
 
 There are three methods provided for creating a subgraph from the graph:
 
-1. ``subgraph_by_nodes``, filter by nodes
-2. ``subgraph_by_parameters``, filter by node callable parameters
-3. ``subgraph_by_returns``, filter by node callable returns
+1. filter by nodes ("nodes")
+2. filter by node callable parameters ("inputs")
+3. filter by node callable returns ("outputs")
 
 .. Note::
-    
+
     The filtered subgraph is a view of the original graph and they are
     frozen.
 
-The resulting subgraph can be built into models:
+If we filter the graph by the output "log_xy", the node "function node" is
+excluded.
+The resulting subgraph can be built into models (the graph is defined the same as
+README.rst):
 
 .. code-block:: python
 
-    H = subgraph_by_returns(G, ['c'])
-    model = Model(H, (MemHandler, {}))
+    H = G.subgraph(outputs=["log_xy"])
+    model = Model("model", H, (MemHandler, {}))
+
+    >>> print(H.nodes)
+    ['add', 'log']
  
-The filtering is useful if we only want to create model executable for
+The filtering is useful if we only want to create a model callable for
 only part of the graph.
 
 Subgraph as model
@@ -30,30 +36,29 @@ Subgraph as model
 
 Subgraphing is also useful if we want to apply modifiers to part of the
 graph. For example, we want to loop a variable that only part of the subgraph
-uses. Here we loop the "base" parameter from the Quickstart example.
+uses. Here we loop the "log_base" parameter from the Quickstart example.
+``replace_subgraph`` outputs a new graph.
 
-.. code-block:: python
+.. code-block:: python 
 
-    from mmodel import subgraph_by_parameters, modify_subgraph, loop_modifier
-
-    subgraph = subgraph_by_parameters(graph, ["base"])
+    H = G.subgraph(inputs=["log_base"])
     loop_node = Model(
-        "loop_node",
-        subgraph,
-        (MemHandler, {}),
-        modifiers=[(loop_modifier, {"parameter": "base"})],
+        "loop_submodel",
+        H,
+        handler=(MemHandler, {}),
+        modifiers=[(loop_modifier, {"parameter": "log_base"})],
     )
-    looped_graph = modify_subgraph(graph, subgraph, "loop node", loop_node)
-    looped_model = Model("loop_model", looped_graph, loop_node.handler)
+    looped_graph = G.replace_subgraph(H, "loop_node", loop_node, output="looped_z")
+
+    looped_model = Model("looped_model", looped_graph, loop_node.handler)
 
 .. note::
 
-    The process above: 
+    The steps:
 
-    1. filter the graph with ``subgraph_by_parameters``
-    2. create subgraph model with ``Model`` and loop modifiers  
-    3. update graph with the subgraph nodes object ``loop_node`` with
-       ``modify_subgraph``, in this step the original returns list is retained.
-       (to modify the returns, use "subgraph_returns" argument)
-    4. build the model for the graph with ``Model``. The handler is the same as
+    1. Filter the graph with ``G.subgraph(inputs = ...)``.
+    2. Create a subgraph model with ``Model`` and loop modifiers.
+    3. Update the graph with the subgraph nodes object ``loop_node`` with
+       ``replace_subgraph``. Use "output" to specify the output name of the subgraph node.
+    4. Build the model for the graph with ``Model``. The handler is the same as
        the loop_node.
