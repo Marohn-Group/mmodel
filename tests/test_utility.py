@@ -256,6 +256,31 @@ def test_modify_node(mmodel_G):
     # add one to the final value
     assert mod_G.nodes["subtract"]["func"](1, 2) == 0
 
+def test_modify_node_modifier(mmodel_G):
+    """Test if modify node removes the original modifiers.
+
+    The original modifiers should be replaced if new modifiers are supplied.
+    """
+
+    def mod(func, a):
+        @wraps(func)
+        def wrapped(*args, **kwargs):
+            return func(*args, **kwargs) + a
+
+        return wrapped
+
+    # original function
+    func = mmodel_G.nodes['subtract']['_func']
+    mod_G = util.modify_node(mmodel_G, "subtract", modifiers=[(mod, {"a": 1})])
+
+    # add one to the final value
+    assert mod_G.nodes["subtract"]["func"](1, 2) == 0
+
+    # make sure the original function stays the same.
+    mod_G = util.modify_node(mod_G, "subtract", modifiers=[(mod, {"a": 1})])
+
+    assert mod_G.nodes["subtract"]["_func"] == func
+
 
 def test_modify_node_inplace(mmodel_G):
     """Test modify_node to modify in place."""

@@ -170,7 +170,7 @@ def modify_node(
     if not inplace:
         graph = graph.deepcopy()
 
-    func = func or graph.nodes[node]["func"]
+    func = func or graph.nodes[node]["_func"]
     modifiers = modifiers or graph.nodes[node]["modifiers"]
     output = output or graph.nodes[node]["output"]
     graph.set_node_object(
