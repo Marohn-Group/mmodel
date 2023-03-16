@@ -25,7 +25,7 @@ API Change
 - Change ``model_signature`` and ``model_returns`` to
   ``modelgraph_signature`` and ``modelgraph_returns``
   add both as methods in the graph class.
-- Change "returns" to "output", the value should be a string.
+- Change "returns" to "output". The value should be a string.
 - Parameter "returns" is a Model exclusive parameter that denotes the graph output.
 - Change ``Model.get_node_object`` to ``Model.get_node_func``, the base function is
   returned.
@@ -35,7 +35,7 @@ Fixed
 
 - Fix the issue where modify subgraph cannot add inputs or modifiers.
 - Fix the issue in tests that node attributes are not compared in `graph_equal()`.
-- Fix the issue that the original graph freezes when a model is created.
+- Fix the issue that the original graph freezes when creating a model.
 - Fix the inconsistency between node and model metadata.
 - Fix the issue that "None" is included in the returns list.
 
@@ -49,7 +49,7 @@ Changed
 - Allow isolated graphs in the model (for single-node models).
 - The subgraph method of the graph is modified to create a subgraph with
   inputs and outputs.
-- ``model.graph`` is a property method, a new copy of the graph is created
+- ``model.graph`` is a property method. A new copy of the graph is created
   every time.
 - Specified inputs are no longer added to the modifier list, and the base function is
   modified.
