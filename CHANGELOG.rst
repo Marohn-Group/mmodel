@@ -7,7 +7,7 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
-[0.5.0] 
+[0.5.0] - 2023-3-15
 ------------------------
 The package is moved to `Marohn Group <https://github.com/Marohn-Group/mmodel>`_.
 
