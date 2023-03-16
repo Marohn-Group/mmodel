@@ -33,6 +33,13 @@ class TestModel:
         assert model_instance.__signature__ == mmodel_signature
         assert model_instance.returns == ["k", "m"]
         assert model_instance.modifiers == []
+        assert model_instance.execution_order == [
+            "add",
+            "subtract",
+            "poly",
+            "log",
+            "multiply",
+        ]
 
     def test_model_str(self, model_instance):
         """Test model representation."""

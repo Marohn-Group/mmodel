@@ -50,6 +50,7 @@ class Model:
         handler_class, handler_kwargs = handler
 
         executor = handler_class(name, self._graph, self.returns, **handler_kwargs)
+        self.execution_order = [node for node, _ in executor.order]
 
         for mdf, kwargs in self.modifiers:
             executor = mdf(executor, **kwargs)
@@ -57,14 +58,14 @@ class Model:
         self.__signature__ = executor.__signature__
 
         # final callable
-        self.executor = executor
+        self._executor = executor
 
     def __call__(self, *args, **kwargs):
 
         # process inputs
         inputs = parse_input(self.__signature__, *args, **kwargs)
 
-        return self.executor(**inputs)
+        return self._executor(**inputs)
 
     def __str__(self):
         """Output callable information."""

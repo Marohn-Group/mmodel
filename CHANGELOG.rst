@@ -15,6 +15,15 @@ Fixed
 
 - Fix the issue ``modify_node`` doesn't remove the old modifiers.
 
+Changed
+^^^^^^^
+
+- Change "executor" to a private Model class attribute ``Model._executor``.
+
+Added
+^^^^^
+
+- Add "order" attribute to the Model class to show the order of the execution.
 
 [0.5.0] - 2023-3-15
 ------------------------
