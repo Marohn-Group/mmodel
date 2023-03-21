@@ -12,14 +12,14 @@ def test_draw_plain_model(mmodel_G):
     node [shape=box]
     add
     subtract
-    poly
+    power
     log
     multiply
     add -> subtract
-    add -> poly
+    add -> power
     add -> log
     subtract -> multiply
-    poly -> multiply
+    power -> multiply
     }
     """
 
@@ -33,10 +33,10 @@ def test_draw_short_graph(mmodel_G):
     dot_graph = draw_graph(mmodel_G, label="test label", style="short")
     # test if add function is included
     assert (
-        "add\l\laddition(a, factor=2)\lreturn: "
-        "c\lfunctype: callable\l\lAddition operation." not in dot_graph.source
+        "add\l\laddition(a, constant=2)\lreturn: "
+        "c\lfunctype: callable\l\lAdd a constant to the value a." not in dot_graph.source
     )
-    assert "add\l\laddition(a, factor=2)\lreturn: c" in dot_graph.source
+    assert "add\l\laddition(a, constant=2)\lreturn: c" in dot_graph.source
 
 
 def test_draw_full_graph(mmodel_G):
@@ -45,8 +45,8 @@ def test_draw_full_graph(mmodel_G):
     dot_graph = draw_graph(mmodel_G, label="test label", style="full")
     # test if add function is included
     assert (
-        "add\l\laddition(a, factor=2)\lreturn: "
-        "c\lfunctype: callable\l\lAddition operation." in dot_graph.source
+        "add\l\laddition(a, constant=2)\lreturn: "
+        "c\lfunctype: callable\l\lAdd a constant to the value a." in dot_graph.source
     )
 
 
@@ -83,4 +83,4 @@ def test_draw_graph_export(mmodel_G, tmp_path):
 
     with open(filename, "r") as f:
 
-        assert "add\l\laddition(a, factor=2)\lreturn: c" in f.read()
+        assert "add\l\laddition(a, constant=2)\lreturn: c" in f.read()

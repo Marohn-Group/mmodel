@@ -331,7 +331,7 @@ class TestNetworkXGraphOperation:
 
         G = mmodel_G
         DG = G.to_directed(as_view=True)
-        SDG = DG.subgraph(["subtract", "poly"])
+        SDG = DG.subgraph(["subtract", "power"])
         RSDG = SDG.reverse(copy=False)
         assert G is DG._graph
         assert DG is SDG._graph
@@ -342,7 +342,7 @@ class TestNetworkXGraphOperation:
         G = mmodel_G
 
         # full subgraph
-        H = G.subgraph(["add", "multiply", "subtract", "poly", "log"])
+        H = G.subgraph(["add", "multiply", "subtract", "power", "log"])
         assert graph_equal(H, G)  # check if they are the same
 
         # partial subgraph
@@ -394,7 +394,7 @@ class TestMModelGraphOperation:
         """Test subgraph if inputs are specified"""
 
         subgraph = mmodel_G.subgraph(inputs=["f"])
-        assert graph_equal(subgraph, mmodel_G.subgraph(nodes=["poly", "multiply"]))
+        assert graph_equal(subgraph, mmodel_G.subgraph(nodes=["power", "multiply"]))
 
     def test_subgraph_combined(self, mmodel_G):
         """Test subgraph with nodes, outputs, and inputs
@@ -404,7 +404,7 @@ class TestMModelGraphOperation:
 
         subgraph = mmodel_G.subgraph(inputs=["f"], outputs=["m"])
         assert graph_equal(
-            subgraph, mmodel_G.subgraph(nodes=["add", "log", "poly", "multiply"])
+            subgraph, mmodel_G.subgraph(nodes=["add", "log", "power", "multiply"])
         )
 
         subgraph = mmodel_G.subgraph(nodes=["subtract"], inputs=["f"], outputs=["m"])
@@ -416,7 +416,7 @@ class TestMModelGraphOperation:
         See utils.replace_subgraph for more tests
         """
 
-        subgraph = mmodel_G.subgraph(["multiply", "poly"])
+        subgraph = mmodel_G.subgraph(["multiply", "power"])
 
         def func(a, b, c, d):
             return a + b + c + d

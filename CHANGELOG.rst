@@ -19,6 +19,7 @@ Changed
 ^^^^^^^
 
 - Change "executor" to a private Model class attribute ``Model._executor``.
+- Change test node functions and docstring for consistency.
 
 Added
 ^^^^^

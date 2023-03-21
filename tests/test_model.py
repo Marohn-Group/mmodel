@@ -36,7 +36,7 @@ class TestModel:
         assert model_instance.execution_order == [
             "add",
             "subtract",
-            "poly",
+            "power",
             "log",
             "multiply",
         ]

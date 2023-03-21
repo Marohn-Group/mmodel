@@ -128,7 +128,7 @@ def test_modelgraph_returns_None():
 def test_graph_topological_sort(mmodel_G):
     """Test graph_topological_sort.
 
-    The order is: add, subtract, multiply, log, poly.
+    The order is: add, subtract, multiply, log, power.
 
     each node should be (node, attr), where the node is the name
     of the node, attr is a dictionary of attributes.
@@ -151,7 +151,7 @@ def test_graph_topological_sort(mmodel_G):
         ]
         nodes.append(node)
 
-    assert nodes == ["add", "subtract", "poly", "log", "multiply"]
+    assert nodes == ["add", "subtract", "power", "log", "multiply"]
 
 
 def test_param_counter(mmodel_G):
@@ -176,7 +176,7 @@ def test_replace_subgraph_terminal(mmodel_G):
     This tests specifically the terminal node.
     """
 
-    subgraph = mmodel_G.subgraph(["multiply", "poly"])
+    subgraph = mmodel_G.subgraph(["multiply", "power"])
 
     def func(c, e, x, y):
         """Function docstring."""
@@ -209,13 +209,13 @@ def test_replace_subgraph_middle(mmodel_G):
     This test specifically the middle node.
     """
 
-    subgraph = mmodel_G.subgraph(["subtract", "poly"])
+    subgraph = mmodel_G.subgraph(["subtract", "power"])
 
     def func(c, x, y):
         """Function docstring."""
         return x + y
 
-    # combine the nodes subtract and poly to a "test" node
+    # combine the nodes subtract and power to a "test" node
     graph = util.replace_subgraph(mmodel_G, subgraph, "test", func, "e")
 
     # a copy is created
