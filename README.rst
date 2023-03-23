@@ -161,7 +161,11 @@ Development installation
 ^^^^^^^^^^^^^^^^^^^^^^^^
 MModel uses `poetry <https://python-poetry.org/docs/>`_ as
 the build system. The package works with both pip and poetry
-installation. 
+installation. For macos systems, sometimes `brew install` results
+in unexpected installation path, it is recommended to install
+with conda::
+
+    conda install -c conda-forge pygraphviz
 
 To install test and docs, despondencies run::
 
