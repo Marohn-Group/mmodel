@@ -20,11 +20,14 @@ Changed
 
 - Change "executor" to a private Model class attribute ``Model._executor``.
 - Change test node functions and docstring for consistency.
+- Change the "full" style to "verbose" in metadata and drawing methods.
 
 Added
 ^^^^^
 
 - Add "order" attribute to the Model class to show the order of the execution.
+- Add "metadata" module to format metadata information.
+- Add graph information to model metadata.
 
 [0.5.0] - 2023-3-15
 ------------------------
