@@ -1,5 +1,5 @@
 from collections import UserDict
-from mmodel.utility import modelgraph_signature, graph_topological_sort, param_counter
+from mmodel.utility import graph_topological_sort, param_counter
 from datetime import datetime
 import h5py
 import string
@@ -30,9 +30,9 @@ class TopologicalHandler:
         See Model constructor definition.
     """
 
-    DataClass = None
+    DataClass: type = callable
 
-    def __init__(self, name, graph, returns: list = [], **datacls_kwargs):
+    def __init__(self, name, graph, returns: list, **datacls_kwargs):
 
         self.__name__ = name
         # __signature__ allows the inspect module to properly generate the signature
@@ -72,11 +72,9 @@ class TopologicalHandler:
                 data[output] = func_result
 
         except:  # exception occurred while running the node
-            try:  # if the data class needs to be closed
-                data.close()
-            except:
-                pass
 
+            if hasattr(data, "close"):
+                data.close()
             # format the error message
             node_str = self.graph.node_metadata(node)
             input_str = "\n".join(
@@ -95,10 +93,9 @@ class TopologicalHandler:
         else:
             result = tuple(data[rt] for rt in returns)
 
-        try:  # if the data class needs to be closed
+        # if the data class needs to be closed
+        if hasattr(data, "close"):
             data.close()
-        except:
-            pass
 
         return result
 
@@ -198,7 +195,7 @@ class MemHandler(TopologicalHandler):
 
     DataClass = MemData
 
-    def __init__(self, name, graph, returns: list = []):
+    def __init__(self, name, graph, returns: list):
         """Add counter to the object"""
 
         counter = param_counter(graph, returns)

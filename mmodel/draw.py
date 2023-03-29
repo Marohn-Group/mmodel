@@ -59,9 +59,11 @@ def draw_graph(
                     nlabel = node
 
                 dot_graph.node(node, label=nlabel)
-            
+
         else:
-            raise Exception(f"Invalid style {repr(style)}: must be one of plain, short, or verbose.")
+            raise Exception(
+                f"Invalid style {repr(style)}: must be one of plain, short, or verbose."
+            )
 
         for u, v, edict in G.edges(data=True):
 

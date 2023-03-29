@@ -1,6 +1,5 @@
-from inspect import signature, Signature, Parameter
+from inspect import Signature, Parameter
 import networkx as nx
-import textwrap
 
 # graph properties
 def modelgraph_signature(graph):
