@@ -50,7 +50,7 @@ class NodeParser:
 def parse_docstring(docstring):
     """Parse docstring from built-in function and numpy.ufunc.
 
-    The built-in and ufunv type docstring location is not consistent
+    The built-in and ufunc type docstring location is not consistent
     some module/function has the repr at the first line, and some don't.
     Here we try to grab the first line that starts with an upper case
     and ends with a period.

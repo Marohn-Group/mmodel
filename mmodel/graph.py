@@ -114,7 +114,7 @@ class ModelGraph(nx.DiGraph):
 
         for u, v in self.edges:
             # the edge "var" is not defined if the parent node does not
-            # have "output" attribute, or the child node does not have
+            # have "output" attribute or the child node does not have
             # the parameter
 
             # extract the parameter dictionary
