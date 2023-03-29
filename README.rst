@@ -70,6 +70,7 @@ be plotted using the ``draw`` method.
     >>> print(example_model)
     example_model(log_base, x, y)
     returns: z
+    graph: example_graph
     handler: MemHandler()
 
     Test model.
@@ -116,6 +117,7 @@ We can inspect the loop node as well as the new model.
     >>> print(loop_node)
     loop_submodel(log_base, sum_xy)
     returns: z
+    graph: example_graph
     handler: MemHandler()
     modifiers:
       - loop_modifier('log_base')
@@ -123,6 +125,7 @@ We can inspect the loop node as well as the new model.
     >>> print(looped_model)
     looped_model(log_base, x, y)
     returns: looped_z
+    graph: example_graph
     handler: MemHandler()
     
     >>> looped_model([2, 4], 5, 3) # (5 + 3)log(5 + 3, 2) + 6
