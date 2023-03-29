@@ -133,7 +133,7 @@ We can inspect the loop node as well as the new model.
 
 
 Use the ``draw`` method to draw the graph. There are three styles
-"plain", "short", and "full", which differ by the level of detail of the
+"plain", "short", and "verbose", which differ by the level of detail of the
 node information. A graph output is displayed in Jupyter Notebook
 or can be saved using the export option.
 
