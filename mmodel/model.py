@@ -145,7 +145,7 @@ class Model:
 
         return self._graph.node_metadata(*args, **kwargs)
 
-    def draw(self, style="full", export=None):
+    def draw(self, style="verbose", export=None):
         """Draw the graph of the model.
 
         Draws the default styled graph.

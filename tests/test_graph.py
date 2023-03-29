@@ -284,7 +284,8 @@ class TestModelGraphBasics:
         The draw methods are tested in test_draw.py module. Here we make sure
         the label is correct.
         """
-        dot_graph = mmodel_G.draw(draw_graph)
+
+        dot_graph = mmodel_G.draw()
         label = """label="ModelGraph named \'test_graph\' with 5 nodes and 5 edges"""
         assert label in dot_graph.source
 
@@ -295,7 +296,7 @@ class TestModelGraphBasics:
         """
 
         filename = tmp_path / "test_draw.dot"
-        mmodel_G.draw(draw_graph, export=filename)
+        mmodel_G.draw(export=filename)
 
         label = """label="ModelGraph named \'test_graph\' with 5 nodes and 5 edges"""
 

@@ -203,19 +203,19 @@ class ModelGraph(nx.DiGraph):
         """Modify node attributes"""
         return modify_node(self, node, func, output, inputs, modifiers, inplace)
 
-    def draw(self, style="full", export=None, wrap_width=30):
+    def draw(self, style="verbose", export=None):
         """Draw the graph.
 
         Draws the default styled graph.
 
-        :param str style: there are three styles, plain, short and full.
+        :param str style: there are three styles, plain, short, and verbose.
             Plain shows nodes only, short shows part of the metadata, and
             long shows all the metadata.
         :param str export: filename to save the graph as. The file extension
             is needed.
         """
 
-        return draw_graph(self, str(self), style, export, wrap_width)
+        return draw_graph(self, str(self), style, export)
 
     def deepcopy(self):
         """Deepcopy graph.

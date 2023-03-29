@@ -1,6 +1,7 @@
 from mmodel.draw import draw_graph
 import networkx as nx
 from textwrap import dedent
+import pytest
 
 
 def test_draw_plain_model(mmodel_G):
@@ -43,7 +44,7 @@ def test_draw_short_graph(mmodel_G):
 def test_draw_full_graph(mmodel_G):
     """Test the model with full node and edge detail."""
 
-    dot_graph = draw_graph(mmodel_G, label="test label", style="full")
+    dot_graph = draw_graph(mmodel_G, label="test label", style="verbose")
     # test if add function is included
     assert (
         "add\l\laddition(a, constant=2)\lreturn: "
@@ -68,7 +69,7 @@ def test_draw_partial_graph():
     G.add_edge("a", "b")
 
     dot_graph_short = draw_graph(G, label="test label", style="short")
-    dot_graph_full = draw_graph(G, label="test label", style="full")
+    dot_graph_full = draw_graph(G, label="test label", style="verbose")
     assert dot_graph_short.source.replace("\t", "") == dedent(dot_source)
     assert dot_graph_full.source.replace("\t", "") == dedent(dot_source)
 
@@ -85,3 +86,13 @@ def test_draw_graph_export(mmodel_G, tmp_path):
     with open(filename, "r") as f:
 
         assert "add\l\laddition(a, constant=2)\lreturn: c" in f.read()
+
+
+def test_draw_raises_error(mmodel_G):
+    """Test draw graph raises error if style is not valid."""
+
+    with pytest.raises(
+        Exception,
+        match="Invalid style 'invalid': must be one of plain, short, or verbose.",
+    ):
+        draw_graph(mmodel_G, label="test label", style="invalid")

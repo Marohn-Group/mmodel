@@ -21,7 +21,7 @@ def draw_graph(
     :param str name: name of the graph
     :param str label: title of the graph
     :param str style: there are three valid styles, plain
-        short and full. Each style corresponds to node-only,
+        short and verbose. Each style corresponds to node-only,
         function-only, and detailed note metadata graph
     :param str export: filename to export to
     """
@@ -50,7 +50,7 @@ def draw_graph(
 
                 dot_graph.node(node, label=nlabel)
 
-        elif style == "full":
+        elif style == "verbose":
             for node, ndict in G.nodes(data=True):
                 if "func" in ndict:
                     metadata = G.node_metadata(node, True, formatter, textwrapper)
@@ -59,6 +59,9 @@ def draw_graph(
                     nlabel = node
 
                 dot_graph.node(node, label=nlabel)
+            
+        else:
+            raise Exception(f"Invalid style {repr(style)}: must be one of plain, short, or verbose.")
 
         for u, v, edict in G.edges(data=True):
 
