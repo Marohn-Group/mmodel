@@ -1,10 +1,10 @@
 from mmodel.parser import (
-    parser_engine,
-    default_parser,
-    ufunc_parser,
-    model_parser,
-    builtin_parser,
-    parse_docstring,
+    node_parser,
+    parse_default,
+    parse_ufunc,
+    parse_model,
+    parse_builtin,
+    grab_docstring,
 )
 from mmodel.model import Model
 from mmodel.handler import BasicHandler
@@ -17,23 +17,23 @@ from functools import wraps
 
 
 def test_parse_docstring():
-    """Test parse_docstring against some of the built-in and numpy.ufunc."""
+    """Test grab_docstring against some of the built-in and numpy.ufunc."""
 
-    assert parse_docstring(np.sum.__doc__) == "Sum of array elements over a given axis."
-    assert parse_docstring(np.add.__doc__) == "Add arguments element-wise."
+    assert grab_docstring(np.sum.__doc__) == "Sum of array elements over a given axis."
+    assert grab_docstring(np.add.__doc__) == "Add arguments element-wise."
     assert (
-        parse_docstring(math.log.__doc__)
+        grab_docstring(math.log.__doc__)
         == "Return the logarithm of x to the given base."
     )
     assert (
-        parse_docstring(math.acos.__doc__)
+        grab_docstring(math.acos.__doc__)
         == "Return the arc cosine (measured in radians) of x."
     )
     assert (
-        parse_docstring(print.__doc__)
+        grab_docstring(print.__doc__)
         == "Prints the values to a stream, or to sys.stdout by default."
     )
-    assert parse_docstring(operator.add.__doc__) == "Same as a + b."
+    assert grab_docstring(operator.add.__doc__) == "Same as a + b."
 
 
 class TestDefaultParser:
@@ -53,7 +53,7 @@ class TestDefaultParser:
     def test_default_parser(self, callable_func):
         """Test default parser correctly parse callable."""
 
-        assert default_parser("test", callable_func, "c", [], []) == {
+        assert parse_default("test", callable_func, "c", [], []) == {
             "_func": callable_func,
             "doc": "Sum of a and b.",
             "functype": "callable",
@@ -63,7 +63,7 @@ class TestDefaultParser:
         """Test default parser correctly parse function without doc."""
 
         func = lambda x: x
-        assert default_parser("test", func, "c", [], []) == {
+        assert parse_default("test", func, "c", [], []) == {
             "_func": func,
             "doc": "",
             "functype": "callable",
@@ -72,7 +72,7 @@ class TestDefaultParser:
     def test_default_parser_input(self, callable_func):
         """Test default parser change inputs."""
 
-        func = default_parser("test", callable_func, "c", ["x", "y"], [])["_func"]
+        func = parse_default("test", callable_func, "c", ["x", "y"], [])["_func"]
         assert list(inspect.signature(func).parameters) == ["x", "y"]
 
     def test_default_parser_raises(self, callable_func):
@@ -80,14 +80,14 @@ class TestDefaultParser:
 
         with pytest.raises(Exception, match=f"Node 'test' has invalid function type."):
             # use an integer
-            default_parser("test", 1, "c", ["x", "y"], [])["_func"]
+            parse_default("test", 1, "c", ["x", "y"], [])["_func"]
 
 
 class TestBuiltinParser:
     def test_builtin_parser(self):
         """Test default parser correctly parse built-in function."""
 
-        func_dict = builtin_parser("test", math.pow, "c", ["a", "b"], [])
+        func_dict = parse_builtin("test", math.pow, "c", ["a", "b"], [])
         func = func_dict.pop("_func")
         assert func_dict == {
             "doc": "Return x**y (x to the power of y).",
@@ -96,9 +96,9 @@ class TestBuiltinParser:
         assert list(inspect.signature(func).parameters) == ["a", "b"]
 
     def test_builtin_parser_long_doc(self):
-        """Test builtin_parser correctly parse built-in function."""
+        """Test parse_builtin correctly parse built-in function."""
 
-        func_dict = builtin_parser("test", print, "c", ["a"], [])
+        func_dict = parse_builtin("test", print, "c", ["a"], [])
         func = func_dict.pop("_func")
         assert func_dict == {
             "doc": "Prints the values to a stream, or to sys.stdout by default.",
@@ -114,16 +114,16 @@ class TestBuiltinParser:
             match=f"Node 'test' built-in type function requires 'inputs' definition.",
         ):
             # use an integer
-            builtin_parser("test", print, "c", [], [])["_func"]
+            parse_builtin("test", print, "c", [], [])["_func"]
 
 
 class TestufuncParser:
-    """Test numpy ufunc_parser"""
+    """Test numpy parse_ufunc"""
 
     def test_ufunc_parser(self):
         """Test ufunc parser correctly parse numpy.ufunc."""
 
-        func_dict = ufunc_parser("test", np.add, "c", ["a", "b"], [])
+        func_dict = parse_ufunc("test", np.add, "c", ["a", "b"], [])
         func = func_dict.pop("_func")
         assert func_dict == {
             "doc": "Add arguments element-wise.",
@@ -139,7 +139,7 @@ class TestufuncParser:
             match=f"Node 'test' numpy.ufunc type function requires 'inputs' definition.",
         ):
             # use an integer
-            ufunc_parser("test", np.add, "c", [], [])["_func"]
+            parse_ufunc("test", np.add, "c", [], [])["_func"]
 
 
 class TestModelParser:
@@ -156,7 +156,7 @@ class TestModelParser:
     def test_model_parser(self, func):
         """Test ufunc parser correctly parse model instances."""
 
-        func_dict = model_parser("test", func, "c", [], [])
+        func_dict = parse_model("test", func, "c", [], [])
         assert func_dict == {
             "_func": func,
             "doc": "The first line of description.",
@@ -168,7 +168,7 @@ class TestModelParser:
         """Test ufunc parser correctly parse model instances."""
 
         func.description = ""
-        func_dict = model_parser("test", func, "c", [], [])
+        func_dict = parse_model("test", func, "c", [], [])
         assert func_dict == {
             "_func": func,
             "doc": "",
@@ -179,7 +179,7 @@ class TestModelParser:
     def test_model_parser_inputs(self, func):
         """Test ufunc parser correctly parse model instances with inputs."""
 
-        func_dict = model_parser("test", func, "c", ["x", "y", "z", "xy"], [])
+        func_dict = parse_model("test", func, "c", ["x", "y", "z", "xy"], [])
         func = func_dict.pop("_func")
         assert func_dict == {
             "doc": "The first line of description.",
@@ -223,7 +223,7 @@ class TestNodeParser:
     def test_parse_builtin(self, modifier):
         """Test the full node attributes for builtin function."""
 
-        func_dict = parser_engine(
+        func_dict = node_parser(
             "test", math.pow, "c", ["a", "b"], [(modifier, {"value": 2})]
         )
         func_dict.pop("_func")
@@ -245,7 +245,7 @@ class TestNodeParser:
     def test_parse_ufunc(self, modifier):
         """Test the full node attributes for numpy.ufunc."""
 
-        func_dict = parser_engine(
+        func_dict = node_parser(
             "test", np.add, "c", ["a", "b"], [(modifier, {"value": 1})]
         )
         func_dict.pop("_func")
@@ -267,7 +267,7 @@ class TestNodeParser:
     def test_parse_model(self, modifier, model_func):
         """Test the full node attributes for mmodel.model."""
 
-        func_dict = parser_engine("test", model_func, "c", ["x", "y", "z", "xy"], [])
+        func_dict = node_parser("test", model_func, "c", ["x", "y", "z", "xy"], [])
         func_dict.pop("_func")
 
         sig = func_dict.pop("sig")
@@ -287,7 +287,7 @@ class TestNodeParser:
     def test_parse_callable(self, modifier, callable_func):
         """Test the full node attributes for callable."""
 
-        func_dict = parser_engine(
+        func_dict = node_parser(
             "test", callable_func, "c", ["x", "y"], [(modifier, {"value": -1})]
         )
         func_dict.pop("_func")
