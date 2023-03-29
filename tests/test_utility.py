@@ -238,63 +238,55 @@ def test_replace_subgraph_middle(mmodel_G):
     assert graph.edges["test", "multiply"]["var"] == "e"
 
 
-def test_modify_node(mmodel_G):
+@pytest.fixture
+def modifier():
+    """Return a modifier function."""
+
+    def mod(func, a):
+        @wraps(func)
+        def wrapped(*args, **kwargs):
+            return func(*args, **kwargs) + a
+
+        return wrapped
+
+    return mod
+
+
+def test_modify_node(mmodel_G, modifier):
     """Test modify_node.
 
     Test if the node has the correct signature and result.
     """
 
-    def mod(func, a):
-        @wraps(func)
-        def wrapped(*args, **kwargs):
-            return func(*args, **kwargs) + a
-
-        return wrapped
-
-    mod_G = util.modify_node(mmodel_G, "subtract", modifiers=[(mod, {"a": 1})])
+    mod_G = util.modify_node(mmodel_G, "subtract", modifiers=[(modifier, {"a": 1})])
 
     # add one to the final value
     assert mod_G.nodes["subtract"]["func"](1, 2) == 0
 
 
-def test_modify_node_modifier(mmodel_G):
+def test_modify_node_modifier(mmodel_G, modifier):
     """Test if modify node removes the original modifiers.
 
     The original modifiers should be replaced if new modifiers are supplied.
     """
 
-    def mod(func, a):
-        @wraps(func)
-        def wrapped(*args, **kwargs):
-            return func(*args, **kwargs) + a
-
-        return wrapped
-
     # original function
     func = mmodel_G.nodes["subtract"]["_func"]
-    mod_G = util.modify_node(mmodel_G, "subtract", modifiers=[(mod, {"a": 1})])
+    mod_G = util.modify_node(mmodel_G, "subtract", modifiers=[(modifier, {"a": 1})])
 
     # add one to the final value
     assert mod_G.nodes["subtract"]["func"](1, 2) == 0
 
     # make sure the original function stays the same.
-    mod_G = util.modify_node(mod_G, "subtract", modifiers=[(mod, {"a": 1})])
-
+    mod_G = util.modify_node(mod_G, "subtract", modifiers=[(modifier, {"a": 1})])
     assert mod_G.nodes["subtract"]["_func"] == func
 
 
-def test_modify_node_inplace(mmodel_G):
+def test_modify_node_inplace(mmodel_G, modifier):
     """Test modify_node to modify in place."""
 
-    def mod(func, a):
-        @wraps(func)
-        def wrapped(*args, **kwargs):
-            return func(*args, **kwargs) + a
-
-        return wrapped
-
     mod_G = util.modify_node(
-        mmodel_G, "subtract", modifiers=[(mod, {"a": 1})], inplace=True
+        mmodel_G, "subtract", modifiers=[(modifier, {"a": 1})], inplace=True
     )
 
     # test the original graph

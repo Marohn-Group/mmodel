@@ -75,10 +75,10 @@ class TestDefaultParser:
         func = parse_default("test", callable_func, "c", ["x", "y"], [])["_func"]
         assert list(inspect.signature(func).parameters) == ["x", "y"]
 
-    def test_default_parser_raises(self, callable_func):
+    def test_default_parser_raises(self):
         """Test if the function is not a callable an exception is raised."""
 
-        with pytest.raises(Exception, match=f"Node 'test' has invalid function type."):
+        with pytest.raises(Exception, match="Node 'test' has invalid function type."):
             # use an integer
             parse_default("test", 1, "c", ["x", "y"], [])["_func"]
 
@@ -107,11 +107,11 @@ class TestBuiltinParser:
         assert list(inspect.signature(func).parameters) == ["a"]
 
     def test_builtin_parser_raises(self):
-        """Test if an exception is raised when the inputs parameters is not defined."""
+        """Test if an exception is raised when the inputs parameters are not defined."""
 
         with pytest.raises(
             Exception,
-            match=f"Node 'test' built-in type function requires 'inputs' definition.",
+            match="Node 'test' built-in type function requires 'inputs' definition.",
         ):
             # use an integer
             parse_builtin("test", print, "c", [], [])["_func"]
@@ -136,7 +136,7 @@ class TestufuncParser:
 
         with pytest.raises(
             Exception,
-            match=f"Node 'test' numpy.ufunc type function requires 'inputs' definition.",
+            match="Node 'test' numpy.ufunc type function requires 'inputs' definition.",
         ):
             # use an integer
             parse_ufunc("test", np.add, "c", [], [])["_func"]
@@ -160,18 +160,6 @@ class TestModelParser:
         assert func_dict == {
             "_func": func,
             "doc": "The first line of description.",
-            "functype": "mmodel.Model",
-        }
-        assert list(inspect.signature(func).parameters) == ["a", "b", "d", "f"]
-
-    def test_model_parser(self, func):
-        """Test ufunc parser correctly parse model instances."""
-
-        func.description = ""
-        func_dict = parse_model("test", func, "c", [], [])
-        assert func_dict == {
-            "_func": func,
-            "doc": "",
             "functype": "mmodel.Model",
         }
         assert list(inspect.signature(func).parameters) == ["a", "b", "d", "f"]

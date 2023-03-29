@@ -4,11 +4,9 @@ import math
 import networkx as nx
 from copy import deepcopy
 from textwrap import dedent
+import numpy as np
 
-from mmodel.model import Model
-from mmodel.handler import BasicHandler, H5Handler, MemHandler
-from mmodel.modifier import loop_modifier
-from mmodel.graph import ModelGraph
+from mmodel import Model, BasicHandler, H5Handler, MemHandler, loop_modifier, ModelGraph
 
 
 class TestModel:
@@ -387,10 +385,6 @@ class TestModelSpecialFunc:
     @pytest.fixture
     def model(self):
         """Basic Model with builtin and ufunc nodes."""
-
-        import numpy as np
-        import math
-        from mmodel import ModelGraph
 
         G = ModelGraph()
         G.add_edge("func_a", "func_b")

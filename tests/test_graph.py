@@ -1,5 +1,5 @@
 from tests.conftest import graph_equal
-from mmodel import ModelGraph, draw_graph
+from mmodel import ModelGraph
 import pytest
 from functools import wraps
 from inspect import signature
