@@ -1,6 +1,5 @@
-from inspect import signature, Signature, Parameter
+from inspect import Signature, Parameter
 import networkx as nx
-import textwrap
 
 # graph properties
 def modelgraph_signature(graph):
@@ -170,7 +169,7 @@ def modify_node(
     if not inplace:
         graph = graph.deepcopy()
 
-    func = func or graph.nodes[node]["func"]
+    func = func or graph.nodes[node]["_func"]
     modifiers = modifiers or graph.nodes[node]["modifiers"]
     output = output or graph.nodes[node]["output"]
     graph.set_node_object(
@@ -244,50 +243,6 @@ def parse_input(signature, *args, **kwargs):
     values = signature.bind(*args, **kwargs)
     values.apply_defaults()
     return values.arguments
-
-
-def content_wrap(content_list: list, width: int = 80, indent: int = 2):
-    """Wrap metadata content.
-
-    The width defaults to 80 characters. The content is a list of
-    strings representing each line. The resulting wrapping has no
-    initial indentation. The indent parameter is the subsequent indent
-    parameter in the wrap function. The tabsize is the same as
-    the indent.
-    """
-
-    wrapper = textwrap.TextWrapper(
-        width=width,
-        subsequent_indent=" " * indent,
-        replace_whitespace=False,
-        expand_tabs=True,
-        tabsize=indent,
-    )
-
-    wrapped_list = []
-    for item in content_list:
-        if item:
-            wrapped_list.extend(wrapper.wrap(item))
-        else:
-            wrapped_list.append("")
-
-    return wrapped_list  # return the wrapped list
-
-
-def parse_modifiers(modifiers):
-    """Parse modifiers parameters to readable strings."""
-
-    if modifiers:
-        modifier_str_list = ["modifiers:"]
-
-        for mod, kwargs in modifiers:
-            str_value = [repr(v) for v in kwargs.values()]
-            mod_str = f"\t- {mod.__name__}({', '.join(str_value)})"
-            modifier_str_list.append(mod_str)
-
-        return modifier_str_list
-    else:
-        return []
 
 
 def is_node_attr_defined(graph, attr: str, attr_name: str = None):

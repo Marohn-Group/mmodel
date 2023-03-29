@@ -1,5 +1,5 @@
 from tests.conftest import graph_equal
-from mmodel import ModelGraph, draw_graph
+from mmodel import ModelGraph
 import pytest
 from functools import wraps
 from inspect import signature
@@ -284,7 +284,8 @@ class TestModelGraphBasics:
         The draw methods are tested in test_draw.py module. Here we make sure
         the label is correct.
         """
-        dot_graph = mmodel_G.draw(draw_graph)
+
+        dot_graph = mmodel_G.draw()
         label = """label="ModelGraph named \'test_graph\' with 5 nodes and 5 edges"""
         assert label in dot_graph.source
 
@@ -295,7 +296,7 @@ class TestModelGraphBasics:
         """
 
         filename = tmp_path / "test_draw.dot"
-        mmodel_G.draw(draw_graph, export=filename)
+        mmodel_G.draw(export=filename)
 
         label = """label="ModelGraph named \'test_graph\' with 5 nodes and 5 edges"""
 
@@ -331,7 +332,7 @@ class TestNetworkXGraphOperation:
 
         G = mmodel_G
         DG = G.to_directed(as_view=True)
-        SDG = DG.subgraph(["subtract", "poly"])
+        SDG = DG.subgraph(["subtract", "power"])
         RSDG = SDG.reverse(copy=False)
         assert G is DG._graph
         assert DG is SDG._graph
@@ -342,7 +343,7 @@ class TestNetworkXGraphOperation:
         G = mmodel_G
 
         # full subgraph
-        H = G.subgraph(["add", "multiply", "subtract", "poly", "log"])
+        H = G.subgraph(["add", "multiply", "subtract", "power", "log"])
         assert graph_equal(H, G)  # check if they are the same
 
         # partial subgraph
@@ -394,7 +395,7 @@ class TestMModelGraphOperation:
         """Test subgraph if inputs are specified"""
 
         subgraph = mmodel_G.subgraph(inputs=["f"])
-        assert graph_equal(subgraph, mmodel_G.subgraph(nodes=["poly", "multiply"]))
+        assert graph_equal(subgraph, mmodel_G.subgraph(nodes=["power", "multiply"]))
 
     def test_subgraph_combined(self, mmodel_G):
         """Test subgraph with nodes, outputs, and inputs
@@ -404,7 +405,7 @@ class TestMModelGraphOperation:
 
         subgraph = mmodel_G.subgraph(inputs=["f"], outputs=["m"])
         assert graph_equal(
-            subgraph, mmodel_G.subgraph(nodes=["add", "log", "poly", "multiply"])
+            subgraph, mmodel_G.subgraph(nodes=["add", "log", "power", "multiply"])
         )
 
         subgraph = mmodel_G.subgraph(nodes=["subtract"], inputs=["f"], outputs=["m"])
@@ -416,7 +417,7 @@ class TestMModelGraphOperation:
         See utils.replace_subgraph for more tests
         """
 
-        subgraph = mmodel_G.subgraph(["multiply", "poly"])
+        subgraph = mmodel_G.subgraph(["multiply", "power"])
 
         def func(a, b, c, d):
             return a + b + c + d

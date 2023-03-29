@@ -7,6 +7,28 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
+[0.5.1]
+-----------------------
+
+Fixed
+^^^^^
+
+- Fix the issue ``modify_node`` doesn't remove the old modifiers.
+
+Changed
+^^^^^^^
+
+- Change "executor" to a private Model class attribute ``Model._executor``.
+- Change test node functions and docstring for consistency.
+- Change the "full" style to "verbose" in metadata and drawing methods.
+
+Added
+^^^^^
+
+- Add "order" attribute to the Model class to show the order of the execution.
+- Add "metadata" module to format metadata information.
+- Add graph information to model metadata.
+
 [0.5.0] - 2023-3-15
 ------------------------
 The package is moved to `Marohn Group <https://github.com/Marohn-Group/mmodel>`_.

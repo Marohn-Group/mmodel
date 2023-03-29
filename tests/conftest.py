@@ -20,9 +20,9 @@ import math
 # in graph testing they should be equal
 
 
-def addition(a, factor=2):
-    """Addition operation."""
-    return a + factor
+def addition(a, constant=2):
+    """Add a constant to the value a."""
+    return a + constant
 
 
 def subtraction(c, d):
@@ -30,13 +30,13 @@ def subtraction(c, d):
     return c - d
 
 
-def polynomial(c, f):
-    """Polynomial operation."""
+def power(c, f):
+    """The value of c raise to the power of f."""
     return c**f
 
 
 def multiplication(e, g):
-    """Multiplication operation."""
+    """Multiply e and g."""
     return e * g
 
 
@@ -63,7 +63,7 @@ def standard_G():
                 "output": "c",
                 "sig": signature(addition),
                 "modifiers": [],
-                "doc": "Addition operation.",
+                "doc": "Add a constant to the value a.",
                 "functype": "callable",
             },
         ),
@@ -80,14 +80,14 @@ def standard_G():
             },
         ),
         (
-            "poly",
+            "power",
             {
-                "_func": polynomial,
-                "func": polynomial,
+                "_func": power,
+                "func": power,
                 "output": "g",
-                "sig": signature(polynomial),
+                "sig": signature(power),
                 "modifiers": [],
-                "doc": "Polynomial operation.",
+                "doc": "The value of c raise to the power of f.",
                 "functype": "callable",
             },
         ),
@@ -99,7 +99,7 @@ def standard_G():
                 "output": "k",
                 "sig": signature(multiplication),
                 "modifiers": [],
-                "doc": "Multiplication operation.",
+                "doc": "Multiply e and g.",
                 "functype": "callable",
             },
         ),
@@ -120,8 +120,8 @@ def standard_G():
     edge_list = [
         ("add", "subtract", {"var": "c"}),
         ("subtract", "multiply", {"var": "e"}),
-        ("add", "poly", {"var": "c"}),
-        ("poly", "multiply", {"var": "g"}),
+        ("add", "power", {"var": "c"}),
+        ("power", "multiply", {"var": "g"}),
         ("add", "log", {"var": "c"}),
     ]
 
@@ -144,14 +144,14 @@ def mmodel_G():
     """
 
     grouped_edges = [
-        ("add", ["subtract", "poly", "log"]),
-        (["subtract", "poly"], "multiply"),
+        ("add", ["subtract", "power", "log"]),
+        (["subtract", "power"], "multiply"),
     ]
 
     node_objects = [
         ("add", addition, "c"),
         ("subtract", subtraction, "e"),
-        ("poly", polynomial, "g"),
+        ("power", power, "g"),
         ("multiply", multiplication, "k"),
         ("log", logarithm, "m"),
     ]

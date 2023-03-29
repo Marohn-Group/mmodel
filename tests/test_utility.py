@@ -128,7 +128,7 @@ def test_modelgraph_returns_None():
 def test_graph_topological_sort(mmodel_G):
     """Test graph_topological_sort.
 
-    The order is: add, subtract, multiply, log, poly.
+    The order is: add, subtract, multiply, log, power.
 
     each node should be (node, attr), where the node is the name
     of the node, attr is a dictionary of attributes.
@@ -151,7 +151,7 @@ def test_graph_topological_sort(mmodel_G):
         ]
         nodes.append(node)
 
-    assert nodes == ["add", "subtract", "poly", "log", "multiply"]
+    assert nodes == ["add", "subtract", "power", "log", "multiply"]
 
 
 def test_param_counter(mmodel_G):
@@ -176,7 +176,7 @@ def test_replace_subgraph_terminal(mmodel_G):
     This tests specifically the terminal node.
     """
 
-    subgraph = mmodel_G.subgraph(["multiply", "poly"])
+    subgraph = mmodel_G.subgraph(["multiply", "power"])
 
     def func(c, e, x, y):
         """Function docstring."""
@@ -209,13 +209,13 @@ def test_replace_subgraph_middle(mmodel_G):
     This test specifically the middle node.
     """
 
-    subgraph = mmodel_G.subgraph(["subtract", "poly"])
+    subgraph = mmodel_G.subgraph(["subtract", "power"])
 
     def func(c, x, y):
         """Function docstring."""
         return x + y
 
-    # combine the nodes subtract and poly to a "test" node
+    # combine the nodes subtract and power to a "test" node
     graph = util.replace_subgraph(mmodel_G, subgraph, "test", func, "e")
 
     # a copy is created
@@ -238,69 +238,60 @@ def test_replace_subgraph_middle(mmodel_G):
     assert graph.edges["test", "multiply"]["var"] == "e"
 
 
-def test_modify_node(mmodel_G):
+@pytest.fixture
+def modifier():
+    """Return a modifier function."""
+
+    def mod(func, a):
+        @wraps(func)
+        def wrapped(*args, **kwargs):
+            return func(*args, **kwargs) + a
+
+        return wrapped
+
+    return mod
+
+
+def test_modify_node(mmodel_G, modifier):
     """Test modify_node.
 
     Test if the node has the correct signature and result.
     """
 
-    def mod(func, a):
-        @wraps(func)
-        def wrapped(*args, **kwargs):
-            return func(*args, **kwargs) + a
-
-        return wrapped
-
-    mod_G = util.modify_node(mmodel_G, "subtract", modifiers=[(mod, {"a": 1})])
+    mod_G = util.modify_node(mmodel_G, "subtract", modifiers=[(modifier, {"a": 1})])
 
     # add one to the final value
     assert mod_G.nodes["subtract"]["func"](1, 2) == 0
 
 
-def test_modify_node_inplace(mmodel_G):
+def test_modify_node_modifier(mmodel_G, modifier):
+    """Test if modify node removes the original modifiers.
+
+    The original modifiers should be replaced if new modifiers are supplied.
+    """
+
+    # original function
+    func = mmodel_G.nodes["subtract"]["_func"]
+    mod_G = util.modify_node(mmodel_G, "subtract", modifiers=[(modifier, {"a": 1})])
+
+    # add one to the final value
+    assert mod_G.nodes["subtract"]["func"](1, 2) == 0
+
+    # make sure the original function stays the same.
+    mod_G = util.modify_node(mod_G, "subtract", modifiers=[(modifier, {"a": 1})])
+    assert mod_G.nodes["subtract"]["_func"] == func
+
+
+def test_modify_node_inplace(mmodel_G, modifier):
     """Test modify_node to modify in place."""
 
-    def mod(func, a):
-        @wraps(func)
-        def wrapped(*args, **kwargs):
-            return func(*args, **kwargs) + a
-
-        return wrapped
-
     mod_G = util.modify_node(
-        mmodel_G, "subtract", modifiers=[(mod, {"a": 1})], inplace=True
+        mmodel_G, "subtract", modifiers=[(modifier, {"a": 1})], inplace=True
     )
 
     # test the original graph
     assert mod_G.nodes["subtract"]["func"](1, 2) == 0
     assert mmodel_G.nodes["subtract"]["func"](1, 2) == 0
-
-
-def test_parse_modifiers():
-    """Test pase_modifier outputs the correct string.
-
-    Test string, list, and tuples.
-    """
-
-    def mod1(func, parameter):
-        return
-
-    def mod2(func, param1, param2):
-        return
-
-    modifiers = [
-        (mod1, {"parameter": "test"}),
-        (mod2, {"param1": [1, 2, 3], "param2": (1, 2)}),
-    ]
-
-    modifier_str_list = ["modifiers:", "\t- mod1('test')", "\t- mod2([1, 2, 3], (1, 2))"]
-    assert util.parse_modifiers(modifiers) == modifier_str_list
-
-
-def test_parse_modifier_empty():
-    """Test pase_modifier outputs None when there is no modifier."""
-
-    assert util.parse_modifiers([]) == []
 
 
 def test_is_node_attr_defined():

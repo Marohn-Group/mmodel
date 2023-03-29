@@ -7,10 +7,9 @@ from mmodel.utility import (
     modelgraph_returns,
     replace_subgraph,
     modify_node,
-    parse_modifiers,
-    content_wrap,
 )
-from mmodel.parser import parser_engine
+from mmodel.metadata import nodeformatter, format_metadata, textwrap80
+from mmodel.parser import node_parser
 
 
 class ModelGraph(nx.DiGraph):
@@ -33,14 +32,14 @@ class ModelGraph(nx.DiGraph):
 
     graph_attr_dict_factory = {"type": "ModelGraph"}.copy
 
-    def __init__(self, *args, parser=parser_engine, **kwargs):
+    def __init__(self, *args, parser=node_parser, **kwargs):
         super().__init__(*args, **kwargs)
         self._parser = parser
 
     def set_node_object(
         self,
-        node,
-        func,
+        node: str,
+        func: callable,
         output: str = None,
         inputs: list = None,
         modifiers: list = None,
@@ -114,7 +113,7 @@ class ModelGraph(nx.DiGraph):
 
         for u, v in self.edges:
             # the edge "var" is not defined if the parent node does not
-            # have "output" attribute, or the child node does not have
+            # have "output" attribute or the child node does not have
             # the parameter
 
             # extract the parameter dictionary
@@ -122,31 +121,39 @@ class ModelGraph(nx.DiGraph):
             if "output" in self.nodes[u] and self.nodes[u]["output"] in v_sig:
                 self.edges[u, v]["var"] = self.nodes[u]["output"]
 
-    def node_metadata(self, node: str, full=True, wrap_width=80):
-        """Printout node metadata.
-
-        The metadata includes the node information and the node function
-        information. If the node is a ``mmodel.Model`` instance; outputs its metadata.
-        """
+    def _node_metadata_dict(self, node: str, verbose):
+        """Return node metadata as a dictionary."""
 
         node_dict = self.nodes[node]
 
-        metadata_list = [
-            node,
-            "",
-            f"{node_dict['func'].__name__}{node_dict['sig']}",
-            f"return: {node_dict['output']}",
-        ]
+        short_dict = {
+            "node": node,
+            "func": node_dict["func"],
+            "return": node_dict["output"],
+        }
 
-        if full:  # adds functype, modifiers, and docs
-            metadata_list.append(f"functype: {node_dict['functype']}")
-            metadata_list.extend(parse_modifiers(node_dict["modifiers"]))
-            doc = node_dict["doc"] or ""
-            metadata_list.extend(["", doc])
+        additional_dict = {
+            "functype": node_dict["functype"],
+            "modifiers": node_dict["modifiers"],
+            "doc": node_dict["doc"],
+        }
+        if verbose:
+            return {**short_dict, **additional_dict}
+        else:
+            return short_dict
 
-        wrapped_list = content_wrap(metadata_list, width=wrap_width)
+    def node_metadata(
+        self, node: str, verbose=True, formatter=nodeformatter, textwrapper=textwrap80
+    ):
+        """Printout node metadata.
 
-        return "\n".join(wrapped_list).rstrip()
+        The metadata includes the node information and the node function
+        information.
+        """
+        str_list = format_metadata(
+            self._node_metadata_dict(node, verbose), formatter, textwrapper
+        )
+        return "\n".join(str_list).rstrip()
 
     # graph properties
     @property
@@ -196,20 +203,19 @@ class ModelGraph(nx.DiGraph):
         """Modify node attributes"""
         return modify_node(self, node, func, output, inputs, modifiers, inplace)
 
-    def draw(self, style="full", export=None, wrap_width=30):
+    def draw(self, style="verbose", export=None):
         """Draw the graph.
 
         Draws the default styled graph.
 
-        :param str style: there are three styles, plain, short and full.
+        :param str style: there are three styles, plain, short, and verbose.
             Plain shows nodes only, short shows part of the metadata, and
             long shows all the metadata.
         :param str export: filename to save the graph as. The file extension
             is needed.
-
         """
 
-        return draw_graph(self, str(self), style, export, wrap_width)
+        return draw_graph(self, str(self), style, export)
 
     def deepcopy(self):
         """Deepcopy graph.

@@ -4,11 +4,9 @@ import math
 import networkx as nx
 from copy import deepcopy
 from textwrap import dedent
+import numpy as np
 
-from mmodel.model import Model
-from mmodel.handler import BasicHandler, H5Handler
-from mmodel.modifier import loop_modifier
-from mmodel.graph import ModelGraph
+from mmodel import Model, BasicHandler, H5Handler, MemHandler, loop_modifier, ModelGraph
 
 
 class TestModel:
@@ -33,19 +31,27 @@ class TestModel:
         assert model_instance.__signature__ == mmodel_signature
         assert model_instance.returns == ["k", "m"]
         assert model_instance.modifiers == []
+        assert model_instance.execution_order == [
+            "add",
+            "subtract",
+            "power",
+            "log",
+            "multiply",
+        ]
 
     def test_model_str(self, model_instance):
         """Test model representation."""
 
-        MODEL_STR = """\
+        model_str = """\
         model_instance(a, b, d, f)
         returns: (k, m)
+        graph: test_graph
         handler: BasicHandler()
 
         A long description that tests if the model module wraps the Model output string
           description at 90 characters."""
 
-        assert str(model_instance) == dedent(MODEL_STR)
+        assert str(model_instance) == dedent(model_str)
 
     def test_model_graph_freeze(self, model_instance):
         """Test the graph is frozen."""
@@ -168,9 +174,25 @@ class TestModel:
         assert model.returns == ["m", "k", "c"]
         assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36, 12)
 
+    def test_model_edit(self, model_instance):
+        """Test model editing.
+
+        The function should return a new model instance.
+        """
+
+        new_model = model_instance.edit(
+            name="new_model", handler=(MemHandler, {}), description="Model description."
+        )
+        assert new_model.name == "new_model"
+        assert new_model.description == "Model description."
+        assert new_model.handler == (MemHandler, {})
+        assert model_instance.graph is not new_model.graph
+
+        assert new_model(a=10, d=15, f=1, b=2) == (-36, math.log(12, 2))
+
 
 class TestModelMetaData:
-    """Test the model instance metadata"""
+    """Test the model instance metadata."""
 
     @pytest.fixture
     def func(self):
@@ -185,47 +207,28 @@ class TestModelMetaData:
     def G(self):
         """An graph with one node."""
 
-        G = ModelGraph()
+        G = ModelGraph(name="meta test graph")
         G.add_node("Test")
         return G
 
-    def test_metadata_without_no_return(self, func, G):
-        """Test metadata that doesn't have return"""
-        G.set_node_object("Test", func, output=None)
-        model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
+    def test_metadata_dict(self, func, G):
+        """Test metadata_dict that has all key and value pairs.
 
-        node_s = """\
-        test_model(a, b)
-        returns: None
-        handler: BasicHandler()
-
-        Test model."""
-        assert model.metadata() == dedent(node_s)
-
-    def test_metadata_without_ome_return(self, func, G):
-        """Test metadata that doesn't have return"""
+        Test both the verbose and non-verbose version.
+        """
         G.set_node_object("Test", func, output="c")
         model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
 
-        node_s = """\
-        test_model(a, b)
-        returns: c
-        handler: BasicHandler()
+        assert sorted(list(model._metadata_dict(True).keys())) == [
+            "description",
+            "graph",
+            "handler",
+            "model",
+            "modifiers",
+            "returns",
+        ]
 
-        Test model."""
-        assert model.metadata() == dedent(node_s)
-
-    def test_metadata_short(self, func, G):
-        """Test metadata that has one return"""
-        G.set_node_object("Test", func, output="c")
-        model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
-
-        node_s = """\
-        test_model(a, b)
-        returns: c
-        handler: BasicHandler()"""
-
-        assert model.metadata(full=False) == dedent(node_s)
+        assert sorted(list(model._metadata_dict(False).keys())) == ["model", "returns"]
 
 
 class TestModifiedModel:
@@ -263,6 +266,7 @@ class TestModifiedModel:
         mod_model_s = """\
         mod_model_instance(a, b, d, f)
         returns: (k, m)
+        graph: test_graph
         handler: BasicHandler()
         modifiers:
           - loop_modifier('a')
@@ -381,10 +385,6 @@ class TestModelSpecialFunc:
     @pytest.fixture
     def model(self):
         """Basic Model with builtin and ufunc nodes."""
-
-        import numpy as np
-        import math
-        from mmodel import ModelGraph
 
         G = ModelGraph()
         G.add_edge("func_a", "func_b")

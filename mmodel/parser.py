@@ -47,10 +47,10 @@ class NodeParser:
                 return attr_dict
 
 
-def parse_docstring(docstring):
+def grab_docstring(docstring):
     """Parse docstring from built-in function and numpy.ufunc.
 
-    The built-in and ufunv type docstring location is not consistent
+    The built-in and ufunc type docstring location is not consistent
     some module/function has the repr at the first line, and some don't.
     Here we try to grab the first line that starts with an upper case
     and ends with a period.
@@ -65,7 +65,7 @@ def parse_docstring(docstring):
     return doc
 
 
-def default_parser(node, func, output, inputs, modifiers):
+def parse_default(node, func, output, inputs, modifiers):
     """Return the default function dictionary.
 
     The function needs to have the start uppercase and end period style of
@@ -76,9 +76,9 @@ def default_parser(node, func, output, inputs, modifiers):
 
         doc = ""
         if hasattr(func, "__doc__") and func.__doc__:
-            doc = parse_docstring(func.__doc__)
+            doc = grab_docstring(func.__doc__)
 
-        func_dict['doc'] = doc
+        func_dict["doc"] = doc
 
         if inputs:
             func = signature_modifier(func, inputs)
@@ -90,11 +90,11 @@ def default_parser(node, func, output, inputs, modifiers):
         raise Exception(f"Node {repr(node)} has invalid function type.")
 
 
-def builtin_parser(node, func, output, inputs, modifiers):
+def parse_builtin(node, func, output, inputs, modifiers):
     """Check if the function is a built-in function."""
     if isinstance(func, types.BuiltinFunctionType):
 
-        doc = parse_docstring(func.__doc__)
+        doc = grab_docstring(func.__doc__)
 
         if inputs:
             func = pos_signature_modifier(func, inputs)
@@ -107,14 +107,14 @@ def builtin_parser(node, func, output, inputs, modifiers):
         return {"_func": func, "functype": "builtin", "doc": doc}
 
 
-def ufunc_parser(node, func, output, inputs, modifiers):
+def parse_ufunc(node, func, output, inputs, modifiers):
     """Check if the function is a numpy universal function.
 
     The documentation of the universal function is normally the third line.
     """
     if isinstance(func, np.ufunc):
 
-        doc = parse_docstring(func.__doc__)
+        doc = grab_docstring(func.__doc__)
 
         if inputs:
             func = pos_signature_modifier(func, inputs)
@@ -127,7 +127,7 @@ def ufunc_parser(node, func, output, inputs, modifiers):
         return {"_func": func, "functype": "numpy.ufunc", "doc": doc}
 
 
-def model_parser(node, func, output, inputs, modifiers):
+def parse_model(node, func, output, inputs, modifiers):
     """Check if the function is a Model class instance."""
 
     if isinstance(func, Model):
@@ -142,11 +142,11 @@ def model_parser(node, func, output, inputs, modifiers):
         return {"_func": func, "functype": "mmodel.Model", "doc": doc}
 
 
-parser_engine = NodeParser(
+node_parser = NodeParser(
     {
-        "buitin": builtin_parser,
-        "numpy.ufunc": ufunc_parser,
-        "mmodel.Model": model_parser,
-        "default": default_parser,
+        "buitin": parse_builtin,
+        "numpy.ufunc": parse_ufunc,
+        "mmodel.Model": parse_model,
+        "default": parse_default,
     }
 )

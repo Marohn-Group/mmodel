@@ -1,5 +1,6 @@
 import graphviz
 from copy import deepcopy
+from mmodel.metadata import textwrap50, nodeformatter
 
 DEFAULT_SETTINGS = {
     "graph_attr": {
@@ -12,13 +13,15 @@ DEFAULT_SETTINGS = {
 }
 
 
-def draw_graph(G, label, style, export=None, wrap_width=30):
+def draw_graph(
+    G, label, style, export=None, formatter=nodeformatter, textwrapper=textwrap50
+):
     """Draw a detailed graph with options.
 
     :param str name: name of the graph
     :param str label: title of the graph
     :param str style: there are three valid styles, plain
-        short and full. Each style corresponds to node-only,
+        short and verbose. Each style corresponds to node-only,
         function-only, and detailed note metadata graph
     :param str export: filename to export to
     """
@@ -40,26 +43,27 @@ def draw_graph(G, label, style, export=None, wrap_width=30):
         if style == "short":
             for node, ndict in G.nodes(data=True):
                 if "func" in ndict:
-                    nlabel = (
-                        G.node_metadata(node, False, wrap_width).replace("\n", "\l")
-                        + "\l"
-                    )
+                    metadata = G.node_metadata(node, False, formatter, textwrapper)
+                    nlabel = metadata.replace("\n", "\l") + "\l"
                 else:
                     nlabel = node
 
                 dot_graph.node(node, label=nlabel)
 
-        elif style == "full":
+        elif style == "verbose":
             for node, ndict in G.nodes(data=True):
                 if "func" in ndict:
-                    nlabel = (
-                        G.node_metadata(node, True, wrap_width).replace("\n", "\l")
-                        + "\l"
-                    )
+                    metadata = G.node_metadata(node, True, formatter, textwrapper)
+                    nlabel = metadata.replace("\n", "\l") + "\l"
                 else:
                     nlabel = node
 
                 dot_graph.node(node, label=nlabel)
+
+        else:
+            raise Exception(
+                f"Invalid style {repr(style)}: must be one of plain, short, or verbose."
+            )
 
         for u, v, edict in G.edges(data=True):
 
