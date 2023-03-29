@@ -196,8 +196,21 @@ class TestModelMetaData:
         G.add_node("Test")
         return G
 
+    def test_metadata_dict(self, func, G):
+        """Test metadata_dict that has all key and value pair."""
+        G.set_node_object("Test", func, output="c")
+        model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
+
+        assert sorted(list(model.metadata_dict().keys())) == [
+            "description",
+            "func",
+            "handler",
+            "modifiers",
+            "returns",
+        ]
+
     def test_metadata_without_no_return(self, func, G):
-        """Test metadata that doesn't have return"""
+        """Test metadata that doesn't have return."""
         G.set_node_object("Test", func, output=None)
         model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
 
@@ -207,10 +220,10 @@ class TestModelMetaData:
         handler: BasicHandler()
 
         Test model."""
-        assert model.metadata() == dedent(node_s)
+        assert model.metadata_str() == dedent(node_s)
 
-    def test_metadata_without_ome_return(self, func, G):
-        """Test metadata that doesn't have return"""
+    def test_metadata_without_one_return(self, func, G):
+        """Test metadata that has one return."""
         G.set_node_object("Test", func, output="c")
         model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
 
@@ -220,10 +233,10 @@ class TestModelMetaData:
         handler: BasicHandler()
 
         Test model."""
-        assert model.metadata() == dedent(node_s)
+        assert model.metadata_str() == dedent(node_s)
 
     def test_metadata_short(self, func, G):
-        """Test metadata that has one return"""
+        """Test metadata string without description."""
         G.set_node_object("Test", func, output="c")
         model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
 
@@ -232,7 +245,7 @@ class TestModelMetaData:
         returns: c
         handler: BasicHandler()"""
 
-        assert model.metadata(full=False) == dedent(node_s)
+        assert model.metadata_str(full=False) == dedent(node_s)
 
 
 class TestModifiedModel:

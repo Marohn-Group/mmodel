@@ -10,7 +10,7 @@ import networkx as nx
 
 
 class Model:
-    """Create model executable.
+    """Create model callable.
 
     :param str name: Model name
     :param object graph: ModelGraph instance (digraph)
@@ -70,12 +70,23 @@ class Model:
     def __str__(self):
         """Output callable information."""
 
-        return self.metadata()
+        return self.metadata_str()
 
-    def metadata(self, full=True, wrap_width=80):
+    def metadata_dict(self):
+        """Return a dictionary with metadata keys."""
+
+        return {
+            "func": self,
+            "returns": self.returns,
+            "handler": self.handler,
+            "modifiers": self.modifiers,
+            "description": self.description,
+        }
+
+    def metadata_str(self, full=True, wrap_width=80):
         """Parse metadata string of the Model instance."""
 
-        # use tuple if there are multiple returns
+        # use a tuple if there are multiple returns
         # else use returns directly.
         return_len = len(self.returns)
         if return_len == 0:
@@ -136,7 +147,7 @@ class Model:
 
     def get_node_func(self, node):
         """Quick access to node base callable within the model.
-        
+
         The function helps extract the original function within
         the node.
         """
@@ -146,7 +157,7 @@ class Model:
     def node_metadata(self, node, full=True, wrap_width=80):
         """View a specific node."""
 
-        return self._graph.node_metadata(node, full=True, wrap_width=80)
+        return self._graph.node_metadata(node, full=full, wrap_width=wrap_width)
 
     def draw(self, style="full", export=None, wrap_width=30):
         """Draw the graph of the model.
@@ -161,4 +172,4 @@ class Model:
 
         """
 
-        return draw_graph(self._graph, self.metadata(), style, export, wrap_width)
+        return draw_graph(self._graph, self.metadata_str(), style, export, wrap_width)
