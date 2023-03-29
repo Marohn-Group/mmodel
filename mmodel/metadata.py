@@ -9,14 +9,14 @@ import inspect
 from textwrap import TextWrapper
 
 
-class MetaFormatter:
+class MetaDataFormatter:
     """Metadata Formatter."""
 
-    def __init__(self, formatter, metaorder):
+    def __init__(self, formatter: dict, metaorder: list = None):
         """Initiate the formatter."""
 
-        self._frommatter = formatter
-        self._metaorder = metaorder
+        self.frommatter = formatter
+        self.metaorder = metaorder
 
     def __call__(self, metadata):
         """Convert metadata dictionary to string.
@@ -29,16 +29,16 @@ class MetaFormatter:
         :param list metaorder: metadata key order, entry is None if linebreak needed.
             Defaults to dictionary key order.
         """
-
+        metaorder = self.metaorder if self.metaorder is not None else metadata.keys()
         metadata_str_list = []
-        for key in self._metaorder:
+        for key in metaorder:
             if key is None:
                 metadata_str_list.append("")
                 continue
             elif key not in metadata:
                 continue
-            if key in self._frommatter:
-                metadata_str_list.extend(self._frommatter[key](key, metadata[key]))
+            if key in self.frommatter:
+                metadata_str_list.extend(self.frommatter[key](key, metadata[key]))
             else:
                 metadata_str_list.extend([f"{key}: {metadata[key]}"])
 
@@ -62,7 +62,7 @@ def format_listargs(key, value):
     """
 
     if value:
-        str_list = [f"{key}: "]
+        str_list = [f"{key}:"]
 
         for func, kwargs in value:
             str_value = [repr(v) for v in kwargs.values()]
@@ -124,11 +124,11 @@ def format_obj(key, value):
     The object needs to have __name__ or name attribute defined.
     """
 
-    name = getattr(value, "__name__", value.name)
+    name = getattr(value, "__name__", getattr(value, "name", None))
     return [f"{key}: {name}"]
 
 
-modelformatter = MetaFormatter(
+modelformatter = MetaDataFormatter(
     {
         "model": format_func,
         "returns": format_returns,
@@ -140,7 +140,7 @@ modelformatter = MetaFormatter(
     ["model", "returns", "graph", "handler", "modifiers", None, "description"],
 )
 
-nodeformatter = MetaFormatter(
+nodeformatter = MetaDataFormatter(
     {
         "node": format_value,
         "func": format_func,

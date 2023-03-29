@@ -256,6 +256,7 @@ def test_modify_node(mmodel_G):
     # add one to the final value
     assert mod_G.nodes["subtract"]["func"](1, 2) == 0
 
+
 def test_modify_node_modifier(mmodel_G):
     """Test if modify node removes the original modifiers.
 
@@ -270,7 +271,7 @@ def test_modify_node_modifier(mmodel_G):
         return wrapped
 
     # original function
-    func = mmodel_G.nodes['subtract']['_func']
+    func = mmodel_G.nodes["subtract"]["_func"]
     mod_G = util.modify_node(mmodel_G, "subtract", modifiers=[(mod, {"a": 1})])
 
     # add one to the final value
@@ -299,33 +300,6 @@ def test_modify_node_inplace(mmodel_G):
     # test the original graph
     assert mod_G.nodes["subtract"]["func"](1, 2) == 0
     assert mmodel_G.nodes["subtract"]["func"](1, 2) == 0
-
-
-def test_parse_modifiers():
-    """Test pase_modifier outputs the correct string.
-
-    Test string, list, and tuples.
-    """
-
-    def mod1(func, parameter):
-        return
-
-    def mod2(func, param1, param2):
-        return
-
-    modifiers = [
-        (mod1, {"parameter": "test"}),
-        (mod2, {"param1": [1, 2, 3], "param2": (1, 2)}),
-    ]
-
-    modifier_str_list = ["modifiers:", "\t- mod1('test')", "\t- mod2([1, 2, 3], (1, 2))"]
-    assert util.parse_modifiers(modifiers) == modifier_str_list
-
-
-def test_parse_modifier_empty():
-    """Test pase_modifier outputs None when there is no modifier."""
-
-    assert util.parse_modifiers([]) == []
 
 
 def test_is_node_attr_defined():

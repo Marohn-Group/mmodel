@@ -6,7 +6,7 @@ from copy import deepcopy
 from textwrap import dedent
 
 from mmodel.model import Model
-from mmodel.handler import BasicHandler, H5Handler
+from mmodel.handler import BasicHandler, H5Handler, MemHandler
 from mmodel.modifier import loop_modifier
 from mmodel.graph import ModelGraph
 
@@ -176,9 +176,25 @@ class TestModel:
         assert model.returns == ["m", "k", "c"]
         assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36, 12)
 
+    def test_model_edit(self, model_instance):
+        """Test model editing.
+
+        The function should return a new model instance.
+        """
+
+        new_model = model_instance.edit(
+            name="new_model", handler=(MemHandler, {}), description="Model description."
+        )
+        assert new_model.name == "new_model"
+        assert new_model.description == "Model description."
+        assert new_model.handler == (MemHandler, {})
+        assert model_instance.graph is not new_model.graph
+
+        assert new_model(a=10, d=15, f=1, b=2) == (-36, math.log(12, 2))
+
 
 class TestModelMetaData:
-    """Test the model instance metadata"""
+    """Test the model instance metadata."""
 
     @pytest.fixture
     def func(self):
@@ -198,7 +214,7 @@ class TestModelMetaData:
         return G
 
     def test_metadata_dict(self, func, G):
-        """Test metadata_dict that has all key and value pair.
+        """Test metadata_dict that has all key and value pairs.
 
         Test both the verbose and non-verbose version.
         """
@@ -215,46 +231,6 @@ class TestModelMetaData:
         ]
 
         assert sorted(list(model._metadata_dict(False).keys())) == ["model", "returns"]
-
-    # def test_metadata_without_return(self, func, G):
-    #     """Test metadata that doesn't have a return."""
-    #     G.set_node_object("Test", func, output=None)
-    #     model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
-
-    #     node_s = """\
-    #     test_model(a, b)
-    #     returns: None
-    #     graph: meta test graph
-    #     handler: BasicHandler()
-
-    #     Test model."""
-    #     assert model.metadata_str() == dedent(node_s)
-
-    # def test_metadata_with_one_return(self, func, G):
-    #     """Test metadata that has one return."""
-    #     G.set_node_object("Test", func, output="c")
-    #     model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
-
-    #     node_s = """\
-    #     test_model(a, b)
-    #     returns: c
-    #     graph: meta test graph
-    #     handler: BasicHandler()
-
-    #     Test model."""
-    #     assert model.metadata_str() == dedent(node_s)
-
-    # def test_metadata_short(self, func, G):
-    #     """Test metadata string without description."""
-    #     G.set_node_object("Test", func, output="c")
-    #     model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
-
-    #     node_s = """\
-    #     test_model(a, b)
-    #     returns: c
-    #     handler: BasicHandler()"""
-
-    #     assert model.metadata_str(full=False) == dedent(node_s)
 
 
 class TestModifiedModel:

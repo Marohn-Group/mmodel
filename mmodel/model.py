@@ -167,5 +167,5 @@ class Model:
         a new model with the same graph.
         """
 
-        model_dict = {key: getattr(self, key) for key in self.model_keys}
+        model_dict = {key: getattr(self, key) for key in self._model_keys}
         return self.__class__(**{**model_dict, **kwargs})

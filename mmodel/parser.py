@@ -78,7 +78,7 @@ def parse_default(node, func, output, inputs, modifiers):
         if hasattr(func, "__doc__") and func.__doc__:
             doc = grab_docstring(func.__doc__)
 
-        func_dict['doc'] = doc
+        func_dict["doc"] = doc
 
         if inputs:
             func = signature_modifier(func, inputs)

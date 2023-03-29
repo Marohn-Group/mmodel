@@ -34,7 +34,8 @@ def test_draw_short_graph(mmodel_G):
     # test if add function is included
     assert (
         "add\l\laddition(a, constant=2)\lreturn: "
-        "c\lfunctype: callable\l\lAdd a constant to the value a." not in dot_graph.source
+        "c\lfunctype: callable\l\lAdd a constant to the value a."
+        not in dot_graph.source
     )
     assert "add\l\laddition(a, constant=2)\lreturn: c" in dot_graph.source
 
