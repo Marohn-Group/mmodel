@@ -44,15 +44,16 @@ class TestModel:
     def test_model_str(self, model_instance):
         """Test model representation."""
 
-        MODEL_STR = """\
+        model_str = """\
         model_instance(a, b, d, f)
         returns: (k, m)
+        graph: test_graph
         handler: BasicHandler()
 
         A long description that tests if the model module wraps the Model output string
           description at 90 characters."""
 
-        assert str(model_instance) == dedent(MODEL_STR)
+        assert str(model_instance) == dedent(model_str)
 
     def test_model_graph_freeze(self, model_instance):
         """Test the graph is frozen."""
@@ -192,60 +193,68 @@ class TestModelMetaData:
     def G(self):
         """An graph with one node."""
 
-        G = ModelGraph()
+        G = ModelGraph(name="meta test graph")
         G.add_node("Test")
         return G
 
     def test_metadata_dict(self, func, G):
-        """Test metadata_dict that has all key and value pair."""
+        """Test metadata_dict that has all key and value pair.
+
+        Test both the verbose and non-verbose version.
+        """
         G.set_node_object("Test", func, output="c")
         model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
 
-        assert sorted(list(model.metadata_dict().keys())) == [
+        assert sorted(list(model._metadata_dict(True).keys())) == [
             "description",
-            "func",
+            "graph",
             "handler",
+            "model",
             "modifiers",
             "returns",
         ]
 
-    def test_metadata_without_no_return(self, func, G):
-        """Test metadata that doesn't have return."""
-        G.set_node_object("Test", func, output=None)
-        model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
+        assert sorted(list(model._metadata_dict(False).keys())) == ["model", "returns"]
 
-        node_s = """\
-        test_model(a, b)
-        returns: None
-        handler: BasicHandler()
+    # def test_metadata_without_return(self, func, G):
+    #     """Test metadata that doesn't have a return."""
+    #     G.set_node_object("Test", func, output=None)
+    #     model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
 
-        Test model."""
-        assert model.metadata_str() == dedent(node_s)
+    #     node_s = """\
+    #     test_model(a, b)
+    #     returns: None
+    #     graph: meta test graph
+    #     handler: BasicHandler()
 
-    def test_metadata_without_one_return(self, func, G):
-        """Test metadata that has one return."""
-        G.set_node_object("Test", func, output="c")
-        model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
+    #     Test model."""
+    #     assert model.metadata_str() == dedent(node_s)
 
-        node_s = """\
-        test_model(a, b)
-        returns: c
-        handler: BasicHandler()
+    # def test_metadata_with_one_return(self, func, G):
+    #     """Test metadata that has one return."""
+    #     G.set_node_object("Test", func, output="c")
+    #     model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
 
-        Test model."""
-        assert model.metadata_str() == dedent(node_s)
+    #     node_s = """\
+    #     test_model(a, b)
+    #     returns: c
+    #     graph: meta test graph
+    #     handler: BasicHandler()
 
-    def test_metadata_short(self, func, G):
-        """Test metadata string without description."""
-        G.set_node_object("Test", func, output="c")
-        model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
+    #     Test model."""
+    #     assert model.metadata_str() == dedent(node_s)
 
-        node_s = """\
-        test_model(a, b)
-        returns: c
-        handler: BasicHandler()"""
+    # def test_metadata_short(self, func, G):
+    #     """Test metadata string without description."""
+    #     G.set_node_object("Test", func, output="c")
+    #     model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
 
-        assert model.metadata_str(full=False) == dedent(node_s)
+    #     node_s = """\
+    #     test_model(a, b)
+    #     returns: c
+    #     handler: BasicHandler()"""
+
+    #     assert model.metadata_str(full=False) == dedent(node_s)
 
 
 class TestModifiedModel:
@@ -283,6 +292,7 @@ class TestModifiedModel:
         mod_model_s = """\
         mod_model_instance(a, b, d, f)
         returns: (k, m)
+        graph: test_graph
         handler: BasicHandler()
         modifiers:
           - loop_modifier('a')

@@ -9,14 +9,14 @@ import inspect
 from textwrap import TextWrapper
 
 
-
 class MetaFormatter:
     """Metadata Formatter."""
 
-    def __init__(self, formatter):
+    def __init__(self, formatter, metaorder):
         """Initiate the formatter."""
 
         self._frommatter = formatter
+        self._metaorder = metaorder
 
     def __call__(self, metadata):
         """Convert metadata dictionary to string.
@@ -24,20 +24,25 @@ class MetaFormatter:
         The process returns a list of metadata by lines.
         If the formatter is not found in the formatter dictionary,
         the default string output is "key: value".
+
+        :param dict metadata: metadata dictionary
+        :param list metaorder: metadata key order, entry is None if linebreak needed.
+            Defaults to dictionary key order.
         """
 
-        metadata_str = []
-        for key, value in metadata.items():
-
+        metadata_str_list = []
+        for key in self._metaorder:
+            if key is None:
+                metadata_str_list.append("")
+                continue
+            elif key not in metadata:
+                continue
             if key in self._frommatter:
-                metadata_str.extend(self._frommatter[key](key, value))
+                metadata_str_list.extend(self._frommatter[key](key, metadata[key]))
             else:
-                metadata_str.extend([f"{key}: {value}"])
+                metadata_str_list.extend([f"{key}: {metadata[key]}"])
 
-    def update(self, key, value):
-        """Update the formatter dictionary."""
-
-        self._frommatter[key] = value
+        return metadata_str_list
 
 
 def format_func(key, value):
@@ -64,7 +69,7 @@ def format_listargs(key, value):
             mod_str = f"\t- {func.__name__}({', '.join(str_value)})"
             str_list.append(mod_str)
 
-        return str
+        return str_list
 
     else:
         return []
@@ -88,7 +93,7 @@ def format_returns(key, value):
     """Format the metadata value that has a list of returns.
 
     The formatter is for the returns metadata. If the "returns" value is empty,
-    the output None. If the returns only have 1 value, return the value, else
+    the output is None. If the returns only have 1 value, return the value, else
     return the values separated by commas in a tuple representation.
     """
 
@@ -104,13 +109,10 @@ def format_returns(key, value):
     return [f"{key}: {returns_str}"]
 
 
-def format_docs(key, value):
-    """Format the docstring metadata.
-
-    The only change is to add an empty string as the linebreak.
-    """
+def format_value(key, value):
+    """Format the metadata without displaying key."""
     if value:
-        return ["", value]
+        return [value]
     else:
         return []
 
@@ -126,17 +128,27 @@ def format_obj(key, value):
     return [f"{key}: {name}"]
 
 
-formatter = MetaFormatter(
+modelformatter = MetaFormatter(
     {
-        "func": format_func,
+        "model": format_func,
         "returns": format_returns,
         "graph": format_obj,
         "handler": format_args,
         "modifiers": format_listargs,
-        "description": format_docs,
-    }
+        "description": format_value,
+    },
+    ["model", "returns", "graph", "handler", "modifiers", None, "description"],
 )
 
+nodeformatter = MetaFormatter(
+    {
+        "node": format_value,
+        "func": format_func,
+        "modifiers": format_listargs,
+        "doc": format_value,
+    },
+    ["node", None, "func", "return", "functype", "modifiers", None, "doc"],
+)
 
 
 def textwrapper(width: int = 80, indent: int = 2):
@@ -157,5 +169,24 @@ def textwrapper(width: int = 80, indent: int = 2):
     )
 
 
-textwrapper_80 = textwrapper(80, 2)
-textwrapper_60 = textwrapper(50, 2)
+# Standard textwrapper with 80 characters.
+textwrap80 = textwrapper(80, 2)
+# shorted textwarpper with 5o characters for nodes.
+textwrap50 = textwrapper(50, 2)
+
+
+def format_metadata(metadata, formatter, textwrapper):
+    """Format and wrap the metadata."""
+
+    metadata_list = formatter(metadata)
+
+    if textwrapper:
+        metadata_wrapped = []
+        for line in metadata_list:
+            if line:
+                metadata_wrapped.extend(textwrapper.wrap(line))
+            else:
+                metadata_wrapped.append("")
+        return metadata_wrapped
+
+    return metadata_list

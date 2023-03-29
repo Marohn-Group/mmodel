@@ -1,10 +1,5 @@
-from mmodel.utility import (
-    parse_input,
-    parse_modifiers,
-    content_wrap,
-    is_node_attr_defined,
-    is_edge_attr_defined,
-)
+from mmodel.utility import parse_input, is_node_attr_defined, is_edge_attr_defined
+from mmodel.metadata import modelformatter, textwrap80, format_metadata
 from mmodel.draw import draw_graph
 import networkx as nx
 
@@ -26,6 +21,8 @@ class Model:
     :param list returns: The order of returns of the model; defaults to the
         topological search.
     """
+
+    _model_keys = ["name", "graph", "handler", "modifiers", "description", "returns"]
 
     def __init__(
         self,
@@ -61,56 +58,45 @@ class Model:
         self._executor = executor
 
     def __call__(self, *args, **kwargs):
+        """Execute the model.
+
+        The inputs from the keyword arguments are parsed and passed to the
+        the handler class.
+        """
 
         # process inputs
         inputs = parse_input(self.__signature__, *args, **kwargs)
 
         return self._executor(**inputs)
 
-    def __str__(self):
-        """Output callable information."""
-
-        return self.metadata_str()
-
-    def metadata_dict(self):
+    def _metadata_dict(self, verbose):
         """Return a dictionary with metadata keys."""
 
-        return {
-            "func": self,
-            "returns": self.returns,
+        short_dict = {"model": self, "returns": self.returns}
+
+        additonal_dict = {
+            "graph": self._graph,
             "handler": self.handler,
             "modifiers": self.modifiers,
             "description": self.description,
         }
 
-    def metadata_str(self, full=True, wrap_width=80):
-        """Parse metadata string of the Model instance."""
-
-        # use a tuple if there are multiple returns
-        # else use returns directly.
-        return_len = len(self.returns)
-        if return_len == 0:
-            returns_str = "None"
-        elif return_len == 1:
-            returns_str = self.returns[0]
+        if verbose:
+            return {**short_dict, **additonal_dict}
         else:
-            returns_str = f"({', '.join(self.returns)})"
+            return short_dict
 
-        metadata_list = [
-            f"{self.__name__}{self.__signature__}",
-            f"returns: {returns_str}",
-            f"handler: {self.handler[0].__name__}"
-            f"({', '.join(repr(v) for v in self.handler[1].values())})",
-        ]
+    def metadata_str(
+        self, verbose=True, formatter=modelformatter, textwrapper=textwrap80
+    ):
+        """Parse metadata string of the Model instance."""
+        return format_metadata(self._metadata_dict(verbose), formatter, textwrapper)
 
-        metadata_list.extend(parse_modifiers(self.modifiers))
+    def __str__(self):
+        """Output callable information."""
 
-        if full:
-            metadata_list.extend(["", self.description])
-
-        wrapped_list = content_wrap(metadata_list, width=wrap_width)
-
-        return "\n".join(wrapped_list).rstrip()
+        str_list = self.metadata_str()
+        return "\n".join(str_list).rstrip()
 
     @staticmethod
     def _is_valid_graph(G):
@@ -154,12 +140,12 @@ class Model:
 
         return self._graph.nodes[node]["_func"]
 
-    def node_metadata(self, node, full=True, wrap_width=80):
+    def node_metadata(self, *args, **kwargs):
         """View a specific node."""
 
-        return self._graph.node_metadata(node, full=full, wrap_width=wrap_width)
+        return self._graph.node_metadata(*args, **kwargs)
 
-    def draw(self, style="full", export=None, wrap_width=30):
+    def draw(self, style="full", export=None):
         """Draw the graph of the model.
 
         Draws the default styled graph.
@@ -169,7 +155,17 @@ class Model:
             long shows all the metadata.
         :param str export: filename to save the graph as. The file extension
             is needed.
-
         """
 
-        return draw_graph(self._graph, self.metadata_str(), style, export, wrap_width)
+        return draw_graph(self._graph, str(self), style, export)
+
+    def edit(self, **kwargs):
+        """Edit components of the model to create a new model.
+
+        It is not recommended to edit the graph component of the model.
+        Although it does create a new model, but "edit" is for creating
+        a new model with the same graph.
+        """
+
+        model_dict = {key: getattr(self, key) for key in self.model_keys}
+        return self.__class__(**{**model_dict, **kwargs})
