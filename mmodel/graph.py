@@ -82,7 +82,7 @@ class ModelGraph(nx.DiGraph):
         self.update_graph()
 
     def add_grouped_edge(self, u, v):
-        """Add linked edge
+        """Add linked edge.
 
         For mmodel, a group edge (u, v) allows u or v
         to be a list of nodes. Represents several nodes
@@ -120,7 +120,7 @@ class ModelGraph(nx.DiGraph):
             if "output" in self.nodes[u] and self.nodes[u]["output"] in v_sig:
                 self.edges[u, v]["var"] = self.nodes[u]["output"]
 
-    def _node_metadata_dict(self, node: str, verbose):
+    def _node_metadata_dict(self, node: str, verbose: bool):
         """Return node metadata as a dictionary."""
 
         node_dict = self.nodes[node]
@@ -195,13 +195,13 @@ class ModelGraph(nx.DiGraph):
     def replace_subgraph(
         self, subgraph, name, func, output=None, inputs=None, modifiers=None
     ):
-        """Replace subgraph with a node"""
+        """Replace subgraph with a node."""
         return replace_subgraph(self, subgraph, name, func, output, inputs, modifiers)
 
     def modify_node(
         self, node, func=None, output=None, inputs=None, modifiers=None, inplace=False
     ):
-        """Modify node attributes"""
+        """Modify node attributes."""
         return modify_node(self, node, func, output, inputs, modifiers, inplace)
 
     def draw(self, style="verbose", export=None):

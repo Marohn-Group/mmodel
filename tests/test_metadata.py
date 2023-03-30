@@ -10,9 +10,9 @@ class TestMetaDataFormatter:
     """Test MetaDataFormatter class."""
 
     def test_metaorder_empty(self):
-        """Test constructor if the order is empty list.
+        """Test constructor if the order is an empty list.
 
-        If the order is empty list, the formatter should return an empty list.
+        If the order is an empty list, the formatter should return an empty list.
         However, if the order is None (not defined), the formatter should return
         based on the dictionary keys order.
         """
@@ -155,7 +155,7 @@ class TestFormatMetadata:
 
     @pytest.fixture
     def formatter(self):
-        """Return formatter instance"""
+        """Return formatter instance."""
 
         return meta.MetaDataFormatter(
             {

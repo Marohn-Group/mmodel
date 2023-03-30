@@ -150,7 +150,7 @@ class Model:
 
         Draws the default styled graph.
 
-        :param str style: there are three styles, plain, short, and full.
+        :param str style: there are three styles, plain, short, and verbose.
             Plain shows nodes only, short shows part of the metadata, and
             long shows all the metadata.
         :param str export: filename to save the graph as. The file extension

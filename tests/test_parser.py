@@ -101,7 +101,7 @@ class TestBuiltinParser:
         func_dict = parse_builtin("test", print, "c", ["a"], [])
         func = func_dict.pop("_func")
         assert func_dict == {
-            "doc": "Prints the values to a stream, or to sys.stdout by default.",
+            "doc": "Prints the values to a stream, or sys.stdout by default.",
             "functype": "builtin",
         }
         assert list(inspect.signature(func).parameters) == ["a"]

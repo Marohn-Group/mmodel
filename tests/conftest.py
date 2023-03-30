@@ -1,7 +1,7 @@
-"""Configuration for testing
+"""Configuration for testing,
 
 The configuration file provides several default graph fixtures
-and test functions
+and test functions.
 
 1. `standard_G` - test graph generated using DiGraph, scope: function
 2. `mmodel_G` - test graph generated using ModelGraph. scope: function

@@ -176,7 +176,7 @@ class H5Data:
             self.group.attrs[key] = str(value)
 
     def close(self):
-        """Close the data object"""
+        """Close the data object."""
         self.f.close()
 
 

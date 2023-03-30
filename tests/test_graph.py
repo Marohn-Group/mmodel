@@ -102,7 +102,7 @@ class TestSetNodeObject:
 
     @pytest.fixture
     def base_G(self):
-        """Basic ModelGraph with pre-defined edges"""
+        """Basic ModelGraph with pre-defined edges."""
 
         def func_a(m, n):
             return m + n
@@ -324,7 +324,7 @@ class TestNetworkXGraphOperation:
         assert G_deepcopy.graph is not mmodel_G.graph
 
     def test_graph_chain(self, mmodel_G):
-        """Test Chain graph"""
+        """Test Chain graph."""
 
         G = mmodel_G
         DG = G.to_directed(as_view=True)
@@ -367,7 +367,7 @@ class TestNetworkXGraphOperation:
         with the original graph.
 
         The subgraph view retains the graph attribute, and the copy method is only a
-        shallow copy. Modify a copied subgraph attribute changes the original graph
+        shallow copy. Modify a copied subgraph attribute changes the original graph.
         """
 
         H = mmodel_G.subgraph(["subtract", "multiply"]).deepcopy()
@@ -382,24 +382,24 @@ class TestNetworkXGraphOperation:
 
 
 class TestMModelGraphOperation:
-    """Test graph operation defined specific to mmodel"""
+    """Test graph operation defined specific to mmodel."""
 
     def test_subgraph_by_outputs(self, mmodel_G):
-        """Test subgraph if outputs are specified"""
+        """Test subgraph if outputs are specified."""
 
         subgraph = mmodel_G.subgraph(outputs=["m"])
         assert graph_equal(subgraph, mmodel_G.subgraph(nodes=["add", "log"]))
 
     def test_subgraph_by_inputs(self, mmodel_G):
-        """Test subgraph if inputs are specified"""
+        """Test subgraph if inputs are specified."""
 
         subgraph = mmodel_G.subgraph(inputs=["f"])
         assert graph_equal(subgraph, mmodel_G.subgraph(nodes=["power", "multiply"]))
 
     def test_subgraph_combined(self, mmodel_G):
-        """Test subgraph with nodes, outputs, and inputs
+        """Test subgraph with nodes, outputs, and inputs.
 
-        The resulting graph should be the union of all selected values
+        The resulting graph should be the union of all selected values.
         """
 
         subgraph = mmodel_G.subgraph(inputs=["f"], outputs=["m"])
@@ -411,9 +411,9 @@ class TestMModelGraphOperation:
         assert graph_equal(subgraph, mmodel_G)
 
     def test_replace_subgraph(self, mmodel_G):
-        """Test the replace_subgraph method replaces the graph properly inplace or copy
+        """Test the replace_subgraph method replaces the graph properly inplace or copy.
 
-        See utils.replace_subgraph for more tests
+        See utils.replace_subgraph for more tests.
         """
 
         subgraph = mmodel_G.subgraph(["multiply", "power"])
@@ -456,9 +456,9 @@ class TestMModelGraphOperation:
         assert graph.edges["subtract", "test"]["var"] == "e"
 
     def test_modify_node(self, mmodel_G):
-        """Test modify_node method
+        """Test modify_node method.
 
-        See utils.modify_node for more tests
+        See utils.modify_node for more tests.
         """
 
         def mod(func, a):
@@ -475,12 +475,12 @@ class TestMModelGraphOperation:
 
 
 class TestGraphProperty:
-    """Test graph property"""
+    """Test graph property."""
 
     def test_graph_signature(self, mmodel_G, mmodel_signature):
-        """Test graph signature
+        """Test graph signature.
 
-        Test that the property updates when the graph updates
+        Test that the property updates when the graph updates.
         """
         assert mmodel_G.signature == mmodel_signature
 
@@ -488,9 +488,9 @@ class TestGraphProperty:
         assert list(mmodel_G.signature.parameters) == ["a", "d", "f"]
 
     def test_graph_returns(self, mmodel_G):
-        """Test graph returns
+        """Test graph returns.
 
-        Test that the property updates when the graph updates
+        Test that the property updates when the graph updates.
         """
         assert mmodel_G.returns == ["k", "m"]
 

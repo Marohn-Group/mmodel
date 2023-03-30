@@ -144,7 +144,7 @@ class Test_H5Data:
         assert all(data[dataset] == value)
 
     def test_close(self, data):
-        """Test that the h5 file is closed"""
+        """Test that the h5 file is closed."""
 
         data.close()
 

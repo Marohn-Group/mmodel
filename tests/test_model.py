@@ -77,9 +77,9 @@ class TestModel:
         assert model_instance(a=1, d=2, f=3, b=4) == (27, math.log(3, 4))
 
     def test_metadata_without_no_return(self):
-        """Test metadata that doesn't have a return
+        """Test metadata that doesn't have a return.
 
-        The function has an output and execution should ignore the output
+        The function has an output and execution should ignore the output.
         """
         G = ModelGraph()
         G.add_node("Test")
@@ -214,7 +214,7 @@ class TestModelMetaData:
     def test_metadata_dict(self, func, G):
         """Test metadata_dict that has all key and value pairs.
 
-        Test both the verbose and non-verbose version.
+        Test both the verbose and non-verbose versions.
         """
         G.set_node_object("Test", func, output="c")
         model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
@@ -232,7 +232,7 @@ class TestModelMetaData:
 
 
 class TestModifiedModel:
-    """Test modified model"""
+    """Test modified model."""
 
     @pytest.fixture
     def mod_model_instance(self, mmodel_G):
