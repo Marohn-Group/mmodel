@@ -7,7 +7,7 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
-[0.5.2]
+[0.5.2] - 2023-3-30
 -----------------------
 
 Fixed
@@ -16,6 +16,10 @@ Fixed
 - Fix the issue where ``deepcopy`` does not copy the "_parser" attribute.
 - Fix the inconsistency of format in metadata when the object doesn't have a name.
 
+Changed
+^^^^^^^
+
+- Change the subgraph from a view to a copy of the graph.
 
 [0.5.1] - 2023-3-29
 -----------------------
