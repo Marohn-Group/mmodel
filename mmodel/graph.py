@@ -30,11 +30,9 @@ class ModelGraph(nx.DiGraph):
     - The method adds callable signature 'sig' to the node attribute.
     """
 
-    graph_attr_dict_factory = {"type": "ModelGraph"}.copy
-
-    def __init__(self, *args, parser=node_parser, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._parser = parser
+    # Add the default parser to the graph attribute dictionary.
+    # To change the parser, subclass ModelGraph and change the attribute.
+    graph_attr_dict_factory = {"type": "ModelGraph", "parser": node_parser}.copy
 
     def set_node_object(
         self,
@@ -53,9 +51,10 @@ class ModelGraph(nx.DiGraph):
         """
 
         node_dict = self.nodes[node]
+        parser = self.graph["parser"]
 
         modifiers = modifiers or list()
-        attr_dict = self._parser(node, func, output, inputs, modifiers)
+        attr_dict = parser(node, func, output, inputs, modifiers)
         node_dict.update(attr_dict)
 
         self.update_graph()
@@ -177,7 +176,9 @@ class ModelGraph(nx.DiGraph):
         """Extract subgraph by nodes, inputs, and output.
 
         If multiple parameters are specified, the result is a union
-        of the selection.
+        of the selection. The subgraph is a deep copy of the original graph.
+        The behavior is different from the parent class method, where the subgraph
+        returns a view of the original graph.
         """
 
         nodes = nodes or []
@@ -189,7 +190,7 @@ class ModelGraph(nx.DiGraph):
         # may consider not using the same name as the parent class to avoid collision
         subgraph_nodes = set(list(nodes) + node_inputs + node_outputs)  # unique nodes
 
-        return super().subgraph(subgraph_nodes)
+        return super().subgraph(subgraph_nodes).deepcopy()
 
     def replace_subgraph(
         self, subgraph, name, func, output=None, inputs=None, modifiers=None
@@ -229,8 +230,9 @@ class ModelGraph(nx.DiGraph):
         subgraph contains '_graph', which stores the original graph.
         An alternative method is to copy the code from the copy method,
         but use deepcopy for the items.
+
+        The parser is redefined in the new graph.
         """
-        # return deepcopy(self)
 
         G = self.__class__()
         G.graph.update(deepcopy(self.graph))

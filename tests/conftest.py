@@ -12,6 +12,7 @@ import pytest
 from inspect import signature, Signature, Parameter
 import networkx as nx
 from mmodel.graph import ModelGraph
+from mmodel.parser import node_parser
 import math
 
 
@@ -125,7 +126,7 @@ def standard_G():
         ("add", "log", {"var": "c"}),
     ]
 
-    G = nx.DiGraph(name="test_graph")
+    G = nx.DiGraph(name="test_graph", parser=node_parser)
     G.graph["type"] = "ModelGraph"  # for comparison
 
     G.add_nodes_from(node_list)
@@ -186,7 +187,13 @@ def graph_equal(G1, G2):
     assert dict(G1.edges) == dict(G2.edges)
 
     # test graph attributes
-    assert G1.graph == G2.graph
+    # ModelGraph adds parser attribute, here we test if the functions
+    # are the same.
+    for key in G1.graph:
+        if key == "parser":
+            assert G1.graph[key]._parser_dict == G2.graph[key]._parser_dict
+        else:
+            assert G1.graph[key] == G2.graph[key]
     assert G1.name == G2.name
 
     return True
