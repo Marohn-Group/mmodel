@@ -8,7 +8,6 @@ MModel is a lightweight and modular model-building framework
 for small-scale and nonlinear models. The package aims to solve
 scientific program prototyping and distribution difficulties, making
 it easier to create modular, fast, and user-friendly packages.
-The package is fully tested.
 
 Quickstart
 ----------
@@ -91,22 +90,29 @@ The resulting graph contains the model metadata and detailed node information.
 ..   :alt: example model graph
 
 One key feature of ``mmodel`` that differs from other workflow is modifiers, 
-which modify callables post definition. Modifiers work on both the node level and model level.
+which modify callables post definition. Modifiers work on both the node level
+and model level.
 
-Example: Using modifier and graph to loop the nodes that require the "log_base" parameter.
+Example: Use ``loop_modifier`` on the graph to loop the nodes that require the
+"log_base" parameter.
 
 .. code-block:: python 
 
     from mmodel import loop_modifier
 
     H = G.subgraph(inputs=["log_base"])
-    loop_node = Model(
-        "loop_submodel",
+    H.name = "example_subgraph"
+    loop_node = Model("submodel", H, handler=(MemHandler, {}))
+
+    looped_G = G.replace_subgraph(
         H,
-        handler=(MemHandler, {}),
+        "loop_node",
+        loop_node,
+        output="looped_z",
         modifiers=[(loop_modifier, {"parameter": "log_base"})],
     )
-    looped_G = G.replace_subgraph(H, "loop_node", loop_node, output="looped_z")
+    looped_G.name = "looped_graph"
+
     looped_model = Model("looped_model", looped_G, loop_node.handler)
 
 
@@ -117,7 +123,7 @@ We can inspect the loop node as well as the new model.
     >>> print(loop_node)
     loop_submodel(log_base, sum_xy)
     returns: z
-    graph: example_graph
+    graph: example_subgraph
     handler: MemHandler()
     modifiers:
       - loop_modifier('log_base')
@@ -125,7 +131,7 @@ We can inspect the loop node as well as the new model.
     >>> print(looped_model)
     looped_model(log_base, x, y)
     returns: looped_z
-    graph: example_graph
+    graph: looped_graph
     handler: MemHandler()
     
     >>> looped_model([2, 4], 5, 3) # (5 + 3)log(5 + 3, 2) + 6
@@ -133,7 +139,7 @@ We can inspect the loop node as well as the new model.
 
 
 Use the ``draw`` method to draw the graph. There are three styles
-"plain", "short", and "full", which differ by the level of detail of the
+"plain", "short", and "verbose", which differ by the level of detail of the
 node information. A graph output is displayed in Jupyter Notebook
 or can be saved using the export option.
 

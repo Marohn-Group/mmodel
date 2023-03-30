@@ -89,7 +89,7 @@ def test_draw_graph_export(mmodel_G, tmp_path):
 
 
 def test_draw_raises_error(mmodel_G):
-    """Test draw graph raises error if style is not valid."""
+    """Test draw graph raises an error if the style is not valid."""
 
     with pytest.raises(
         Exception,

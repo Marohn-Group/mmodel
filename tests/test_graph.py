@@ -102,7 +102,7 @@ class TestSetNodeObject:
 
     @pytest.fixture
     def base_G(self):
-        """Basic ModelGraph with pre-defined edges"""
+        """Basic ModelGraph with pre-defined edges."""
 
         def func_a(m, n):
             return m + n
@@ -305,30 +305,26 @@ class TestModelGraphBasics:
 
 
 class TestNetworkXGraphOperation:
-    """Test the copy, deepcopy, chain, subgraph, subgraph copy based on networkx"""
+    """Test the copy, deepcopy, chain, subgraph, subgraph copy based on networkx."""
 
     def test_copy(self, mmodel_G):
-        """Test if copy works with ModelGraph"""
+        """Test if copy works with ModelGraph."""
 
         assert graph_equal(mmodel_G.copy(), mmodel_G)
         assert mmodel_G.copy().graph is not mmodel_G.graph
 
     def test_deepcopy(self, mmodel_G):
-        """Test if copy creates a new graph attribute dictionary"""
+        """Test if copy creates a new graph attribute dictionary."""
 
         G_deepcopy = mmodel_G.deepcopy()
-        G_copy = mmodel_G.copy()
 
         # check if the graph is correctly duplicated
         assert graph_equal(G_deepcopy, mmodel_G)
-        assert G_copy.graph == G_deepcopy.graph
         # see test_copy that the two dictionaries are the same
         assert G_deepcopy.graph is not mmodel_G.graph
 
-        assert G_copy.graph is not G_deepcopy.graph
-
     def test_graph_chain(self, mmodel_G):
-        """Test Chain graph"""
+        """Test Chain graph."""
 
         G = mmodel_G
         DG = G.to_directed(as_view=True)
@@ -339,7 +335,12 @@ class TestNetworkXGraphOperation:
         assert SDG is RSDG._graph
 
     def test_subgraph(self, mmodel_G):
-        """Test subgraph view"""
+        """Test subgraph.
+
+        The networkx graph creates the subgraph as a view of the original graph.
+        The ModelGraph subgraph is a copy of the original graph.
+        The copied graph no longer has the _graph attribute.
+        """
         G = mmodel_G
 
         # full subgraph
@@ -349,33 +350,31 @@ class TestNetworkXGraphOperation:
         # partial subgraph
         H = G.subgraph(["subtract"])
         assert H.adj == {"subtract": {}}
-        assert H._graph == G  # original graph
 
         # partial subgraph
         H = G.subgraph(["subtract", "multiply"])
         assert H.adj == {"subtract": {"multiply": {"var": "e"}}, "multiply": {}}
-        assert H._graph == G  # original graph
 
         # empty subgraph
         H = G.subgraph([])
         assert H.adj == {}
         assert G.adj != {}
-        assert H._graph == G  # original graph
 
     def test_subgraph_deepcopy(self, mmodel_G):
-        """Test the subgraph is copied correctly and they no longer share graph
-        attributes.
+        """Test the subgraph is copied.
+
+        The subgraph no longer shares the graph attribute dictionary
+        with the original graph.
 
         The subgraph view retains the graph attribute, and the copy method is only a
-        shallow copy. Modify a copied subgraph attribute changes the original graph
+        shallow copy. Modify a copied subgraph attribute changes the original graph.
         """
 
         H = mmodel_G.subgraph(["subtract", "multiply"]).deepcopy()
 
         assert H.adj == {"subtract": {"multiply": {"var": "e"}}, "multiply": {}}
 
-        # check the graph attribute is no longer the same dictionary
-        assert H.graph == mmodel_G.graph
+        # check the graph attribute is no longer the same dictionary`
         assert H.graph is not mmodel_G.graph
 
         H.name = "subgraph_test"
@@ -383,24 +382,24 @@ class TestNetworkXGraphOperation:
 
 
 class TestMModelGraphOperation:
-    """Test graph operation defined specific to mmodel"""
+    """Test graph operation defined specific to mmodel."""
 
     def test_subgraph_by_outputs(self, mmodel_G):
-        """Test subgraph if outputs are specified"""
+        """Test subgraph if outputs are specified."""
 
         subgraph = mmodel_G.subgraph(outputs=["m"])
         assert graph_equal(subgraph, mmodel_G.subgraph(nodes=["add", "log"]))
 
     def test_subgraph_by_inputs(self, mmodel_G):
-        """Test subgraph if inputs are specified"""
+        """Test subgraph if inputs are specified."""
 
         subgraph = mmodel_G.subgraph(inputs=["f"])
         assert graph_equal(subgraph, mmodel_G.subgraph(nodes=["power", "multiply"]))
 
     def test_subgraph_combined(self, mmodel_G):
-        """Test subgraph with nodes, outputs, and inputs
+        """Test subgraph with nodes, outputs, and inputs.
 
-        The resulting graph should be the union of all selected values
+        The resulting graph should be the union of all selected values.
         """
 
         subgraph = mmodel_G.subgraph(inputs=["f"], outputs=["m"])
@@ -412,9 +411,9 @@ class TestMModelGraphOperation:
         assert graph_equal(subgraph, mmodel_G)
 
     def test_replace_subgraph(self, mmodel_G):
-        """Test the replace_subgraph method replaces the graph properly inplace or copy
+        """Test the replace_subgraph method replaces the graph properly inplace or copy.
 
-        See utils.replace_subgraph for more tests
+        See utils.replace_subgraph for more tests.
         """
 
         subgraph = mmodel_G.subgraph(["multiply", "power"])
@@ -457,9 +456,9 @@ class TestMModelGraphOperation:
         assert graph.edges["subtract", "test"]["var"] == "e"
 
     def test_modify_node(self, mmodel_G):
-        """Test modify_node method
+        """Test modify_node method.
 
-        See utils.modify_node for more tests
+        See utils.modify_node for more tests.
         """
 
         def mod(func, a):
@@ -476,12 +475,12 @@ class TestMModelGraphOperation:
 
 
 class TestGraphProperty:
-    """Test graph property"""
+    """Test graph property."""
 
     def test_graph_signature(self, mmodel_G, mmodel_signature):
-        """Test graph signature
+        """Test graph signature.
 
-        Test that the property updates when the graph updates
+        Test that the property updates when the graph updates.
         """
         assert mmodel_G.signature == mmodel_signature
 
@@ -489,9 +488,9 @@ class TestGraphProperty:
         assert list(mmodel_G.signature.parameters) == ["a", "d", "f"]
 
     def test_graph_returns(self, mmodel_G):
-        """Test graph returns
+        """Test graph returns.
 
-        Test that the property updates when the graph updates
+        Test that the property updates when the graph updates.
         """
         assert mmodel_G.returns == ["k", "m"]
 

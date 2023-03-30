@@ -1,9 +1,9 @@
-"""Filters that used to create subgraph"""
+"""Filters that used to create subgraph."""
 import networkx as nx
 
 
 def subnodes_by_inputs(graph, inputs: list) -> list:
-    """Obtain a list of subgraph nodes based on node inputs
+    """Obtain a list of subgraph nodes based on node inputs.
 
     If a parent node is included, so are the child nodes.
 

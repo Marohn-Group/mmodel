@@ -10,7 +10,6 @@ class NodeParser:
 
     The class check function outputs the necessary properties
     of the function and add it to the node attribute.
-
     The class currently supports Python built-in functions, regular
     function, numpy.ufunc, and Model class instance.
 
