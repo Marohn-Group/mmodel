@@ -8,7 +8,6 @@ MModel is a lightweight and modular model-building framework
 for small-scale and nonlinear models. The package aims to solve
 scientific program prototyping and distribution difficulties, making
 it easier to create modular, fast, and user-friendly packages.
-The package is fully tested.
 
 Quickstart
 ----------
