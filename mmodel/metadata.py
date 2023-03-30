@@ -125,7 +125,10 @@ def format_obj(key, value):
     """
 
     name = getattr(value, "__name__", getattr(value, "name", None))
-    return [f"{key}: {name}"]
+    if name:
+        return [f"{key}: {name}"]
+    else:
+        return []
 
 
 modelformatter = MetaDataFormatter(

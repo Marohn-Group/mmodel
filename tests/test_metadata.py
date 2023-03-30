@@ -111,6 +111,11 @@ def test_format_obj_func():
 
     assert meta.format_obj("a", func) == ["a: func"]
 
+def test_format_obj_without_name():
+    """Test format_obj on an object without name attribute."""
+
+    assert meta.format_obj("a", "func") == []
+
 
 def test_textwrapper():
     """Test textwrapper function."""
