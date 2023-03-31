@@ -11,8 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy
-        uses: peterhs73/sphinx-docs-action@v0.0.2
+        uses: peterhs73/sphinx-docs-action@v0.1.0
         with:
           docs-source: docs/
+          dependency-path: tool.poetry.dependencies
           external-repo: Marohn-Group/mmodel-docs
           deploy-token: ${{ secrets.PRIVATE_TOKEN}}
