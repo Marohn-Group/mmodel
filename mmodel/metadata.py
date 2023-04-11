@@ -15,7 +15,7 @@ class MetaDataFormatter:
     def __init__(self, formatter: dict, metaorder: list = None):
         """Initiate the formatter."""
 
-        self.frommatter = formatter
+        self.formatter = formatter
         self.metaorder = metaorder
 
     def __call__(self, metadata):
@@ -37,8 +37,8 @@ class MetaDataFormatter:
                 continue
             elif key not in metadata:
                 continue
-            if key in self.frommatter:
-                metadata_str_list.extend(self.frommatter[key](key, metadata[key]))
+            if key in self.formatter:
+                metadata_str_list.extend(self.formatter[key](key, metadata[key]))
             else:
                 metadata_str_list.extend([f"{key}: {metadata[key]}"])
 
