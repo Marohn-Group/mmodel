@@ -6,7 +6,7 @@ from copy import deepcopy
 from textwrap import dedent
 import numpy as np
 
-from mmodel import Model, BasicHandler, H5Handler, MemHandler, loop_modifier, ModelGraph
+from mmodel import Model, BasicHandler, H5Handler, MemHandler, loop, ModelGraph
 
 
 class TestModel:
@@ -147,7 +147,7 @@ class TestModel:
         # the output of the path is the repr instead of the string
         assert f"handler: H5Handler" in str(h5model)
         assert f"handler args" in str(h5model)
-        assert f"- fname: {path}" in str(h5model).replace('\n  ', '')
+        assert f"- fname: {path}" in str(h5model).replace("\n  ", "")
 
     def test_model_returns_order(self, mmodel_G):
         """Test model with custom returns order.
@@ -163,9 +163,7 @@ class TestModel:
     def test_model_returns_intermediate(self, mmodel_G):
         """Test model with custom returns that are more than graph."""
         # more returns
-        model = Model(
-            "model_instance", mmodel_G, BasicHandler, returns=["m", "k", "c"]
-        )
+        model = Model("model_instance", mmodel_G, BasicHandler, returns=["m", "k", "c"])
 
         assert model.returns == ["m", "k", "c"]
         assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36, 12)
@@ -235,13 +233,11 @@ class TestModifiedModel:
     def mod_model_instance(self, mmodel_G):
         """Construct a model_instance with loop modifier."""
 
-        loop_mod = (loop_modifier, {"parameter": "a"})
-
         return Model(
             "mod_model_instance",
             mmodel_G,
             BasicHandler,
-            modifiers=[loop_mod],
+            modifiers=[loop("a")],
             description="Modified model.",
         )
 
@@ -266,7 +262,7 @@ class TestModifiedModel:
         graph: test_graph
         handler: BasicHandler
         modifiers:
-          - loop_modifier('a')
+          - loop('a')
         
         Modified model."""
         assert str(mod_model_instance) == dedent(mod_model_s)

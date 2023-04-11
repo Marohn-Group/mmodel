@@ -1,5 +1,5 @@
 import types
-from mmodel.modifier import signature_modifier, pos_signature_modifier
+from mmodel.modifier import replace_signature, replace_pos_signature
 import numpy as np
 from mmodel.model import Model
 import inspect
@@ -31,8 +31,8 @@ class NodeParser:
             if attr_dict:
                 func = attr_dict["_func"]
                 # apply the modifiers
-                for mdf, kwargs in modifiers:
-                    func = mdf(func, **kwargs)
+                for mdf in modifiers:
+                    func = mdf(func)
 
                 sig = inspect.signature(func)
                 base_dict = {
@@ -80,7 +80,7 @@ def parse_default(node, func, output, inputs, modifiers):
         func_dict["doc"] = doc
 
         if inputs:
-            func = signature_modifier(func, inputs)
+            func = replace_signature(inputs)(func)
 
         func_dict.update({"_func": func, "functype": "callable"})
         return func_dict
@@ -96,7 +96,7 @@ def parse_builtin(node, func, output, inputs, modifiers):
         doc = grab_docstring(func.__doc__)
 
         if inputs:
-            func = pos_signature_modifier(func, inputs)
+            func = replace_pos_signature(inputs)(func)
         else:
             raise Exception(
                 f"Node {repr(node)} built-in type function "
@@ -116,7 +116,7 @@ def parse_ufunc(node, func, output, inputs, modifiers):
         doc = grab_docstring(func.__doc__)
 
         if inputs:
-            func = pos_signature_modifier(func, inputs)
+            func = replace_pos_signature(inputs)(func)
         else:
             raise Exception(
                 f"Node {repr(node)} numpy.ufunc type function "
@@ -136,7 +136,7 @@ def parse_model(node, func, output, inputs, modifiers):
             doc = func.description.splitlines()[0]
 
         if inputs:
-            func = signature_modifier(func, inputs)
+            func = replace_signature(inputs)(func)
 
         return {"_func": func, "functype": "mmodel.Model", "doc": doc}
 

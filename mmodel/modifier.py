@@ -3,29 +3,33 @@ import inspect
 from mmodel.utility import parse_input, parse_parameters
 
 
-def loop_modifier(func, parameter: str):
+def loop(parameter: str):
     """Modify function to iterate one given parameter.
 
     :param list parameter: target parameter to loop
     """
 
-    @wraps(func)
-    def loop_wrapped(**kwargs):
+    def loop_modifier(func):
+        @wraps(func)
+        def loop_wrapped(**kwargs):
 
-        loop_values = kwargs.pop(parameter)
+            loop_values = kwargs.pop(parameter)
 
-        try:
-            # make sure the parameter input is iterable
-            iter(loop_values)
-        except TypeError:
-            raise Exception(f"{parameter} value is not iterable")
+            try:
+                # make sure the parameter input is iterable
+                iter(loop_values)
+            except TypeError:
+                raise Exception(f"{parameter} value is not iterable")
 
-        return [func(**kwargs, **{parameter: value}) for value in loop_values]
+            return [func(**kwargs, **{parameter: value}) for value in loop_values]
 
-    return loop_wrapped
+        return loop_wrapped
+
+    loop_modifier.metadata = f"loop({repr(parameter)})"
+    return loop_modifier
 
 
-def zip_loop_modifier(func, parameters: list):
+def zip_loop(parameters: list):
     """Modify function to iterate the parameters pairwise.
 
     :param list parameters: list of the parameter to loop
@@ -33,24 +37,28 @@ def zip_loop_modifier(func, parameters: list):
         provided, the parameters should be delimited by ", ".
     """
 
-    @wraps(func)
-    def loop_wrapped(**kwargs):
+    def zip_loop_modifier(func):
+        @wraps(func)
+        def loop_wrapped(**kwargs):
 
-        loop_values = [kwargs.pop(param) for param in parameters]
+            loop_values = [kwargs.pop(param) for param in parameters]
 
-        result = []
-        for value in zip(*loop_values):  # unzip the values
+            result = []
+            for value in zip(*loop_values):  # unzip the values
 
-            loop_value_dict = dict(zip(parameters, value))
-            rv = func(**kwargs, **loop_value_dict)
-            result.append(rv)
+                loop_value_dict = dict(zip(parameters, value))
+                rv = func(**kwargs, **loop_value_dict)
+                result.append(rv)
 
-        return result
+            return result
 
-    return loop_wrapped
+        return loop_wrapped
+
+    zip_loop_modifier.metadata = f"zip_loop({repr(parameters)})"
+    return zip_loop_modifier
 
 
-def signature_modifier(func, parameters):
+def replace_signature(parameters: list):
     """Replace node object signature.
 
     :param list parameters: signature parameters to replace the original
@@ -65,32 +73,37 @@ def signature_modifier(func, parameters):
         (built-in and numpy.ufunc). Use pos_signature_modifier instead.
 
     """
-    sig, param_order, defaultargs = parse_parameters(parameters)
 
-    # if there's "kwargs" in the parameter, ignore the parameter
-    old_parameters = []
-    for name, param in inspect.signature(func).parameters.items():
-        if param.kind < 4:
-            old_parameters.append(name)
+    def signature_modifier(func):
 
-    # once unzipped to return iterators, the original variable returns none
-    param_pair = list(zip(old_parameters, param_order))
+        sig, param_order, defaultargs = parse_parameters(parameters)
 
-    @wraps(func)
-    def wrapped(**kwargs):
-        # assume there are no repeated signature names that are not overlapping
-        # replace a, b with b, c is not allowed in the following step
-        kwargs.update(defaultargs)
-        for old, new in param_pair:
-            kwargs[old] = kwargs.pop(new)
-        return func(**kwargs)
+        # if there's "kwargs" in the parameter, ignore the parameter
+        old_parameters = []
+        for name, param in inspect.signature(func).parameters.items():
+            if param.kind < 4:
+                old_parameters.append(name)
 
-    wrapped.__signature__ = sig
-    return wrapped
+        # once unzipped to return iterators, the original variable returns none
+        param_pair = list(zip(old_parameters, param_order))
+
+        @wraps(func)
+        def wrapped(**kwargs):
+            # assume there are no repeated signature names that are not overlapping
+            # replace a, b with b, c is not allowed in the following step
+            kwargs.update(defaultargs)
+            for old, new in param_pair:
+                kwargs[old] = kwargs.pop(new)
+            return func(**kwargs)
+
+        wrapped.__signature__ = sig
+        return wrapped
+
+    return signature_modifier
 
 
-def pos_signature_modifier(func, parameters):
-    """Replace node object signature with position arguments.
+def replace_pos_signature(parameters: list):
+    """Replace node object positional signature with keyword arguments.
 
     For functions that do not have a signature or only allow positional only
     inputs. The modifier is specifically used to change the "signature" of the builtin
@@ -100,21 +113,26 @@ def pos_signature_modifier(func, parameters):
 
         The modifier is only tested against built-in function or numpy.ufunc.
     """
-    sig, param_order, defaultargs = parse_parameters(parameters)
 
-    @wraps(func)
-    def wrapped(**kwargs):
-        kwargs.update(defaultargs)
-        # extra the variables in order
-        inputs = [kwargs[key] for key in param_order]
+    def pos_signature_modifier(func):
 
-        return func(*inputs)
+        sig, param_order, defaultargs = parse_parameters(parameters)
 
-    wrapped.__signature__ = sig
-    return wrapped
+        @wraps(func)
+        def wrapped(**kwargs):
+            kwargs.update(defaultargs)
+            # extra the variables in order
+            inputs = [kwargs[key] for key in param_order]
+
+            return func(*inputs)
+
+        wrapped.__signature__ = sig
+        return wrapped
+
+    return pos_signature_modifier
 
 
-def signature_binding_modifier(func):
+def bind_signature(func):
     """Add parameter binding and checking for function.
 
     The additional wrapper is unnecessary, but to keep a consistent

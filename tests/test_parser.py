@@ -149,9 +149,7 @@ class TestModelParser:
     def func(self, mmodel_G):
         """Construct a model_instance"""
         description = "The first line of description.\nThe second line of description."
-        return Model(
-            "model_instance", mmodel_G, BasicHandler, description=description
-        )
+        return Model("model_instance", mmodel_G, BasicHandler, description=description)
 
     def test_model_parser(self, func):
         """Test ufunc parser correctly parse model instances."""
@@ -178,25 +176,10 @@ class TestModelParser:
 
 class TestNodeParser:
     @pytest.fixture
-    def modifier(self):
-        def modifier_func(func, value):
-            """Basic modifier."""
-
-            @wraps(func)
-            def wrapper(**kwargs):
-                return func(**kwargs) + value
-
-            return wrapper
-
-        return modifier_func
-
-    @pytest.fixture
     def model_func(self, mmodel_G):
         """Construct a model_instance."""
         description = "The first line of description.\nThe second line of description."
-        return Model(
-            "model_instance", mmodel_G, BasicHandler, description=description
-        )
+        return Model("model_instance", mmodel_G, BasicHandler, description=description)
 
     @pytest.fixture
     def callable_func(self):
@@ -208,12 +191,10 @@ class TestNodeParser:
 
         return func
 
-    def test_parse_builtin(self, modifier):
+    def test_parse_builtin(self, value_modifier):
         """Test the full node attributes for builtin function."""
-
-        func_dict = node_parser(
-            "test", math.pow, "c", ["a", "b"], [(modifier, {"value": 2})]
-        )
+        mod = value_modifier(value=2)
+        func_dict = node_parser("test", math.pow, "c", ["a", "b"], [mod])
         func_dict.pop("_func")
 
         sig = func_dict.pop("sig")
@@ -224,18 +205,17 @@ class TestNodeParser:
         assert func_dict == {
             "doc": "Return x**y (x to the power of y).",
             "functype": "builtin",
-            "modifiers": [(modifier, {"value": 2})],
+            "modifiers": [mod],
             "output": "c",
         }
 
         assert func(a=1, b=2) == 3  # 1 + 2 (from modifier)
 
-    def test_parse_ufunc(self, modifier):
+    def test_parse_ufunc(self, value_modifier):
         """Test the full node attributes for numpy.ufunc."""
 
-        func_dict = node_parser(
-            "test", np.add, "c", ["a", "b"], [(modifier, {"value": 1})]
-        )
+        mod = value_modifier(value=1)
+        func_dict = node_parser("test", np.add, "c", ["a", "b"], [mod])
         func_dict.pop("_func")
 
         sig = func_dict.pop("sig")
@@ -246,13 +226,13 @@ class TestNodeParser:
         assert func_dict == {
             "doc": "Add arguments element-wise.",
             "functype": "numpy.ufunc",
-            "modifiers": [(modifier, {"value": 1})],
+            "modifiers": [mod],
             "output": "c",
         }
 
         assert np.array_equal(func(a=np.array([1, 2, 3]), b=2), np.array([4, 5, 6]))
 
-    def test_parse_model(self, modifier, model_func):
+    def test_parse_model(self, model_func):
         """Test the full node attributes for mmodel.model."""
 
         func_dict = node_parser("test", model_func, "c", ["x", "y", "z", "xy"], [])
@@ -272,12 +252,11 @@ class TestNodeParser:
 
         assert func(x=10, y=2, z=15, xy=1) == (-36, math.log(12, 2))
 
-    def test_parse_callable(self, modifier, callable_func):
+    def test_parse_callable(self, value_modifier, callable_func):
         """Test the full node attributes for callable."""
 
-        func_dict = node_parser(
-            "test", callable_func, "c", ["x", "y"], [(modifier, {"value": -1})]
-        )
+        mod = value_modifier(value=-1)
+        func_dict = node_parser("test", callable_func, "c", ["x", "y"], [mod])
         func_dict.pop("_func")
         sig = func_dict.pop("sig")
         assert list(sig.parameters) == ["x", "y"]
@@ -286,7 +265,7 @@ class TestNodeParser:
         assert func_dict == {
             "doc": "Sum of a and b.",
             "functype": "callable",
-            "modifiers": [(modifier, {"value": -1})],
+            "modifiers": [mod],
             "output": "c",
         }
 

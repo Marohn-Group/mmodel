@@ -14,6 +14,7 @@ import networkx as nx
 from mmodel.graph import ModelGraph
 from mmodel.parser import node_parser
 import math
+from functools import wraps
 
 
 # define the global functions for two graph
@@ -175,6 +176,23 @@ def mmodel_signature():
     ]
 
     return Signature(param_list)
+
+
+@pytest.fixture
+def value_modifier():
+    """Return a modifier function that adds value to the result."""
+
+    def modifier(value):
+        def mod(func):
+            @wraps(func)
+            def wrapped(*args, **kwargs):
+                return func(*args, **kwargs) + value
+
+            return wrapped
+
+        return mod
+
+    return modifier
 
 
 def graph_equal(G1, G2):

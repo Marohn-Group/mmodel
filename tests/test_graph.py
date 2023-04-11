@@ -101,7 +101,7 @@ class TestSetNodeObject:
     """Test set_node_object and set_node_objects_from."""
 
     @pytest.fixture
-    def base_G(self):
+    def base_G(self, value_modifier):
         """Basic ModelGraph with pre-defined edges."""
 
         def func_a(m, n):
@@ -111,21 +111,12 @@ class TestSetNodeObject:
         G.add_edge("func_a", "func_b")
         G.add_edge("func_a", "func_c")
 
-        def modifier(func, value):
-            """Basic modifier"""
-
-            @wraps(func)
-            def wrapper(**kwargs):
-                return func(**kwargs) + value
-
-            return wrapper
-
         G.set_node_object(
             "func_a",
             func_a,
             "o",
             inputs=["a", "b"],
-            modifiers=[(modifier, {"value": 1})],
+            modifiers=[value_modifier(value=1)],
         )
 
         return G
@@ -144,7 +135,10 @@ class TestSetNodeObject:
     def test_set_node_object_modifiers(self, base_G):
         """Test node modifiers are applied and in the correct order."""
 
-        assert base_G.nodes["func_a"]["modifiers"][0][0].__name__ == "modifier"
+        assert (
+            base_G.nodes["func_a"]["modifiers"][0].__qualname__
+            == "value_modifier.<locals>.modifier.<locals>.mod"
+        )
 
     def test_set_node_object_base_func(self, base_G):
         """Test that the input of base function has updated."""
@@ -232,14 +226,11 @@ class TestModelGraphBasics:
 
         assert mmodel_G.node_metadata("log") == dedent(node_s)
 
-    def test_node_metadata_with_modifiers(self, mmodel_G):
+    def test_node_metadata_with_modifiers(self, mmodel_G, value_modifier):
         """Test if view node outputs node information correctly."""
 
         def func(a, b):
             return a + b
-
-        def modifier(func, value):
-            return func
 
         mmodel_G.add_node("test_node")
         mmodel_G.set_node_object(
@@ -247,7 +238,7 @@ class TestModelGraphBasics:
             func,
             "c",
             [],
-            [(modifier, {"value": 1}), (modifier, {"value": 2})],
+            [value_modifier(value=1), value_modifier(value=2)],
         )
 
         node_s = """\
@@ -257,8 +248,8 @@ class TestModelGraphBasics:
         return: c
         functype: callable
         modifiers:
-          - modifier(1)
-          - modifier(2)"""
+          - modifier(value=1)
+          - modifier(value=2)"""
 
         assert mmodel_G.node_metadata("test_node") == dedent(node_s)
 
@@ -410,7 +401,7 @@ class TestMModelGraphOperation:
         subgraph = mmodel_G.subgraph(nodes=["subtract"], inputs=["f"], outputs=["m"])
         assert graph_equal(subgraph, mmodel_G)
 
-    def test_replace_subgraph(self, mmodel_G):
+    def test_replace_subgraph(self, mmodel_G, value_modifier):
         """Test the replace_subgraph method replaces the graph properly inplace or copy.
 
         See utils.replace_subgraph for more tests.
@@ -421,15 +412,8 @@ class TestMModelGraphOperation:
         def func(a, b, c, d):
             return a + b + c + d
 
-        def mod(func, a):
-            @wraps(func)
-            def wrapped(*args, **kwargs):
-                return func(*args, **kwargs) + a
-
-            return wrapped
-
         graph = mmodel_G.replace_subgraph(
-            subgraph, "test", func, "z", ["c", "e", "x", "y"], [(mod, {"a": 1})]
+            subgraph, "test", func, "z", ["c", "e", "x", "y"], [value_modifier(value=1)]
         )
 
         # a copy is created
@@ -441,7 +425,9 @@ class TestMModelGraphOperation:
         assert list(sig.parameters) == ["c", "e", "x", "y"]
 
         modifiers = node_dict.pop("modifiers")
-        assert modifiers[0][0].__name__ == "mod"
+        assert (
+            modifiers[0].__qualname__ == "value_modifier.<locals>.modifier.<locals>.mod"
+        )
         assert node_dict["output"] == "z"
 
         base_func = node_dict["_func"]
@@ -455,7 +441,7 @@ class TestMModelGraphOperation:
         assert graph.edges["add", "test"]["var"] == "c"
         assert graph.edges["subtract", "test"]["var"] == "e"
 
-    def test_modify_node(self, mmodel_G):
+    def test_modify_node(self, mmodel_G, value_modifier):
         """Test modify_node method.
 
         See utils.modify_node for more tests.
@@ -468,7 +454,7 @@ class TestMModelGraphOperation:
 
             return wrapped
 
-        mod_G = mmodel_G.modify_node("subtract", modifiers=[(mod, {"a": 1})])
+        mod_G = mmodel_G.modify_node("subtract", modifiers=[value_modifier(value=1)])
 
         # add one to the final value
         assert mod_G.nodes["subtract"]["func"](1, 2) == 0

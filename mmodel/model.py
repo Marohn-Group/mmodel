@@ -32,7 +32,7 @@ class Model:
         modifiers: list = None,
         description: str = "",
         returns: list = None,
-        **kwargs
+        **kwargs,
     ):
 
         assert self._is_valid_graph(graph)
@@ -49,8 +49,8 @@ class Model:
         executor = handler(name, self._graph, self.returns, **kwargs)
         self.execution_order = [node for node, _ in executor.order]
 
-        for mdf, kwargs in self.modifiers:
-            executor = mdf(executor, **kwargs)
+        for mdf in self.modifiers:
+            executor = mdf(executor)
 
         self.__signature__ = executor.__signature__
 

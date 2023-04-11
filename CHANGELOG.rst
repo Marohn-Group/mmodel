@@ -17,8 +17,13 @@ Python decorators.
 Changed
 ^^^^^^^
 
-- The "handler" argument in the Model class takes the handler class, additional
+- The "handler" argument in the Model class takes the handler class, and additional
   parameters are passed to the Model class as keyword arguments.
+- The modifiers are now defined as proper decorators to facilitate the
+  integration with decorators from other Python libraries.
+- The "modifier" argument in the ModelGraph and Model class takes the modifier
+  after the argument definition.
+- Modifiers naming change to simplify the definition.
 
 
 [0.5.2] - 2023-3-30
