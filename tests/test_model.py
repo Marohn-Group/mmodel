@@ -19,9 +19,7 @@ class TestModel:
             "A long description that tests if the model module"
             " wraps the Model output string description at 90 characters."
         )
-        return Model(
-            "model_instance", mmodel_G, (BasicHandler, {}), description=description
-        )
+        return Model("model_instance", mmodel_G, BasicHandler, description=description)
 
     def test_model_attr(self, model_instance, mmodel_signature):
         """Test the model has the correct name, signature, returns."""
@@ -46,7 +44,7 @@ class TestModel:
         model_instance(a, b, d, f)
         returns: (k, m)
         graph: test_graph
-        handler: BasicHandler()
+        handler: BasicHandler
 
         A long description that tests if the model module wraps the Model output string
           description at 90 characters."""
@@ -61,7 +59,7 @@ class TestModel:
     def test_model_original_graph_not_frozen(self, mmodel_G):
         """Make sure that the original graph is not frozen when defining models."""
 
-        Model("model_instance", mmodel_G, (BasicHandler, {}))
+        Model("model_instance", mmodel_G, BasicHandler)
         assert not nx.is_frozen(mmodel_G)
 
     def test_model_graph_property(self, model_instance):
@@ -84,7 +82,7 @@ class TestModel:
         G = ModelGraph()
         G.add_node("Test")
         G.set_node_object("Test", lambda x: x, output=None)
-        model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
+        model = Model("test_model", G, BasicHandler, description="Test model.")
 
         assert model(1) == None  # test if the return is None
 
@@ -142,14 +140,14 @@ class TestModel:
         """Test if the argument works with the H5Handler."""
 
         path = tmp_path / "h5model_test.h5"
-        h5model = Model("h5 model", mmodel_G, (H5Handler, {"fname": path}))
+        h5model = Model("h5 model", mmodel_G, H5Handler, fname=path)
 
         assert h5model(a=10, d=15, f=1, b=2) == (-36, math.log(12, 2))
 
         # the output of the path is the repr instead of the string
-        assert f"handler: H5Handler({repr(path)})".replace(" ", "") in str(
-            h5model
-        ).replace("\n", "").replace(" ", "")
+        assert f"handler: H5Handler" in str(h5model)
+        assert f"handler args" in str(h5model)
+        assert f"- fname: {path}" in str(h5model).replace('\n  ', '')
 
     def test_model_returns_order(self, mmodel_G):
         """Test model with custom returns order.
@@ -157,9 +155,7 @@ class TestModel:
         The return order should be the same as the returns list.
         """
 
-        model = Model(
-            "model_instance", mmodel_G, (BasicHandler, {}), returns=["m", "k"]
-        )
+        model = Model("model_instance", mmodel_G, BasicHandler, returns=["m", "k"])
 
         assert model.returns == ["m", "k"]
         assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36)
@@ -168,7 +164,7 @@ class TestModel:
         """Test model with custom returns that are more than graph."""
         # more returns
         model = Model(
-            "model_instance", mmodel_G, (BasicHandler, {}), returns=["m", "k", "c"]
+            "model_instance", mmodel_G, BasicHandler, returns=["m", "k", "c"]
         )
 
         assert model.returns == ["m", "k", "c"]
@@ -181,11 +177,11 @@ class TestModel:
         """
 
         new_model = model_instance.edit(
-            name="new_model", handler=(MemHandler, {}), description="Model description."
+            name="new_model", handler=MemHandler, description="Model description."
         )
         assert new_model.name == "new_model"
         assert new_model.description == "Model description."
-        assert new_model.handler == (MemHandler, {})
+        assert new_model.handler == MemHandler
         assert model_instance.graph is not new_model.graph
 
         assert new_model(a=10, d=15, f=1, b=2) == (-36, math.log(12, 2))
@@ -217,12 +213,13 @@ class TestModelMetaData:
         Test both the verbose and non-verbose versions.
         """
         G.set_node_object("Test", func, output="c")
-        model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
+        model = Model("test_model", G, BasicHandler, description="Test model.")
 
         assert sorted(list(model._metadata_dict(True).keys())) == [
             "description",
             "graph",
             "handler",
+            "handler args",
             "model",
             "modifiers",
             "returns",
@@ -243,7 +240,7 @@ class TestModifiedModel:
         return Model(
             "mod_model_instance",
             mmodel_G,
-            (BasicHandler, {}),
+            BasicHandler,
             modifiers=[loop_mod],
             description="Modified model.",
         )
@@ -267,7 +264,7 @@ class TestModifiedModel:
         mod_model_instance(a, b, d, f)
         returns: (k, m)
         graph: test_graph
-        handler: BasicHandler()
+        handler: BasicHandler
         modifiers:
           - loop_modifier('a')
         
@@ -395,7 +392,7 @@ class TestModelSpecialFunc:
         return Model(
             "model_instance",
             G,
-            (BasicHandler, {}),
+            BasicHandler,
             description="Model with builtin and ufunc.",
         )
 

@@ -7,6 +7,20 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
+[0.6.0]
+-----------------------
+
+Version 0.6.0 is a major update that includes a new Model and modifier API.
+The new API aims to simplify the model definitions and allow for external
+Python decorators.
+
+Changed
+^^^^^^^
+
+- The "handler" argument in the Model class takes the handler class, additional
+  parameters are passed to the Model class as keyword arguments.
+
+
 [0.5.2] - 2023-3-30
 -----------------------
 

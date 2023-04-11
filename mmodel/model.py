@@ -32,6 +32,7 @@ class Model:
         modifiers: list = None,
         description: str = "",
         returns: list = None,
+        **kwargs
     ):
 
         assert self._is_valid_graph(graph)
@@ -42,11 +43,10 @@ class Model:
         self.returns = returns or self._graph.returns  # tuples
         self.modifiers = modifiers or list()
         self.handler = handler
+        self.handler_args = kwargs
         self.description = description
 
-        handler_class, handler_kwargs = handler
-
-        executor = handler_class(name, self._graph, self.returns, **handler_kwargs)
+        executor = handler(name, self._graph, self.returns, **kwargs)
         self.execution_order = [node for node, _ in executor.order]
 
         for mdf, kwargs in self.modifiers:
@@ -77,6 +77,7 @@ class Model:
         additonal_dict = {
             "graph": self._graph,
             "handler": self.handler,
+            "handler args": self.handler_args,
             "modifiers": self.modifiers,
             "description": self.description,
         }

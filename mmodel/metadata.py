@@ -75,6 +75,22 @@ def format_listargs(key, value):
         return []
 
 
+def format_dictargs(key, value):
+    """Format the metadata value that is a dictionary."""
+
+    if value:
+        str_list = [f"{key}:"]
+
+        for k, v in value.items():
+            mod_str = f"\t- {k}: {v}"
+            str_list.append(mod_str)
+
+        return str_list
+
+    else:
+        return []
+
+
 def format_args(key, value):
     """Format the metadata value that has the value of (func, kwargs).
 
@@ -136,11 +152,21 @@ modelformatter = MetaDataFormatter(
         "model": format_func,
         "returns": format_returns,
         "graph": format_obj,
-        "handler": format_args,
+        "handler": format_obj,
+        "handler args": format_dictargs,
         "modifiers": format_listargs,
         "description": format_value,
     },
-    ["model", "returns", "graph", "handler", "modifiers", None, "description"],
+    [
+        "model",
+        "returns",
+        "graph",
+        "handler",
+        "handler args",
+        "modifiers",
+        None,
+        "description",
+    ],
 )
 
 nodeformatter = MetaDataFormatter(

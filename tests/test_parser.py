@@ -150,7 +150,7 @@ class TestModelParser:
         """Construct a model_instance"""
         description = "The first line of description.\nThe second line of description."
         return Model(
-            "model_instance", mmodel_G, (BasicHandler, {}), description=description
+            "model_instance", mmodel_G, BasicHandler, description=description
         )
 
     def test_model_parser(self, func):
@@ -195,7 +195,7 @@ class TestNodeParser:
         """Construct a model_instance."""
         description = "The first line of description.\nThe second line of description."
         return Model(
-            "model_instance", mmodel_G, (BasicHandler, {}), description=description
+            "model_instance", mmodel_G, BasicHandler, description=description
         )
 
     @pytest.fixture

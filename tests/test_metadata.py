@@ -75,6 +75,17 @@ def test_format_listargs():
     ) == ["a:", "\t- <lambda>(1)", "\t- <lambda>('str')"]
 
 
+def test_format_dictargs():
+    """Test format_dictargs function."""
+
+    assert meta.format_dictargs("a", {}) == []
+    assert meta.format_dictargs("a", {"b": 1, "c": "str"}) == [
+        "a:",
+        "\t- b: 1",
+        "\t- c: str",
+    ]
+
+
 def test_format_args():
     """Test format_args function."""
 
