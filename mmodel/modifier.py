@@ -3,13 +3,13 @@ import inspect
 from mmodel.utility import parse_input, parse_parameters
 
 
-def loop(parameter: str):
+def loop_modifier(parameter: str):
     """Modify function to iterate one given parameter.
 
     :param list parameter: target parameter to loop
     """
 
-    def loop_modifier(func):
+    def loop(func):
         @wraps(func)
         def loop_wrapped(**kwargs):
 
@@ -25,11 +25,11 @@ def loop(parameter: str):
 
         return loop_wrapped
 
-    loop_modifier.metadata = f"loop({repr(parameter)})"
-    return loop_modifier
+    loop.metadata = f"loop_modifier({repr(parameter)})"
+    return loop
 
 
-def zip_loop(parameters: list):
+def zip_loop_modifier(parameters: list):
     """Modify function to iterate the parameters pairwise.
 
     :param list parameters: list of the parameter to loop
@@ -37,7 +37,7 @@ def zip_loop(parameters: list):
         provided, the parameters should be delimited by ", ".
     """
 
-    def zip_loop_modifier(func):
+    def zip_loop(func):
         @wraps(func)
         def loop_wrapped(**kwargs):
 
@@ -54,8 +54,8 @@ def zip_loop(parameters: list):
 
         return loop_wrapped
 
-    zip_loop_modifier.metadata = f"zip_loop({repr(parameters)})"
-    return zip_loop_modifier
+    zip_loop.metadata = f"zip_loop({repr(parameters)})"
+    return zip_loop
 
 
 def replace_signature(parameters: list):

@@ -1,6 +1,6 @@
 from mmodel.modifier import (
-    loop,
-    zip_loop,
+    loop_modifier,
+    zip_loop_modifier,
     replace_signature,
     replace_pos_signature,
     bind_signature,
@@ -19,42 +19,42 @@ def example_func():
 
 
 def test_loop(example_func):
-    """Test loop modifier."""
+    """Test loop_modifier modifier."""
 
-    loop_mod = loop("b")(example_func)
+    loop_mod = loop_modifier("b")(example_func)
 
     assert loop_mod(a=1, b=[1, 2, 3], c=4) == [6, 7, 8]
 
 
 def test_loop_exceptions(example_func):
-    """Test loop modifier exception if the input value is not iterable."""
+    """Test loop_modifier modifier exception if the input value is not iterable."""
 
-    loop_mod = loop("b")(example_func)
+    loop_mod = loop_modifier("b")(example_func)
 
     with pytest.raises(Exception, match="b value is not iterable"):
         loop_mod(a=1, b=1, c=4)
 
 
 def test_loop_metadata(example_func):
-    """Test loop modifier metadata."""
+    """Test loop_modifier modifier metadata."""
 
-    loop_mod = loop("b")
+    loop_mod = loop_modifier("b")
 
-    assert loop_mod.metadata == "loop('b')"
+    assert loop_mod.metadata == "loop_modifier('b')"
 
 
 def test_zip_loop_list(example_func):
-    """Test zip loop modifier with list input."""
+    """Test zip_loop_modifier modifier with list input."""
 
-    loop_mod = zip_loop(["a", "b"])(example_func)
+    loop_mod = zip_loop_modifier(["a", "b"])(example_func)
 
     assert loop_mod(a=[0.1, 0.2, 0.3], b=[1, 2, 3], c=10) == [11.1, 12.2, 13.3]
 
 
 def test_zip_loop_metadata(example_func):
-    """Test zip loop modifier metadata."""
+    """Test zip_loop_modifier modifier metadata."""
 
-    loop_mod = zip_loop(["a", "b"])
+    loop_mod = zip_loop_modifier(["a", "b"])
 
     assert loop_mod.metadata == "zip_loop(['a', 'b'])"
 
