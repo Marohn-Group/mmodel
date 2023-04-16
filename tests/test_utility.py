@@ -4,7 +4,6 @@ import random
 from collections import OrderedDict
 from inspect import Parameter
 import networkx as nx
-from functools import wraps
 import mmodel.utility as util
 
 
@@ -71,11 +70,11 @@ def test_modelgraph_signature(mmodel_G, mmodel_signature):
     assert util.modelgraph_signature(mmodel_G) == mmodel_signature
 
 
-def test_replace_signature(mmodel_signature):
-    """Test replace signature."""
+def test_replace_signature_with_object(mmodel_signature):
+    """Test replace_signature_with_object."""
 
     replacement_dict = {"a_rep": ["a"], "f_rep": ["f", "g"]}
-    signature = util.replace_signature(mmodel_signature, replacement_dict)
+    signature = util.replace_signature_with_object(mmodel_signature, replacement_dict)
 
     assert "a_rep" in signature.parameters
     assert "a" not in signature.parameters

@@ -6,7 +6,7 @@ from copy import deepcopy
 from textwrap import dedent
 import numpy as np
 
-from mmodel import Model, BasicHandler, H5Handler, MemHandler, loop_modifier, ModelGraph
+from mmodel import Model, BasicHandler, H5Handler, MemHandler, loop_input, ModelGraph
 
 
 class TestModel:
@@ -231,13 +231,13 @@ class TestModifiedModel:
 
     @pytest.fixture
     def mod_model_instance(self, mmodel_G):
-        """Construct a model_instance with loop_modifier modifier."""
+        """Construct a model_instance with loop_input modifier."""
 
         return Model(
             "mod_model_instance",
             mmodel_G,
             BasicHandler,
-            modifiers=[loop_modifier("a")],
+            modifiers=[loop_input("a")],
             description="Modified model.",
         )
 
@@ -262,7 +262,7 @@ class TestModifiedModel:
         graph: test_graph
         handler: BasicHandler
         modifiers:
-          - loop_modifier('a')
+          - loop_input('a')
         
         Modified model."""
         assert str(mod_model_instance) == dedent(mod_model_s)

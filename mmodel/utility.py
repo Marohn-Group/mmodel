@@ -66,7 +66,7 @@ def param_sorter(parameter):
         return parameter.kind, False, parameter.name
 
 
-def replace_signature(signature, replacement_dict):
+def replace_signature_with_object(signature, replacement_dict):
     """Replace signature with a dictionary of (key, pair).
 
     The function is used to replace several input parameters with an object.

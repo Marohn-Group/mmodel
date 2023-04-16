@@ -13,7 +13,6 @@ import math
 import inspect
 import numpy as np
 import operator
-from functools import wraps
 
 
 def test_parse_docstring():
