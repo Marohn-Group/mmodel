@@ -1,9 +1,19 @@
+__all__ = [
+    "loop_input",
+    "zip_loop_inputs",
+    "redefine_signature",
+    "redefine_pos_signature",
+    "bind_signature",
+    "profile_time",
+]
+
+
 from functools import wraps
 import inspect
 from mmodel.utility import parse_input, parse_parameters
 
 
-def loop_modifier(parameter: str):
+def loop_input(parameter: str):
     """Modify function to iterate one given parameter.
 
     :param list parameter: target parameter to loop
@@ -25,11 +35,11 @@ def loop_modifier(parameter: str):
 
         return loop_wrapped
 
-    loop.metadata = f"loop_modifier({repr(parameter)})"
+    loop.metadata = f"loop_input({repr(parameter)})"
     return loop
 
 
-def zip_loop_modifier(parameters: list):
+def zip_loop_inputs(parameters: list):
     """Modify function to iterate the parameters pairwise.
 
     :param list parameters: list of the parameter to loop
@@ -58,7 +68,7 @@ def zip_loop_modifier(parameters: list):
     return zip_loop
 
 
-def replace_signature(parameters: list):
+def redefine_signature(parameters: list):
     """Replace node object signature.
 
     :param list parameters: signature parameters to replace the original
@@ -102,7 +112,7 @@ def replace_signature(parameters: list):
     return signature_modifier
 
 
-def replace_pos_signature(parameters: list):
+def redefine_pos_signature(parameters: list):
     """Replace node object positional signature with keyword arguments.
 
     For functions that do not have a signature or only allow positional only
@@ -155,3 +165,54 @@ def bind_signature(func):
         return func(**parsed_kwargs)
 
     return wrapped
+
+
+def format_time(dt, precision):
+    """Format time in seconds to a human-readable string."""
+
+    units = {"s": 1.0, "ms": 1e-3, "us": 1e-6, "ns": 1e-9}
+    for unit, scale in units.items():
+        if dt >= scale:
+            return f"{dt / scale:.{precision}f} {unit}"
+
+
+def profile_time(number=1, repeat=1, verbose=False, precision=2):
+    """Profile the execution time of a function.
+
+    The modifier behaves similarly to the timeit module. However,
+    the modifier does not suppress garbage collection during the function
+    execution, therefore, the result might be slightly different.
+    """
+    import timeit
+
+    timer = timeit.default_timer
+
+    def timeit_modifier(func):
+        @wraps(func)
+        def wrapped(*args, **kwargs):
+            time_list = []
+
+            for _ in range(repeat):
+                t0 = timer()
+                for _ in range(number):
+                    result = func(*args, **kwargs)
+                t1 = timer()
+                time_list.append((t1 - t0) / number)
+
+            if verbose:
+                print(f"{func.__name__} - raw times: {time_list}")
+            else:
+                term = "loops" if number > 1 else "loop"
+                min_time = format_time(min(time_list), precision)
+                print(
+                    f"{func.__name__} - {number} {term}, "
+                    f"best of {repeat}: {min_time} per loop"
+                )
+            return result
+
+        return wrapped
+
+    timeit_modifier.metadata = (
+        f"profile_time(number={number}, repeat={repeat}, verbose={verbose})"
+    )
+    return timeit_modifier
