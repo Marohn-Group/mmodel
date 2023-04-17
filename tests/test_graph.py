@@ -105,6 +105,7 @@ class TestSetNodeObject:
         """Basic ModelGraph with pre-defined edges."""
 
         def func_a(m, n):
+            """Base function."""
             return m + n
 
         G = ModelGraph()
@@ -149,6 +150,20 @@ class TestSetNodeObject:
         """Test the final node function has the correct signature and output."""
 
         assert base_G.nodes["func_a"]["func"](a=1, b=2) == 4
+
+    def test_set_node_object_additional_kwargs(self, base_G):
+        """Test additional kwargs are added to the node.
+
+        The additional kwargs override the node attributes.
+        """
+
+        func = base_G.nodes["func_a"]["func"]
+        base_G.set_node_object(
+            "func_a", func, "o", inputs=["a", "b"], foo="bar", doc="foo"
+        )
+
+        assert base_G.nodes["func_a"]["foo"] == "bar"
+        assert base_G.nodes["func_a"]["doc"] == "foo"
 
     def test_set_node_objects_from(self, base_G):
         """Test set_node_objects_from method.

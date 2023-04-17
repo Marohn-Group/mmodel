@@ -41,6 +41,7 @@ class ModelGraph(nx.DiGraph):
         output: str = None,
         inputs: list = None,
         modifiers: list = None,
+        **kwargs,
     ):
         """Add or update the functions of an existing node.
 
@@ -56,6 +57,7 @@ class ModelGraph(nx.DiGraph):
         modifiers = modifiers or list()
         attr_dict = parser(node, func, output, inputs, modifiers)
         node_dict.update(attr_dict)
+        node_dict.update(kwargs)
 
         self.update_graph()
 
