@@ -153,15 +153,30 @@ class TestLambdaParser:
         assert func_dict["functype"] == "lambda"
 
     def test_lambda_parser_complex(self):
-        """Test lambda parser with complex lambda function and with its own line."""
+        """Test lambda parser with complex lambda function and with its line."""
 
         func_dict = parse_lambda(
-            "test", lambda x, y: [x**2 for x in y if x in {"x": 1} or x > 2], "c", []
+            "test",
+            lambda x, y: [x**2 for x in y if x in {"x": 1} or x > 2 or x in (1, 2)],
+            "c",
+            [],
         )
         assert (
             func_dict["doc"]
-            == 'Lambda expression: [x**2 for x in y if x in {"x": 1} or x > 2].'
+            == 'Lambda expression: [x**2 for x in y if x in {"x": 1} or x > 2'
+            ' or x in (1, 2)].'
         )
+
+    def test_lambda_parser_oserror(self, monkeypatch):
+        """Test lambda parser with lambda function that raises an OSError."""
+
+        def patchgetsource(func):
+            raise OSError
+
+        monkeypatch.setattr(inspect, "getsource", patchgetsource)
+
+        func_dict = parse_lambda("test", lambda x, y: x / y, "c", [])
+        assert func_dict["doc"] == ""
 
     def test_lambda_parser_raises(self):
         """Test exception is raised when inputs parameters are not defined."""

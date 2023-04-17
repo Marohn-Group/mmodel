@@ -146,15 +146,17 @@ def parse_lambda(node, func, output, inputs, **kwargs):
             r",\s*[\'|\"]{}[\'|\"]\s*".format(node, output)
         )
         pattern = r"lambda\s[a-zA-Z,_ ]+:\s*(.*),"
-
-        full_expression = inspect.getsource(func)
-        if full_expression.strip().startswith("lambda"):
-            matched = re.search(pattern, full_expression)
-        else:
-            matched = re.search(pattern_prefix, full_expression)
-        if matched:
-            doc = f"Lambda expression: {matched.group(1)}."
-        else:
+        try:
+            full_expression = inspect.getsource(func)
+            if full_expression.strip().startswith("lambda"):
+                matched = re.search(pattern, full_expression)
+            else:
+                matched = re.search(pattern_prefix, full_expression)
+            if matched:
+                doc = f"Lambda expression: {matched.group(1)}."
+            else:
+                doc = ""
+        except OSError: # could not get source code
             doc = ""
         if inputs:
             raise Exception(
