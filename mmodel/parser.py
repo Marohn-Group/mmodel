@@ -156,7 +156,7 @@ def parse_lambda(node, func, output, inputs, **kwargs):
                 doc = f"Lambda expression: {matched.group(1)}."
             else:
                 doc = ""
-        except OSError: # could not get source code
+        except OSError:  # could not get source code
             doc = ""
         if inputs:
             raise Exception(
