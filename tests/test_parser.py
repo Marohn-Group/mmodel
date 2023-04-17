@@ -5,6 +5,7 @@ from mmodel.parser import (
     parse_model,
     parse_builtin,
     grab_docstring,
+    parse_lambda,
 )
 from mmodel.model import Model
 from mmodel.handler import BasicHandler
@@ -52,7 +53,7 @@ class TestDefaultParser:
     def test_default_parser(self, callable_func):
         """Test default parser correctly parse callable."""
 
-        assert parse_default("test", callable_func, "c", [], []) == {
+        assert parse_default("test", callable_func, []) == {
             "_func": callable_func,
             "doc": "Sum of a and b.",
             "functype": "callable",
@@ -62,7 +63,7 @@ class TestDefaultParser:
         """Test default parser correctly parse function without doc."""
 
         func = lambda x: x
-        assert parse_default("test", func, "c", [], []) == {
+        assert parse_default("test", func, []) == {
             "_func": func,
             "doc": "",
             "functype": "callable",
@@ -71,7 +72,7 @@ class TestDefaultParser:
     def test_default_parser_input(self, callable_func):
         """Test default parser change inputs."""
 
-        func = parse_default("test", callable_func, "c", ["x", "y"], [])["_func"]
+        func = parse_default("test", callable_func, ["x", "y"])["_func"]
         assert list(inspect.signature(func).parameters) == ["x", "y"]
 
     def test_default_parser_raises(self):
@@ -79,14 +80,14 @@ class TestDefaultParser:
 
         with pytest.raises(Exception, match="Node 'test' has invalid function type."):
             # use an integer
-            parse_default("test", 1, "c", ["x", "y"], [])["_func"]
+            parse_default("test", 1, ["x", "y"])
 
 
 class TestBuiltinParser:
     def test_builtin_parser(self):
         """Test default parser correctly parse built-in function."""
 
-        func_dict = parse_builtin("test", math.pow, "c", ["a", "b"], [])
+        func_dict = parse_builtin("test", math.pow, ["a", "b"])
         func = func_dict.pop("_func")
         assert func_dict == {
             "doc": "Return x**y (x to the power of y).",
@@ -97,7 +98,7 @@ class TestBuiltinParser:
     def test_builtin_parser_long_doc(self):
         """Test parse_builtin correctly parse built-in function."""
 
-        func_dict = parse_builtin("test", print, "c", ["a"], [])
+        func_dict = parse_builtin("test", print, ["a"])
         func = func_dict.pop("_func")
         assert func_dict == {
             "doc": "Prints the values to a stream, or to sys.stdout by default.",
@@ -113,16 +114,16 @@ class TestBuiltinParser:
             match="Node 'test' built-in type function requires 'inputs' definition.",
         ):
             # use an integer
-            parse_builtin("test", print, "c", [], [])["_func"]
+            parse_builtin("test", print, [])
 
 
 class TestufuncParser:
-    """Test numpy parse_ufunc"""
+    """Test numpy parse_ufunc."""
 
     def test_ufunc_parser(self):
         """Test ufunc parser correctly parse numpy.ufunc."""
 
-        func_dict = parse_ufunc("test", np.add, "c", ["a", "b"], [])
+        func_dict = parse_ufunc("test", np.add, ["a", "b"])
         func = func_dict.pop("_func")
         assert func_dict == {
             "doc": "Add arguments element-wise.",
@@ -138,22 +139,54 @@ class TestufuncParser:
             match="Node 'test' numpy.ufunc type function requires 'inputs' definition.",
         ):
             # use an integer
-            parse_ufunc("test", np.add, "c", [], [])["_func"]
+            parse_ufunc("test", np.add, [])
+
+
+class TestLambdaParser:
+    """Test lambda parser."""
+
+    def test_lambda_parser(self):
+        """Test lambda parser correctly parse lambda function."""
+
+        func_dict = parse_lambda("test", lambda x, y: x + y, "c", [])
+        assert func_dict["doc"] == "Lambda expression: x + y."
+        assert func_dict["functype"] == "lambda"
+
+    def test_lambda_parser_complex(self):
+        """Test lambda parser with complex lambda function and with its own line."""
+
+        func_dict = parse_lambda(
+            "test", lambda x, y: [x**2 for x in y if x in {"x": 1} or x > 2], "c", []
+        )
+        assert (
+            func_dict["doc"]
+            == 'Lambda expression: [x**2 for x in y if x in {"x": 1} or x > 2].'
+        )
+
+    def test_lambda_parser_raises(self):
+        """Test exception is raised when inputs parameters are not defined."""
+
+        with pytest.raises(
+            Exception,
+            match="Node 'test' lambda type function does not support 'inputs' definition.",
+        ):
+            # use an integer
+            parse_lambda("test", lambda x, y: (x, y), "c", ["a", "b"])
 
 
 class TestModelParser:
-    """Test mmodel Model instance parser"""
+    """Test mmodel Model instance parser."""
 
     @pytest.fixture
     def func(self, mmodel_G):
-        """Construct a model_instance"""
+        """Construct a model_instance."""
         description = "The first line of description.\nThe second line of description."
         return Model("model_instance", mmodel_G, BasicHandler, description=description)
 
     def test_model_parser(self, func):
         """Test ufunc parser correctly parse model instances."""
 
-        func_dict = parse_model("test", func, "c", [], [])
+        func_dict = parse_model(func, [])
         assert func_dict == {
             "_func": func,
             "doc": "The first line of description.",
@@ -164,7 +197,7 @@ class TestModelParser:
     def test_model_parser_inputs(self, func):
         """Test ufunc parser correctly parse model instances with inputs."""
 
-        func_dict = parse_model("test", func, "c", ["x", "y", "z", "xy"], [])
+        func_dict = parse_model(func, ["x", "y", "z", "xy"])
         func = func_dict.pop("_func")
         assert func_dict == {
             "doc": "The first line of description.",
@@ -264,6 +297,25 @@ class TestNodeParser:
         assert func_dict == {
             "doc": "Sum of a and b.",
             "functype": "callable",
+            "modifiers": [mod],
+            "output": "c",
+        }
+
+        assert func(x=10, y=2) == 11
+
+    def test_parse_lambda(self, value_modifier, callable_func):
+        """Test the full node attributes for callable."""
+
+        mod = value_modifier(value=-1)
+        func_dict = node_parser("test", lambda x, y: x + y, "c", [], [mod])
+        func_dict.pop("_func")
+        sig = func_dict.pop("sig")
+        assert list(sig.parameters) == ["x", "y"]
+
+        func = func_dict.pop("func")
+        assert func_dict == {
+            "doc": "Lambda expression: x + y.",
+            "functype": "lambda",
             "modifiers": [mod],
             "output": "c",
         }

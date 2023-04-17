@@ -165,6 +165,17 @@ class TestSetNodeObject:
         assert base_G.nodes["func_a"]["foo"] == "bar"
         assert base_G.nodes["func_a"]["doc"] == "foo"
 
+    def test_set_node_object_with_lambda(self, base_G):
+        """Test node object input for lambda function.
+
+        Test the result alongside the base parser test to see if
+        the lambda doc is parsed correctly.
+        """
+
+        base_G.set_node_object("func_a", lambda x: (x[2], {"o": "c"}), "o")
+
+        assert base_G.nodes["func_a"]["doc"] == 'Lambda expression: (x[2], {"o": "c"}).'
+
     def test_set_node_objects_from(self, base_G):
         """Test set_node_objects_from method.
 
@@ -280,7 +291,7 @@ class TestModelGraphBasics:
 
         <lambda>(x)
         return: None
-        functype: callable"""
+        functype: lambda"""
 
         assert G.node_metadata("Test") == dedent(node_s)
 
