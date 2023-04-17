@@ -17,12 +17,12 @@ To create a nonlinear model that has the result of
 
 .. code-block:: python
 
-    from mmodel import ModelGraph, Model, MemHandler
     import math
     import numpy as np
 
     def func(sum_xy, log_xy):
         """Function that adds a value to the multiplied inputs."""
+
         return sum_xy * log_xy + 6
 
 The graph is defined using grouped edges (the ``networkx`` syntax of edge
@@ -30,6 +30,7 @@ the definition also works.)
 
 .. code-block:: python
 
+    from mmodel import ModelGraph, Model, MemHandler
     # create graph edges
     grouped_edges = [
         ("add", ["log", "function node"]),
@@ -59,7 +60,7 @@ of the model are determined based on the node information.
 
 .. code-block:: python
 
-    example_model = Model("example_model", G, handler=(MemHandler, {}), description="Test model.")
+    example_model = Model("example_model", G, handler=MemHandler, description="Test model.")
 
 The model behaves like a Python function, with additional metadata. The graph can
 be plotted using the ``draw`` method.
@@ -70,7 +71,7 @@ be plotted using the ``draw`` method.
     example_model(log_base, x, y)
     returns: z
     graph: example_graph
-    handler: MemHandler()
+    handler: MemHandler
 
     Test model.
 
@@ -93,23 +94,23 @@ One key feature of ``mmodel`` that differs from other workflow is modifiers,
 which modify callables post definition. Modifiers work on both the node level
 and model level.
 
-Example: Use ``loop_modifier`` on the graph to loop the nodes that require the
+Example: Use ``loop_input`` modifier on the graph to loop the nodes that require the
 "log_base" parameter.
 
 .. code-block:: python 
 
-    from mmodel import loop_modifier
+    from mmodel import loop_input
 
     H = G.subgraph(inputs=["log_base"])
     H.name = "example_subgraph"
-    loop_node = Model("submodel", H, handler=(MemHandler, {}))
+    loop_node = Model("submodel", H, handler=MemHandler)
 
     looped_G = G.replace_subgraph(
         H,
         "loop_node",
         loop_node,
         output="looped_z",
-        modifiers=[(loop_modifier, {"parameter": "log_base"})],
+        modifiers=[loop_input("log_base")],
     )
     looped_G.name = "looped_graph"
 
@@ -120,20 +121,19 @@ We can inspect the loop node as well as the new model.
 
 .. code-block:: python 
 
-    >>> print(loop_node)
-    loop_submodel(log_base, sum_xy)
-    returns: z
-    graph: example_subgraph
-    handler: MemHandler()
-    modifiers:
-      - loop_modifier('log_base')
-
     >>> print(looped_model)
     looped_model(log_base, x, y)
     returns: looped_z
     graph: looped_graph
     handler: MemHandler()
     
+    >>> print(looped_model.node_metadata("loop_node"))
+    submodel(log_base, sum_xy)
+    return: looped_z
+    functype: mmodel.Model
+    modifiers:
+      - loop_input('log_base')
+
     >>> looped_model([2, 4], 5, 3) # (5 + 3)log(5 + 3, 2) + 6
     [30.0, 18.0]
 

@@ -19,27 +19,13 @@ without knowing the underlying experimental model or structure.
 
 ``mmodel`` attempts to help with some of the issues outlined above. ``mmodel``
 focuses on building a modular framework, easy-to-test individual components,
-and providing visualization for complex models. Furthermore, the modular
-systems also help with code distribution, as well as introduce differently
-levels of entrances for the package:
-
- ======================= =================== 
-  action                  programming level   
- ======================= =================== 
-  run model               beginner           
-  inspect model           beginner           
-  create a new model      beginner  
-  modify model            intermediate       
-  create components       intermediate       
-  new execution method    advanced           
-  code maintenance        advanced           
- ======================= =================== 
+and providing visualization for complex models. 
 
 How does it work?
 -----------------
 
-``mmodel`` uses a two-stage system to construct a python callable
-that behaves like a python function - **graph and model**.
+``mmodel`` uses a two-stage system to construct a Python callable
+that behaves like a Python function - **graph and model**.
 
 The **graph** is a directed acyclic graph (DAG) to represent a non-linear
 the procedure, with nodes presenting individual functions and edges representing
@@ -48,9 +34,9 @@ while retaining all of its graph algorithms and methods. The class ``ModelGraph`
 handles the graph construction.
 
 The **model** can be created given the graph, the graph handler, and the modifiers.
-The model is a python executable object that behaves like a python function.
+The model is a Python executable object that behaves like a Python function.
 Specifically, the handler creates the workflow that executes each node, and modifiers
-are python wrappers (closure/decorators) that can modify the nodes and the graph.
+are Python wrappers (closure/decorators) that can modify the nodes and the graph.
 The class ``Model`` handles the model construction. Constructing a model using a
 directed graph allows for clear execution steps, error messages, and easy testing.
 Notably, we can modify the subgraph easily without changing the model, 

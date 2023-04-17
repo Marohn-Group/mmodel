@@ -1,11 +1,13 @@
 Building a model
 ================
 
-The model is built based on the graph and the desired handler. A ``mmodel``
+The model is built based on the graph and the desired handler. A mmodel
 handler is an execution method that handles the node execution order and 
 intermediate value flow. The resulting instance is a callable that behaves
 like a function. The resulting model copies and freezes the graph, making
-it immutable. The handler is given as the (class, kwargs) tuple.
+it immutable. The handler class is passed to the "handler" argument and
+any additional arguments to handler can be passed as keyword arguments to the
+Model class.
 
 .. code-block:: python
 
@@ -13,7 +15,7 @@ it immutable. The handler is given as the (class, kwargs) tuple.
 
     from mmodel import MemHandler
 
-    model = Model(G, handler=(MemHandler, {}))
+    model = Model(name='model', graph=G, handler=MemHandler)
 
 .. Note::
 

@@ -6,26 +6,30 @@ Modifier API
     mmodel.modifier
 
 
-Modifiers should be defined the same as closures or decorators. See
+Modifiers should be defined the same as decorators. See
 documentation for 
 `wraps <https://docs.python.org/3/library/functools.html#functools.wraps>`_.
 Here is an example of a loop modifier:
 
 .. code-block:: python
 
-    def loop_modifier(func, parameter: str):
-        """Modify function to iterate one given parameter.
+    from functools import wraps
+    def loop_input(parameter: str):
+        """Modify function to iterate single input parameter.
 
         :param list parameter: target parameter to loop.
         """
+        def loop_modifier(func, parameter: str):
 
-        @wraps(func)
-        def loop_wrapped(**kwargs):
+            @wraps(func)
+            def loop_wrapped(**kwargs):
 
-            loop_values = kwargs.pop(parameter)
-            return [func(**kwargs, **{parameter: value}) for value in loop_values]
+                loop_values = kwargs.pop(parameter)
+                return [func(**kwargs, **{parameter: value}) for value in loop_values]
 
-        return loop_wrapped
+            return loop_wrapped
+        loop_modifier.metadata(f"loop_input({repr(parameter)})")
+        return loop_modifier
 
 
 .. Note::
@@ -39,3 +43,7 @@ Here is an example of a loop modifier:
     A modifier for ``MModel`` requires to have a proper signature. If the modifier changes the
     function signal, add ``__signature__`` attribute with ``inspect.Signature`` to the wrapped
     function.
+
+    The metadata of the modifier is used to generate the string displayed in the metadata
+    at the node and model level. The metadata is a string passed to the "metadata" attribute of
+    the modifier function.

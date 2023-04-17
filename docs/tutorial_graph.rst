@@ -144,7 +144,7 @@ not affected.
 
     G.set_node_object(node="a", func=add, output="z", inputs=["m", "n"])
 
-    >>> print(G.view_node("a"))
+    >>> print(G.node_metadata("a"))
     a
 
     add(m, n)
@@ -191,7 +191,7 @@ mmodel can identify the above functions, and replace the signature:
     Same as a + b.
 
 
-    >>> print(G.view_node('b'))
+    >>> print(G.node_metadata('b'))
     b
 
     sum(m, n)

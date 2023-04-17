@@ -1,4 +1,4 @@
-Filter
+Parser
 ============
 
 :mod:`parser` module

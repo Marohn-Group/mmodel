@@ -23,7 +23,7 @@ README.rst):
 .. code-block:: python
 
     H = G.subgraph(outputs=["log_xy"])
-    model = Model("model", H, (MemHandler, {}))
+    model = Model("model", H, MemHandler)
 
     >>> print(H.nodes)
     ['add', 'log']
@@ -45,8 +45,8 @@ uses. Here we loop the "log_base" parameter from the Quickstart example.
     loop_node = Model(
         "loop_submodel",
         H,
-        handler=(MemHandler, {}),
-        modifiers=[(loop_modifier, {"parameter": "log_base"})],
+        handler=MemHandler,
+        modifiers=[loop_input("log_base"})],
     )
     looped_graph = G.replace_subgraph(H, "loop_node", loop_node, output="looped_z")
 
