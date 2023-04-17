@@ -24,7 +24,15 @@ Changed
 - The "modifier" argument in the ModelGraph and Model class takes the modifier
   after the argument definition.
 - Modifiers naming change to simplify the definition.
+- Node object definition allows user-defined attributes.
 
+Added
+^^^^^
+
+- Add shortcut module.
+- Add lambda parser that attempts to extract lambda function expression.
+- Add ``profile_time`` modifier.
+- Add metadata parsing ability to modifiers.
 
 [0.5.2] - 2023-3-30
 -----------------------
