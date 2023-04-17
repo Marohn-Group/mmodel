@@ -6,7 +6,8 @@ from copy import deepcopy
 from textwrap import dedent
 import numpy as np
 
-from mmodel import Model, BasicHandler, H5Handler, MemHandler, loop_input, ModelGraph
+from mmodel import Model, BasicHandler, H5Handler, MemHandler, ModelGraph
+from mmodel.modifier import loop_input
 
 
 class TestModel:
