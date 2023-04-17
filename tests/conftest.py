@@ -50,7 +50,8 @@ def logarithm(c, b):
 @pytest.fixture()
 def standard_G():
     """Standard test graph generated using DiGraph.
-
+    The inputs are:
+    a, b, d, f
     The results are:
     k = (a + 2 - d)(a + 2)^f
     m = log(a + 2, b)
