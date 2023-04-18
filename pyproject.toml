@@ -46,14 +46,6 @@ docs = ["nbsphinx", "sphinx", "sphinx_book_theme", "pydata-sphinx-theme"]
 source_pkgs = ['mmodel']
 omit = ['tests/*']
 
-[tool.pytest.ini_options]
-filterwarnings = [
-    # note the use of single quote below to denote "raw" strings in TOML
-    # the escape sequence is necessary in graphviz dot string
-    # used to left align node text
-    'ignore:invalid escape sequence \\l:DeprecationWarning',
-]
-
 [tool.tox]
 legacy_tox_ini = """
 [tox]
