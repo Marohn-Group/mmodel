@@ -489,13 +489,6 @@ class TestMModelGraphOperation:
         See utils.modify_node for more tests.
         """
 
-        def mod(func, a):
-            @wraps(func)
-            def wrapped(*args, **kwargs):
-                return func(*args, **kwargs) + a
-
-            return wrapped
-
         mod_G = mmodel_G.modify_node("subtract", modifiers=[value_modifier(value=1)])
 
         # add one to the final value

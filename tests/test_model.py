@@ -156,8 +156,8 @@ class TestModel:
         assert h5model(a=10, d=15, f=1, b=2) == (-36, math.log(12, 2))
 
         # the output of the path is the repr instead of the string
-        assert f"handler: H5Handler" in str(h5model)
-        assert f"handler args" in str(h5model)
+        assert "handler: H5Handler" in str(h5model)
+        assert "handler args" in str(h5model)
         assert f"- fname: {path}" in str(h5model).replace("\n  ", "")
 
     def test_model_returns_order(self, mmodel_G):
