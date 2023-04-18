@@ -86,7 +86,7 @@ class TestModel:
         model = Model("test_model", G, BasicHandler, description="Test model.")
 
         assert model(1) == None  # test if the return is None
-    
+
     def test_model_with_no_inputs(self):
         """Test model with no inputs."""
 
@@ -115,7 +115,7 @@ class TestModel:
         """
         dot_graph = model_instance.draw()
 
-        assert str(model_instance).replace("\n", "\l") in dot_graph.source
+        assert str(model_instance).replace("\n", r"\l") in dot_graph.source
 
     def test_model_draw_export(self, model_instance, tmp_path):
         """Test the draw method that exports to files.
@@ -125,11 +125,11 @@ class TestModel:
 
         filename = tmp_path / "test_draw.dot"
         model_instance.draw(export=filename)
-        reference = str(model_instance).replace("\n", "").replace("\l", "")
+        reference = str(model_instance).replace("\n", "").replace(r"\l", "")
 
         with open(filename, "r") as f:
 
-            assert reference in f.read().replace("\n", "").replace("\l", "").replace(
+            assert reference in f.read().replace("\n", "").replace(r"\l", "").replace(
                 "\\", ""
             )
 
