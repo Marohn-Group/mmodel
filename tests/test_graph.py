@@ -4,6 +4,7 @@ import pytest
 from functools import wraps
 from inspect import signature
 from textwrap import dedent
+import inspect
 
 
 class TestAddEdge:
@@ -175,6 +176,21 @@ class TestSetNodeObject:
         base_G.set_node_object("func_a", lambda x: (x[2], {"o": "c"}), "o")
 
         assert base_G.nodes["func_a"]["doc"] == 'Lambda expression: (x[2], {"o": "c"}).'
+
+    def test_set_node_object_with_no_input(self, base_G):
+        """Test node object input for function with no input.
+
+        Test the result alongside the base parser test to see if
+        the lambda doc is parsed correctly.
+        """
+
+        def func_a():
+            """Return 1."""
+            return 1
+
+        base_G.set_node_object("func_a", func_a, "o")
+
+        assert base_G.signature == inspect.Signature()
 
     def test_set_node_objects_from(self, base_G):
         """Test set_node_objects_from method.
