@@ -86,6 +86,16 @@ class TestModel:
         model = Model("test_model", G, BasicHandler, description="Test model.")
 
         assert model(1) == None  # test if the return is None
+    
+    def test_model_with_no_inputs(self):
+        """Test model with no inputs."""
+
+        G = ModelGraph()
+        G.add_node("Test")
+        G.set_node_object("Test", lambda: 1, "value")
+        model = Model("test_model", G, BasicHandler, description="Test model.")
+
+        assert model() == 1
 
     def test_get_node(self, model_instance, mmodel_G):
         """Test get_node method of the model."""
