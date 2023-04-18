@@ -144,7 +144,7 @@ not affected.
 
     G.set_node_object(node="a", func=add, output="z", inputs=["m", "n"])
 
-    >>> print(G.view_node("a"))
+    >>> print(G.node_metadata("a"))
     a
 
     add(m, n)
@@ -191,7 +191,7 @@ mmodel can identify the above functions, and replace the signature:
     Same as a + b.
 
 
-    >>> print(G.view_node('b'))
+    >>> print(G.node_metadata('b'))
     b
 
     sum(m, n)
@@ -199,6 +199,10 @@ mmodel can identify the above functions, and replace the signature:
     functype: callable
 
     Sum of array elements over a given axis.
+
+The ``set_node_object`` method can also accept additional keyword arguments that is
+stored in the graph node attribute. The "doc" attribute is reserved for the docstring
+of the function, however, it can be overridden by the user.
 
 Function with variable length of arguments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

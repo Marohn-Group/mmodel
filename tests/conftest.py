@@ -14,6 +14,7 @@ import networkx as nx
 from mmodel.graph import ModelGraph
 from mmodel.parser import node_parser
 import math
+from functools import wraps
 
 
 # define the global functions for two graph
@@ -49,7 +50,8 @@ def logarithm(c, b):
 @pytest.fixture()
 def standard_G():
     """Standard test graph generated using DiGraph.
-
+    The inputs are:
+    a, b, d, f
     The results are:
     k = (a + 2 - d)(a + 2)^f
     m = log(a + 2, b)
@@ -175,6 +177,23 @@ def mmodel_signature():
     ]
 
     return Signature(param_list)
+
+
+@pytest.fixture
+def value_modifier():
+    """Return a modifier function that adds value to the result."""
+
+    def modifier(value):
+        def mod(func):
+            @wraps(func)
+            def wrapped(*args, **kwargs):
+                return func(*args, **kwargs) + value
+
+            return wrapped
+
+        return mod
+
+    return modifier
 
 
 def graph_equal(G1, G2):

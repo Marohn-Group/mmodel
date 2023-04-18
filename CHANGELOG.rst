@@ -7,6 +7,33 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
+[0.6.0]
+-----------------------
+
+Version 0.6.0 is a major update that includes a new Model and modifier API.
+The new API aims to simplify the model definitions and allow for external
+Python decorators.
+
+Changed
+^^^^^^^
+
+- The "handler" argument in the Model class takes the handler class, and additional
+  parameters are passed to the Model class as keyword arguments.
+- The modifiers are now defined as proper decorators to facilitate the
+  integration with decorators from other Python libraries.
+- The "modifier" argument in the ModelGraph and Model class takes the modifier
+  after the argument definition.
+- Modifiers naming change to simplify the definition.
+- Node object definition allows user-defined attributes.
+
+Added
+^^^^^
+
+- Add shortcut module.
+- Add lambda parser that attempts to extract lambda function expression.
+- Add ``profile_time`` modifier.
+- Add metadata parsing ability to modifiers.
+
 [0.5.2] - 2023-3-30
 -----------------------
 

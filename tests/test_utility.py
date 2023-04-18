@@ -4,7 +4,6 @@ import random
 from collections import OrderedDict
 from inspect import Parameter
 import networkx as nx
-from functools import wraps
 import mmodel.utility as util
 
 
@@ -71,11 +70,11 @@ def test_modelgraph_signature(mmodel_G, mmodel_signature):
     assert util.modelgraph_signature(mmodel_G) == mmodel_signature
 
 
-def test_replace_signature(mmodel_signature):
-    """Test replace signature."""
+def test_replace_signature_with_object(mmodel_signature):
+    """Test replace_signature_with_object."""
 
     replacement_dict = {"a_rep": ["a"], "f_rep": ["f", "g"]}
-    signature = util.replace_signature(mmodel_signature, replacement_dict)
+    signature = util.replace_signature_with_object(mmodel_signature, replacement_dict)
 
     assert "a_rep" in signature.parameters
     assert "a" not in signature.parameters
@@ -238,33 +237,19 @@ def test_replace_subgraph_middle(mmodel_G):
     assert graph.edges["test", "multiply"]["var"] == "e"
 
 
-@pytest.fixture
-def modifier():
-    """Return a modifier function."""
-
-    def mod(func, a):
-        @wraps(func)
-        def wrapped(*args, **kwargs):
-            return func(*args, **kwargs) + a
-
-        return wrapped
-
-    return mod
-
-
-def test_modify_node(mmodel_G, modifier):
+def test_modify_node(mmodel_G, value_modifier):
     """Test modify_node.
 
     Test if the node has the correct signature and result.
     """
 
-    mod_G = util.modify_node(mmodel_G, "subtract", modifiers=[(modifier, {"a": 1})])
+    mod_G = util.modify_node(mmodel_G, "subtract", modifiers=[value_modifier(value=1)])
 
     # add one to the final value
     assert mod_G.nodes["subtract"]["func"](1, 2) == 0
 
 
-def test_modify_node_modifier(mmodel_G, modifier):
+def test_modify_node_modifier(mmodel_G, value_modifier):
     """Test if modify node removes the original modifiers.
 
     The original modifiers should be replaced if new modifiers are supplied.
@@ -272,21 +257,21 @@ def test_modify_node_modifier(mmodel_G, modifier):
 
     # original function
     func = mmodel_G.nodes["subtract"]["_func"]
-    mod_G = util.modify_node(mmodel_G, "subtract", modifiers=[(modifier, {"a": 1})])
+    mod_G = util.modify_node(mmodel_G, "subtract", modifiers=[value_modifier(value=1)])
 
     # add one to the final value
     assert mod_G.nodes["subtract"]["func"](1, 2) == 0
 
     # make sure the original function stays the same.
-    mod_G = util.modify_node(mod_G, "subtract", modifiers=[(modifier, {"a": 1})])
+    mod_G = util.modify_node(mod_G, "subtract", modifiers=[value_modifier(value=1)])
     assert mod_G.nodes["subtract"]["_func"] == func
 
 
-def test_modify_node_inplace(mmodel_G, modifier):
+def test_modify_node_inplace(mmodel_G, value_modifier):
     """Test modify_node to modify in place."""
 
     mod_G = util.modify_node(
-        mmodel_G, "subtract", modifiers=[(modifier, {"a": 1})], inplace=True
+        mmodel_G, "subtract", modifiers=[value_modifier(value=1)], inplace=True
     )
 
     # test the original graph

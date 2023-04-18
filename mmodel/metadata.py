@@ -15,7 +15,7 @@ class MetaDataFormatter:
     def __init__(self, formatter: dict, metaorder: list = None):
         """Initiate the formatter."""
 
-        self.frommatter = formatter
+        self.formatter = formatter
         self.metaorder = metaorder
 
     def __call__(self, metadata):
@@ -37,8 +37,8 @@ class MetaDataFormatter:
                 continue
             elif key not in metadata:
                 continue
-            if key in self.frommatter:
-                metadata_str_list.extend(self.frommatter[key](key, metadata[key]))
+            if key in self.formatter:
+                metadata_str_list.extend(self.formatter[key](key, metadata[key]))
             else:
                 metadata_str_list.extend([f"{key}: {metadata[key]}"])
 
@@ -54,19 +54,70 @@ def format_func(key, value):
     return [f"{value.__name__}{inspect.signature(value)}"]
 
 
-def format_listargs(key, value):
-    """Format the metadata value that has a list of (func, kwargs).
+def format_list(key, value):
+    """Format the metadata value that is a list."""
 
-    The formatter is for modifiers and other metadata that have a
-    list of (func, kwargs), and kwargs is a dictionary.
+    if value:
+        str_list = [f"{key}:"]
+        for v in value:
+            str_list.append(f"\t- {v}")
+        return str_list
+    else:
+        return []
+
+
+def modifier_metadata(closure):
+    """Extract metadata from closure, including the name and the arguments.
+
+    The order of extraction:
+    1. If the object has the "metadata" attribute defined.
+    2. If the closure takes no arguments, the name is the function name.
+    3. If the closure takes arguments, the "metadata" attribute is not defined.
+
+    Note::
+
+        inspect.getclosurevars(closure).nonlocals can only parse values
+        if the value is used in the closure.
     """
+
+    if hasattr(closure, "metadata"):
+        return closure.metadata
+    elif not inspect.getclosurevars(closure).nonlocals:
+        return closure.__name__
+
+    else:  # closure takes arguments
+
+        # In some rare cases, the closure is a nested function.
+        # For example, in the tests, the nested closure reflects the
+        # path of the parent function. Here we remove the nested
+        # parent function name.
+
+        name = closure.__qualname__.rsplit(".<locals>.")[-2]
+        kwargs = inspect.getclosurevars(closure).nonlocals
+        kwargs_str = ", ".join(f"{k}={repr(v)}" for k, v in kwargs.items())
+        return f"{name}({kwargs_str})"
+
+
+def format_modifierlist(key, value):
+    """Format the metadata that is a list of modifiers.
+
+    The metadata of the modifier is extracted by the modifier_metadata function.
+    The resulting list is formatted by the format_list function.
+    """
+
+    modifier_str_list = [modifier_metadata(modifier) for modifier in value]
+
+    return format_list(key, modifier_str_list)
+
+
+def format_dictargs(key, value):
+    """Format the metadata value that is a dictionary."""
 
     if value:
         str_list = [f"{key}:"]
 
-        for func, kwargs in value:
-            str_value = [repr(v) for v in kwargs.values()]
-            mod_str = f"\t- {func.__name__}({', '.join(str_value)})"
+        for k, v in value.items():
+            mod_str = f"\t- {k}: {v}"
             str_list.append(mod_str)
 
         return str_list
@@ -136,18 +187,28 @@ modelformatter = MetaDataFormatter(
         "model": format_func,
         "returns": format_returns,
         "graph": format_obj,
-        "handler": format_args,
-        "modifiers": format_listargs,
+        "handler": format_obj,
+        "handler args": format_dictargs,
+        "modifiers": format_modifierlist,
         "description": format_value,
     },
-    ["model", "returns", "graph", "handler", "modifiers", None, "description"],
+    [
+        "model",
+        "returns",
+        "graph",
+        "handler",
+        "handler args",
+        "modifiers",
+        None,
+        "description",
+    ],
 )
 
 nodeformatter = MetaDataFormatter(
     {
         "node": format_value,
         "func": format_func,
-        "modifiers": format_listargs,
+        "modifiers": format_modifierlist,
         "doc": format_value,
     },
     ["node", None, "func", "return", "functype", "modifiers", None, "doc"],

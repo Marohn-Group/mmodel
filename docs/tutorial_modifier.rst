@@ -3,9 +3,9 @@ Modifying model and node
 
 Modifiers are used to modify callables. They can be python closures (wrappers)
 or decorators. They are used during the definition of the
-node object or the model. A modifier is provided as ``(func, {kwargs_dict})`` tuple.
-
-To add a loop modifier to the node 'add':
+node object or the model. A modifier is provided should only take the function
+as the argument. If the decorator has additional parameters, the parameters should
+be applied first. For example to add a loop modifier to the node 'add':
 
 .. code-block:: python
 
@@ -22,20 +22,20 @@ To add a loop modifier to the node 'add':
         return c**2
 
 
-    from mmodel import loop_modifier
+    from mmodel.modifier import loop_input
 
     G.add_edge("add", "squared")
     # set object without modifiers
     G.set_node_object("squared", squared, "d")
 
     # set object with modifier
-    G.set_node_object("add", add, "c", modifiers=[(loop_modifier, {"parameter": "b"})])
+    G.set_node_object("add", add, "c", modifiers=[loop_input(parameter='b')])
 
     # post modification
     # a new copy of the graph is created
     from mmodel import modify_node
 
-    H = modify_node(G, "add", modifiers=[(loop_modifier, {"parameter": "b"})])
+    H = modify_node(G, "add", modifiers=[loop_input('b')])
 
 Similarly, use "modifiers" argument to define model modifiers.
 
@@ -48,7 +48,7 @@ For example:
 
 .. code-block:: python
 
-    ... modifiers=[(loop_modifier(parameter='b'), {}), ...]
+    ... modifiers=[loop_input(parameter='b'), ...]
     
 
 Modifier chaining

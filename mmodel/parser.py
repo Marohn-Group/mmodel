@@ -1,8 +1,9 @@
 import types
-from mmodel.modifier import signature_modifier, pos_signature_modifier
+from mmodel.modifier import redefine_signature, redefine_pos_signature
 import numpy as np
 from mmodel.model import Model
 import inspect
+import re
 
 
 class NodeParser:
@@ -27,12 +28,14 @@ class NodeParser:
         long, the order of the parser is important.
         """
         for parser in self._parser_dict.values():
-            attr_dict = parser(node, func, output, inputs, modifiers)
+            attr_dict = parser(
+                node=node, func=func, output=output, inputs=inputs, modifiers=modifiers
+            )
             if attr_dict:
                 func = attr_dict["_func"]
                 # apply the modifiers
-                for mdf, kwargs in modifiers:
-                    func = mdf(func, **kwargs)
+                for mdf in modifiers:
+                    func = mdf(func)
 
                 sig = inspect.signature(func)
                 base_dict = {
@@ -64,7 +67,7 @@ def grab_docstring(docstring):
     return doc
 
 
-def parse_default(node, func, output, inputs, modifiers):
+def parse_default(node, func, inputs, **kwargs):
     """Return the default function dictionary.
 
     The function needs to have the start uppercase and end period style of
@@ -80,7 +83,7 @@ def parse_default(node, func, output, inputs, modifiers):
         func_dict["doc"] = doc
 
         if inputs:
-            func = signature_modifier(func, inputs)
+            func = redefine_signature(inputs)(func)
 
         func_dict.update({"_func": func, "functype": "callable"})
         return func_dict
@@ -89,14 +92,14 @@ def parse_default(node, func, output, inputs, modifiers):
         raise Exception(f"Node {repr(node)} has invalid function type.")
 
 
-def parse_builtin(node, func, output, inputs, modifiers):
+def parse_builtin(node, func, inputs, **kwargs):
     """Check if the function is a built-in function."""
     if isinstance(func, types.BuiltinFunctionType):
 
         doc = grab_docstring(func.__doc__)
 
         if inputs:
-            func = pos_signature_modifier(func, inputs)
+            func = redefine_pos_signature(inputs)(func)
         else:
             raise Exception(
                 f"Node {repr(node)} built-in type function "
@@ -106,7 +109,7 @@ def parse_builtin(node, func, output, inputs, modifiers):
         return {"_func": func, "functype": "builtin", "doc": doc}
 
 
-def parse_ufunc(node, func, output, inputs, modifiers):
+def parse_ufunc(node, func, inputs, **kwargs):
     """Check if the function is a numpy universal function.
 
     The documentation of the universal function is normally the third line.
@@ -116,7 +119,7 @@ def parse_ufunc(node, func, output, inputs, modifiers):
         doc = grab_docstring(func.__doc__)
 
         if inputs:
-            func = pos_signature_modifier(func, inputs)
+            func = redefine_pos_signature(inputs)(func)
         else:
             raise Exception(
                 f"Node {repr(node)} numpy.ufunc type function "
@@ -126,7 +129,45 @@ def parse_ufunc(node, func, output, inputs, modifiers):
         return {"_func": func, "functype": "numpy.ufunc", "doc": doc}
 
 
-def parse_model(node, func, output, inputs, modifiers):
+def parse_lambda(node, func, output, inputs, **kwargs):
+    """Check if the function is a lambda function.
+
+    There is no good way to directly extract the lambda function.
+    The inspect.getsource() function extracts the whole source code,
+    the lambda function is parsed with regex expression. However,
+    this is not a robust solution, recommend to define the doc attribute
+    directly.
+    """
+    if hasattr(func, "__code__") and func.__code__.co_name == "<lambda>":
+
+        pattern_prefix = (
+            r"[\'|\"]{}[\'|\"]\s*,\s*"
+            r"lambda\s[a-zA-Z,_ ]*:\s*(.*)"
+            r",\s*[\'|\"]{}[\'|\"]\s*".format(node, output)
+        )
+        pattern = r"lambda\s[a-zA-Z,_ ]*:\s*(.*),"
+        try:
+            full_expression = inspect.getsource(func)
+            if full_expression.strip().startswith("lambda"):
+                matched = re.search(pattern, full_expression)
+            else:
+                matched = re.search(pattern_prefix, full_expression)
+            if matched:
+                doc = f"Lambda expression: {matched.group(1)}."
+            else:
+                doc = ""
+        except OSError:  # could not get source code
+            doc = ""
+        if inputs:
+            raise Exception(
+                f"Node {repr(node)} lambda type function "
+                "does not support 'inputs' definition."
+            )
+
+        return {"_func": func, "functype": "lambda", "doc": doc}
+
+
+def parse_model(func, inputs, **kwargs):
     """Check if the function is a Model class instance."""
 
     if isinstance(func, Model):
@@ -136,7 +177,7 @@ def parse_model(node, func, output, inputs, modifiers):
             doc = func.description.splitlines()[0]
 
         if inputs:
-            func = signature_modifier(func, inputs)
+            func = redefine_signature(inputs)(func)
 
         return {"_func": func, "functype": "mmodel.Model", "doc": doc}
 
@@ -146,6 +187,7 @@ node_parser = NodeParser(
         "buitin": parse_builtin,
         "numpy.ufunc": parse_ufunc,
         "mmodel.Model": parse_model,
+        "lambda": parse_lambda,
         "default": parse_default,
     }
 )

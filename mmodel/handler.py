@@ -196,7 +196,7 @@ class MemHandler(TopologicalHandler):
     DataClass = MemData
 
     def __init__(self, name, graph, returns: list):
-        """Add counter to the object"""
+        """Add counter to the object."""
 
         counter = param_counter(graph, returns)
 

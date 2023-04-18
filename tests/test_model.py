@@ -6,7 +6,8 @@ from copy import deepcopy
 from textwrap import dedent
 import numpy as np
 
-from mmodel import Model, BasicHandler, H5Handler, MemHandler, loop_modifier, ModelGraph
+from mmodel import Model, BasicHandler, H5Handler, MemHandler, ModelGraph
+from mmodel.modifier import loop_input
 
 
 class TestModel:
@@ -19,9 +20,7 @@ class TestModel:
             "A long description that tests if the model module"
             " wraps the Model output string description at 90 characters."
         )
-        return Model(
-            "model_instance", mmodel_G, (BasicHandler, {}), description=description
-        )
+        return Model("model_instance", mmodel_G, BasicHandler, description=description)
 
     def test_model_attr(self, model_instance, mmodel_signature):
         """Test the model has the correct name, signature, returns."""
@@ -46,7 +45,7 @@ class TestModel:
         model_instance(a, b, d, f)
         returns: (k, m)
         graph: test_graph
-        handler: BasicHandler()
+        handler: BasicHandler
 
         A long description that tests if the model module wraps the Model output string
           description at 90 characters."""
@@ -61,7 +60,7 @@ class TestModel:
     def test_model_original_graph_not_frozen(self, mmodel_G):
         """Make sure that the original graph is not frozen when defining models."""
 
-        Model("model_instance", mmodel_G, (BasicHandler, {}))
+        Model("model_instance", mmodel_G, BasicHandler)
         assert not nx.is_frozen(mmodel_G)
 
     def test_model_graph_property(self, model_instance):
@@ -84,9 +83,19 @@ class TestModel:
         G = ModelGraph()
         G.add_node("Test")
         G.set_node_object("Test", lambda x: x, output=None)
-        model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
+        model = Model("test_model", G, BasicHandler, description="Test model.")
 
         assert model(1) == None  # test if the return is None
+
+    def test_model_with_no_inputs(self):
+        """Test model with no inputs."""
+
+        G = ModelGraph()
+        G.add_node("Test")
+        G.set_node_object("Test", lambda: 1, "value")
+        model = Model("test_model", G, BasicHandler, description="Test model.")
+
+        assert model() == 1
 
     def test_get_node(self, model_instance, mmodel_G):
         """Test get_node method of the model."""
@@ -106,7 +115,7 @@ class TestModel:
         """
         dot_graph = model_instance.draw()
 
-        assert str(model_instance).replace("\n", "\l") in dot_graph.source
+        assert str(model_instance).replace("\n", r"\l") in dot_graph.source
 
     def test_model_draw_export(self, model_instance, tmp_path):
         """Test the draw method that exports to files.
@@ -116,11 +125,11 @@ class TestModel:
 
         filename = tmp_path / "test_draw.dot"
         model_instance.draw(export=filename)
-        reference = str(model_instance).replace("\n", "").replace("\l", "")
+        reference = str(model_instance).replace("\n", "").replace(r"\l", "")
 
         with open(filename, "r") as f:
 
-            assert reference in f.read().replace("\n", "").replace("\l", "").replace(
+            assert reference in f.read().replace("\n", "").replace(r"\l", "").replace(
                 "\\", ""
             )
 
@@ -142,14 +151,14 @@ class TestModel:
         """Test if the argument works with the H5Handler."""
 
         path = tmp_path / "h5model_test.h5"
-        h5model = Model("h5 model", mmodel_G, (H5Handler, {"fname": path}))
+        h5model = Model("h5 model", mmodel_G, H5Handler, fname=path)
 
         assert h5model(a=10, d=15, f=1, b=2) == (-36, math.log(12, 2))
 
         # the output of the path is the repr instead of the string
-        assert f"handler: H5Handler({repr(path)})".replace(" ", "") in str(
-            h5model
-        ).replace("\n", "").replace(" ", "")
+        assert "handler: H5Handler" in str(h5model)
+        assert "handler args" in str(h5model)
+        assert f"- fname: {path}" in str(h5model).replace("\n  ", "")
 
     def test_model_returns_order(self, mmodel_G):
         """Test model with custom returns order.
@@ -157,9 +166,7 @@ class TestModel:
         The return order should be the same as the returns list.
         """
 
-        model = Model(
-            "model_instance", mmodel_G, (BasicHandler, {}), returns=["m", "k"]
-        )
+        model = Model("model_instance", mmodel_G, BasicHandler, returns=["m", "k"])
 
         assert model.returns == ["m", "k"]
         assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36)
@@ -167,9 +174,7 @@ class TestModel:
     def test_model_returns_intermediate(self, mmodel_G):
         """Test model with custom returns that are more than graph."""
         # more returns
-        model = Model(
-            "model_instance", mmodel_G, (BasicHandler, {}), returns=["m", "k", "c"]
-        )
+        model = Model("model_instance", mmodel_G, BasicHandler, returns=["m", "k", "c"])
 
         assert model.returns == ["m", "k", "c"]
         assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36, 12)
@@ -181,11 +186,11 @@ class TestModel:
         """
 
         new_model = model_instance.edit(
-            name="new_model", handler=(MemHandler, {}), description="Model description."
+            name="new_model", handler=MemHandler, description="Model description."
         )
         assert new_model.name == "new_model"
         assert new_model.description == "Model description."
-        assert new_model.handler == (MemHandler, {})
+        assert new_model.handler == MemHandler
         assert model_instance.graph is not new_model.graph
 
         assert new_model(a=10, d=15, f=1, b=2) == (-36, math.log(12, 2))
@@ -217,12 +222,13 @@ class TestModelMetaData:
         Test both the verbose and non-verbose versions.
         """
         G.set_node_object("Test", func, output="c")
-        model = Model("test_model", G, (BasicHandler, {}), description="Test model.")
+        model = Model("test_model", G, BasicHandler, description="Test model.")
 
         assert sorted(list(model._metadata_dict(True).keys())) == [
             "description",
             "graph",
             "handler",
+            "handler args",
             "model",
             "modifiers",
             "returns",
@@ -236,15 +242,13 @@ class TestModifiedModel:
 
     @pytest.fixture
     def mod_model_instance(self, mmodel_G):
-        """Construct a model_instance with loop modifier."""
-
-        loop_mod = (loop_modifier, {"parameter": "a"})
+        """Construct a model_instance with loop_input modifier."""
 
         return Model(
             "mod_model_instance",
             mmodel_G,
-            (BasicHandler, {}),
-            modifiers=[loop_mod],
+            BasicHandler,
+            modifiers=[loop_input("a")],
             description="Modified model.",
         )
 
@@ -267,9 +271,9 @@ class TestModifiedModel:
         mod_model_instance(a, b, d, f)
         returns: (k, m)
         graph: test_graph
-        handler: BasicHandler()
+        handler: BasicHandler
         modifiers:
-          - loop_modifier('a')
+          - loop_input('a')
         
         Modified model."""
         assert str(mod_model_instance) == dedent(mod_model_s)
@@ -395,7 +399,7 @@ class TestModelSpecialFunc:
         return Model(
             "model_instance",
             G,
-            (BasicHandler, {}),
+            BasicHandler,
             description="Model with builtin and ufunc.",
         )
 

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mmodel"
-version = "0.5.2"
+version = "0.6.0"
 description = "Modular modeling framework for scientific modeling and prototyping."
 readme = "README.rst"
 license = "BSD-3-Clause"
@@ -45,14 +45,6 @@ docs = ["nbsphinx", "sphinx", "sphinx_book_theme", "pydata-sphinx-theme"]
 # pytest coverage
 source_pkgs = ['mmodel']
 omit = ['tests/*']
-
-[tool.pytest.ini_options]
-filterwarnings = [
-    # note the use of single quote below to denote "raw" strings in TOML
-    # the escape sequence is necessary in graphviz dot string
-    # used to left align node text
-    'ignore:invalid escape sequence \\l:DeprecationWarning',
-]
 
 [tool.tox]
 legacy_tox_ini = """

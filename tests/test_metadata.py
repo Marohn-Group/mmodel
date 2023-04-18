@@ -4,6 +4,7 @@ import pytest
 import mmodel.metadata as meta
 from types import SimpleNamespace
 from textwrap import dedent
+import functools
 
 
 class TestMetaDataFormatter:
@@ -66,13 +67,22 @@ def test_format_func():
     assert meta.format_func("a", lambda x: x) == ["<lambda>(x)"]
 
 
-def test_format_listargs():
-    """Test format_listargs function."""
+def test_format_list():
+    """Test format_list function."""
 
-    assert meta.format_listargs("a", []) == []
-    assert meta.format_listargs(
-        "a", [(lambda x: x, {"x": 1}), (lambda y: y, {"x": "str"})]
-    ) == ["a:", "\t- <lambda>(1)", "\t- <lambda>('str')"]
+    assert meta.format_list("a", []) == []
+    assert meta.format_list("a", [1, "str"]) == ["a:", "\t- 1", "\t- str"]
+
+
+def test_format_dictargs():
+    """Test format_dictargs function."""
+
+    assert meta.format_dictargs("a", {}) == []
+    assert meta.format_dictargs("a", {"b": 1, "c": "str"}) == [
+        "a:",
+        "\t- b: 1",
+        "\t- c: str",
+    ]
 
 
 def test_format_args():
@@ -134,6 +144,59 @@ def test_textwrapper():
     assert wrapped == dedent(wrapped_str)
 
 
+class TestModifierMetadata:
+    """Test modifier metadata functions."""
+
+    @pytest.fixture
+    def modifier_with_meta(self):
+        """Closure with arguments and "meta" attribute."""
+
+        def modifier(value):
+            def mod(func):
+                @functools.wraps(func)
+                def wrapped(*args, **kwargs):
+                    return func(*args, **kwargs) + value
+
+                return wrapped
+
+            mod.metadata = f"modifier({value})"
+            return mod
+
+        return modifier
+
+    @pytest.fixture
+    def modifier(self):
+        """Closure without arguments."""
+
+        def modifier(func):
+            @functools.wraps(func)
+            def wrapped(*args, **kwargs):
+                return func(*args, **kwargs)
+
+            return wrapped
+
+        return modifier
+
+    def test_modifier_metadata(self, value_modifier, modifier_with_meta, modifier):
+        """Test modifier_metadata function."""
+
+        assert meta.modifier_metadata(value_modifier(1)) == "modifier(value=1)"
+        assert meta.modifier_metadata(modifier_with_meta(1)) == "modifier(1)"
+        assert meta.modifier_metadata(modifier) == "modifier"
+
+    def test_format_modifierlist(self, value_modifier, modifier_with_meta, modifier):
+        """Test format_modifierlist function."""
+
+        assert meta.format_modifierlist(
+            "modifier", [value_modifier(1), modifier_with_meta(1), modifier]
+        ) == [
+            "modifier:",
+            "\t- modifier(value=1)",
+            "\t- modifier(1)",
+            "\t- modifier",
+        ]
+
+
 class TestFormatMetadata:
     """Test format_metadata function."""
 
@@ -145,7 +208,7 @@ class TestFormatMetadata:
             "a": 1,
             "b": "str",
             "c": lambda x: x,
-            "d": [(lambda x: x, {"x": 1}), (lambda y: y, {"x": "str"})],
+            "d": ["element1", 2],
             "e": (lambda x: x, {"x": 1}),
             "f": ["c"],
             "g": ["d", "e"],
@@ -160,7 +223,7 @@ class TestFormatMetadata:
         return meta.MetaDataFormatter(
             {
                 "c": meta.format_func,
-                "d": meta.format_listargs,
+                "d": meta.format_list,
                 "e": meta.format_args,
                 "f": meta.format_returns,
                 "g": meta.format_returns,
@@ -185,8 +248,8 @@ class TestFormatMetadata:
         <lambda>(x)
 
         d:
-          - <lambda>(1)
-          - <lambda>('str')
+          - element1
+          - 2
         e: <lambda>(1)
         f: c
         g: (d, e)
@@ -207,8 +270,8 @@ class TestFormatMetadata:
         <lambda>(x)
 
         d:
-        \t- <lambda>(1)
-        \t- <lambda>('str')
+        \t- element1
+        \t- 2
         e: <lambda>(1)
         f: c
         g: (d, e)
