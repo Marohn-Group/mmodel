@@ -318,21 +318,24 @@ class TestNodeParser:
 
         assert func(x=10, y=2) == 11
 
-    def test_parse_lambda(self, value_modifier, callable_func):
-        """Test the full node attributes for callable."""
+    def test_parse_lambda(self, value_modifier):
+        """Test the full node attributes for callable.
+        
+        Here test lambda expression that has no input.
+        """
 
         mod = value_modifier(value=-1)
-        func_dict = node_parser("test", lambda x, y: x + y, "c", [], [mod])
+        func_dict = node_parser("test", lambda : 10, "c", [], [mod])
         func_dict.pop("_func")
         sig = func_dict.pop("sig")
-        assert list(sig.parameters) == ["x", "y"]
+        assert list(sig.parameters) == []
 
         func = func_dict.pop("func")
         assert func_dict == {
-            "doc": "Lambda expression: x + y.",
+            "doc": "Lambda expression: 10.",
             "functype": "lambda",
             "modifiers": [mod],
             "output": "c",
         }
 
-        assert func(x=10, y=2) == 11
+        assert func() == 9

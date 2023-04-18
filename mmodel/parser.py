@@ -142,10 +142,10 @@ def parse_lambda(node, func, output, inputs, **kwargs):
 
         pattern_prefix = (
             r"[\'|\"]{}[\'|\"]\s*,\s*"
-            r"lambda\s[a-zA-Z,_ ]+:\s*(.*)"
+            r"lambda\s[a-zA-Z,_ ]*:\s*(.*)"
             r",\s*[\'|\"]{}[\'|\"]\s*".format(node, output)
         )
-        pattern = r"lambda\s[a-zA-Z,_ ]+:\s*(.*),"
+        pattern = r"lambda\s[a-zA-Z,_ ]*:\s*(.*),"
         try:
             full_expression = inspect.getsource(func)
             if full_expression.strip().startswith("lambda"):
