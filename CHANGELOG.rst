@@ -7,7 +7,7 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
-[0.6.0]
+[0.6.0] - 2023-4-17
 -----------------------
 
 Version 0.6.0 is a major update that includes a new Model and modifier API.
