@@ -10,7 +10,7 @@ and this project adheres to
 [0.6.0] - 2023-4-17
 -----------------------
 
-Version 0.6.0 is a major update that includes a new Model and modifier API.
+Version 0.6.0 is a major update with a new Model and modifier API.
 The new API aims to simplify the model definitions and allow for external
 Python decorators.
 
