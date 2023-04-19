@@ -23,7 +23,7 @@ copyright = '2023, Peter Sun'
 author = 'Peter Sun'
 
 # The full version, including alpha/beta/rc tags
-release = '0.6.0'
+release = '0.6.1'
 
 
 # -- General configuration ---------------------------------------------------

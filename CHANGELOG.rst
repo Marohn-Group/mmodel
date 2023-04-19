@@ -7,6 +7,15 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
+[0.6.1] - 2023-4-18
+-----------------------
+
+Fixed
+^^^^^
+
+- Fix the issue #14 where the escaped "\\n" does not display properly
+  in the graphviz dot graph.
+
 [0.6.0] - 2023-4-17
 -----------------------
 
