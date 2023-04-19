@@ -1,7 +1,13 @@
-from mmodel.draw import draw_graph
+from mmodel.draw import draw_graph, replace_label
 import networkx as nx
 from textwrap import dedent
 import pytest
+
+def test_escape_label():
+    """Test the label is escaped correctly."""
+
+    label = "a\nb\\nc"
+    assert replace_label(label) == "a\\lb\\\\nc\\l"
 
 
 def test_draw_plain_model(mmodel_G):

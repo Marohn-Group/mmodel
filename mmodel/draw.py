@@ -1,6 +1,7 @@
 import graphviz
 from copy import deepcopy
 from mmodel.metadata import textwrap50, nodeformatter
+import re
 
 DEFAULT_SETTINGS = {
     "graph_attr": {
@@ -11,6 +12,15 @@ DEFAULT_SETTINGS = {
     },
     "node_attr": {"shape": "box"},
 }
+
+
+def replace_label(label):
+    """Format label for graphviz.
+
+    The function replaces newlines with the graphviz left aligned line break.
+    However if the ``\n`` is escaped, change it to ``\\\\n``.
+    """
+    return re.sub(r"(?<!\\)\n", r"\\l", label).replace("\\n", "\\\\n") + r"\l"
 
 
 def draw_graph(
@@ -26,7 +36,7 @@ def draw_graph(
     :param str export: filename to export to
     """
 
-    label = label.replace("\n", "\l") + "\l"
+    label = label.replace("\n", r"\l") + r"\l"
     settings = deepcopy(DEFAULT_SETTINGS)
     settings["graph_attr"].update({"label": label})
 
@@ -44,7 +54,7 @@ def draw_graph(
             for node, ndict in G.nodes(data=True):
                 if "func" in ndict:
                     metadata = G.node_metadata(node, False, formatter, textwrapper)
-                    nlabel = metadata.replace("\n", "\l") + "\l"
+                    nlabel = replace_label(metadata)
                 else:
                     nlabel = node
 
@@ -54,7 +64,7 @@ def draw_graph(
             for node, ndict in G.nodes(data=True):
                 if "func" in ndict:
                     metadata = G.node_metadata(node, True, formatter, textwrapper)
-                    nlabel = metadata.replace("\n", "\l") + "\l"
+                    nlabel = replace_label(metadata)
                 else:
                     nlabel = node
 
