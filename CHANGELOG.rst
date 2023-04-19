@@ -13,7 +13,7 @@ and this project adheres to
 Fixed
 ^^^^^
 
-- Fix issue #14 where the escaped "\\n" does not display properly
+- Fix issue #14, where the escaped "\\n" does not display correctly
   in the graphviz dot graph.
 
 [0.6.0] - 2023-4-17
