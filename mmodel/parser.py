@@ -20,16 +20,26 @@ class NodeParser:
     def __init__(self, parser_dict):
         self._parser_dict = parser_dict
 
-    def __call__(self, node, func, output, inputs, modifiers):
+    def __call__(self, node, func, output, inputs, modifiers, **kwargs):
         """Check if the function belongs to the correct type.
 
         Returns customized dictionary if that is true. It is possible
         that some of the function options overlap when the list goes
         long, the order of the parser is important.
         """
+
+        if "doc" in kwargs:
+            doc = kwargs["doc"]
+        else:
+            doc = ""
         for parser in self._parser_dict.values():
             attr_dict = parser(
-                node=node, func=func, output=output, inputs=inputs, modifiers=modifiers
+                node=node,
+                func=func,
+                output=output,
+                inputs=inputs,
+                modifiers=modifiers,
+                **kwargs,
             )
             if attr_dict:
                 func = attr_dict["_func"]
@@ -38,15 +48,17 @@ class NodeParser:
                     func = mdf(func)
 
                 sig = inspect.signature(func)
+
                 base_dict = {
                     "func": func,
                     "sig": sig,
                     "output": output,
                     "modifiers": modifiers,
+                    "doc": doc,
                 }
                 # attr dict can overwrite the base dict
-                attr_dict.update(base_dict)
-                return attr_dict
+                base_dict.update(attr_dict)
+                return base_dict
 
 
 def grab_docstring(docstring):
@@ -73,6 +85,7 @@ def parse_default(node, func, inputs, **kwargs):
     The function needs to have the start uppercase and end period style of
     docstring.
     """
+
     if callable(func):
         func_dict = {}
 
