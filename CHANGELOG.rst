@@ -14,6 +14,7 @@ Changed
 ^^^^^^^
 
 - `set_node_object` accepts additional keyword arguments.
+- Allow ``modifier_shortcut`` to change the model name.
 
 [0.6.1] - 2023-4-18
 -----------------------
