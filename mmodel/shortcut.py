@@ -1,3 +1,5 @@
+__all__ = ["modifier_shortcut"]
+
 def modifier_shortcut(model, modifier_dict):
     """Shortcut for quickly adding modifiers to the model."""
 
