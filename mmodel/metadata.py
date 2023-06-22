@@ -49,7 +49,7 @@ def format_func(key, value):
     """Format the metadata value that has a function.
 
     The key name is not shown in the string output.
-    The result is func(args1, args2, ...)"""
+    The result is func(args1, args2, ...)."""
 
     return [f"{value.__name__}{inspect.signature(value)}"]
 
@@ -161,7 +161,7 @@ def format_returns(key, value):
 
 
 def format_value(key, value):
-    """Format the metadata without displaying key."""
+    """Format the metadata without displaying the key."""
     if value:
         return [value]
     else:
