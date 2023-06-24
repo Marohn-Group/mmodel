@@ -7,6 +7,15 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
+[Unreleased]
+------------
+
+Changed
+^^^^^^^
+
+- `set_node_object` accepts additional keyword arguments.
+- Allow ``modifier_shortcut`` to change the model name.
+
 [0.6.1] - 2023-4-18
 -----------------------
 

@@ -24,6 +24,13 @@ class TestModifierShorcut:
 
         return Model("model", mmodel_G, BasicHandler)
 
+    def test_modifier_name(self, model_instance):
+        """Test if the modifier_shortcut changes model name."""
+
+        new_model = modifier_shortcut(model_instance, {}, name="new_model")
+
+        assert new_model.name == "new_model"
+
     def test_modifier_shortcut(self, model_instance, modifier):
         """Test modifier shortcut."""
 

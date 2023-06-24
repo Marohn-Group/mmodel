@@ -164,7 +164,7 @@ class Model:
         """Edit components of the model to create a new model.
 
         It is not recommended to edit the graph component of the model.
-        Although it does create a new model, but "edit" is for creating
+        Although it does create a new model, "edit" is for creating
         a new model with the same graph.
         """
 

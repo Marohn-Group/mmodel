@@ -55,7 +55,7 @@ class ModelGraph(nx.DiGraph):
         parser = self.graph["parser"]
 
         modifiers = modifiers or list()
-        attr_dict = parser(node, func, output, inputs, modifiers)
+        attr_dict = parser(node, func, output, inputs, modifiers, **kwargs)
         node_dict.update(attr_dict)
         node_dict.update(kwargs)
 
