@@ -3,48 +3,49 @@ import networkx as nx
 from textwrap import dedent
 import pytest
 
+
 def test_escape_label():
     """Test the label is escaped correctly."""
 
     label = "a\nb\\nc"
-    assert replace_label(label) == "a\\lb\\\\nc\\l"
+    assert replace_label(label) == r"a\lb\\nc\l"
+
+
+DOT_PLAIN = r"""digraph test_graph {
+graph [label="test label\l" labeljust=l labelloc=t ordering=out splines=ortho]
+node [shape=box]
+add
+subtract
+power
+log
+multiply
+add -> subtract
+add -> power
+add -> log
+subtract -> multiply
+power -> multiply
+}
+"""
 
 
 def test_draw_plain_model(mmodel_G):
     """Test the model without the node detail."""
 
-    dot_source = """\
-    digraph test_graph {
-    graph [label="test label\l" labeljust=l labelloc=t ordering=out splines=ortho]
-    node [shape=box]
-    add
-    subtract
-    power
-    log
-    multiply
-    add -> subtract
-    add -> power
-    add -> log
-    subtract -> multiply
-    power -> multiply
-    }
-    """
-
     dot_graph = draw_graph(mmodel_G, label="test label", style="plain")
-    assert dot_graph.source.replace("\t", "") == dedent(dot_source)
+    assert dot_graph.source.replace("\t", "") == DOT_PLAIN
 
 
 def test_draw_short_graph(mmodel_G):
     """Test the model with partial node and edge detail."""
 
     dot_graph = draw_graph(mmodel_G, label="test label", style="short")
-    # test if add function is included
+    # test if the add function is included
     assert (
-        "add\l\laddition(a, constant=2)\lreturn: "
-        "c\lfunctype: callable\l\lAdd a constant to the value a."
+        r"add\l\laddition(a, constant=2)\lreturn: "
+        r"c\lfunctype: callable\l\lAdd a constant to the value a."
         not in dot_graph.source
     )
-    assert "add\l\laddition(a, constant=2)\lreturn: c" in dot_graph.source
+    assert r"add\l\laddition(a, constant=2)\lreturn: c" in dot_graph.source
 
 
 def test_draw_full_graph(mmodel_G):
@@ -53,31 +54,32 @@ def test_draw_full_graph(mmodel_G):
     dot_graph = draw_graph(mmodel_G, label="test label", style="verbose")
     # test if add function is included
     assert (
-        "add\l\laddition(a, constant=2)\lreturn: "
-        "c\lfunctype: callable\l\lAdd a constant to the value a." in dot_graph.source
+        r"add\l\laddition(a, constant=2)\lreturn: "
+        r"c\lfunctype: callable\l\lAdd a constant to the value a." in dot_graph.source
     )
+
+
+DOT_PARTIAL = r"""digraph test_graph {
+graph [label="test label\l" labeljust=l labelloc=t ordering=out splines=ortho]
+node [shape=box]
+a [label=a]
+b [label=b]
+a -> b [xlabel=""]
+}
+"""
 
 
 def test_draw_partial_graph():
     """Test draw detailed graph without node object information."""
-
-    dot_source = """\
-    digraph test_graph {
-    graph [label="test label\l" labeljust=l labelloc=t ordering=out splines=ortho]
-    node [shape=box]
-    a [label=a]
-    b [label=b]
-    a -> b [xlabel=""]
-    }
-    """
 
     G = nx.DiGraph(name="test_graph")
     G.add_edge("a", "b")
 
     dot_graph_short = draw_graph(G, label="test label", style="short")
     dot_graph_full = draw_graph(G, label="test label", style="verbose")
-    assert dot_graph_short.source.replace("\t", "") == dedent(dot_source)
-    assert dot_graph_full.source.replace("\t", "") == dedent(dot_source)
+    # assert dot_graph_short.source.replace("\t", "") == dedent(dot_source)
+    assert dot_graph_short.source.replace("\t", "") == DOT_PARTIAL
+    assert dot_graph_full.source.replace("\t", "") == DOT_PARTIAL
 
 
 def test_draw_graph_export(mmodel_G, tmp_path):
@@ -91,7 +93,7 @@ def test_draw_graph_export(mmodel_G, tmp_path):
 
     with open(filename, "r") as f:
 
-        assert "add\l\laddition(a, constant=2)\lreturn: c" in f.read()
+        assert r"add\l\laddition(a, constant=2)\lreturn: c" in f.read()
 
 
 def test_draw_raises_error(mmodel_G):
