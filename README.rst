@@ -9,6 +9,11 @@ for small-scale and nonlinear models. The package aims to solve
 scientific program prototyping and distribution difficulties, making
 it easier to create modular, fast, and user-friendly packages.
 
+For using mmodel in a complex scientific workflow, please refer to
+the `mrfmsim <https://marohn-group.github.io/mrfmsim-docs/overview.html>`__
+on how mmodel improves the development of magnetic resonance force
+microscopy (MRFM) experiments.
+
 Quickstart
 ----------
 
