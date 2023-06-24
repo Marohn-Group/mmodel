@@ -3,6 +3,7 @@ import networkx as nx
 from textwrap import dedent
 import pytest
 
+
 def test_escape_label():
     """Test the label is escaped correctly."""
 
@@ -25,6 +26,7 @@ subtract -> multiply
 power -> multiply
 }
 """
+
 
 def test_draw_plain_model(mmodel_G):
     """Test the model without the node detail."""
@@ -56,6 +58,7 @@ def test_draw_full_graph(mmodel_G):
         r"c\lfunctype: callable\l\lAdd a constant to the value a." in dot_graph.source
     )
 
+
 DOT_PARTIAL = r"""digraph test_graph {
 graph [label="test label\l" labeljust=l labelloc=t ordering=out splines=ortho]
 node [shape=box]
@@ -64,6 +67,7 @@ b [label=b]
 a -> b [xlabel=""]
 }
 """
+
 
 def test_draw_partial_graph():
     """Test draw detailed graph without node object information."""
