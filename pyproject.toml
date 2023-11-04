@@ -1,18 +1,18 @@
 [tool.poetry]
 name = "mmodel"
-version = "0.6.1"
+version = "0.7.0"
 description = "Modular modeling framework for scientific modeling and prototyping."
 readme = "README.rst"
 license = "BSD-3-Clause"
 authors = ["Peter Sun <hs859@cornell.edu>"]
 maintainers = ["Peter Sun <hs859@cornell.edu>"]
-repository = "https://github.com/peterhs73/MModel"
+repository = "https://github.com/Marohn-Group/mmodel"
 packages = [{ include = "mmodel" }]
-homepage = "https://peterhs73.github.io/mmodel-docs/"
-documentation = "https://peterhs73.github.io/mmodel-docs/"
+homepage = "https://marohn-group.github.io/mmodel-docs/"
+documentation = "https://marohn-group.github.io/mmodel-docs/"
 keywords = ["python", "scientific-modeling", "prototyping"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 3 - Beta",
     "Intended Audience :: Developers",
     "Topic :: Scientific/Engineering",
     "Topic :: Software Development :: Libraries :: Python Modules"
@@ -24,7 +24,7 @@ requires = ["poetry_core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
-python = ">=3.8"
+python = ">=3.10"
 networkx = ">=2.8.3"
 h5py = ">=3.6.0"
 graphviz = ">=0.16"
@@ -49,25 +49,14 @@ omit = ['tests/*']
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py38, py39, py310, py311, coverage, docs
+envlist = py310, py311, coverage, docs
 isolated_build = True
 
 [gh-actions]
 python =
-    3.8: py38, docs
-    3.9: py39, docs
     3.10: py310, docs
     3.11: py311, docs
-
-[testenv:py38]
-deps =
-    pytest >= 7.1.1
-commands = pytest
-
-[testenv:py39]
-deps =
-    pytest >= 7.1.1
-commands = pytest
+    3.12: py312, docs
 
 [testenv:py310]
 deps =
@@ -75,6 +64,11 @@ deps =
 commands = pytest
 
 [testenv:py311]
+deps =
+    pytest >= 7.1.1
+commands = pytest
+
+[testenv:py312]
 deps =
     pytest >= 7.1.1
 commands = pytest
