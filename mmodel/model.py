@@ -52,8 +52,13 @@ class Model:
         self.handler = handler
         self._handler_kwargs = handler_kwargs or {}
         self._defaults = defaults or {}
-        self.doc = doc
-        self.__dict__.update(kwargs)
+        self.doc = self.__doc__ = doc
+
+        # update the kwargs
+        # self.__dict__.update(kwargs)
+        # avoid set property values
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
         # create the runner using handler
         self._runner = handler(self._graph, self._returns, **self._handler_kwargs)

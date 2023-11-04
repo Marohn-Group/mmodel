@@ -35,6 +35,8 @@ class TestSetNodeObject:
     def test_attributes(self, node):
         """Test node object."""
 
+        assert node.name == "func_a"
+        assert node.__name__ == "func_a"
         assert node.func(1, 2) == 3
         assert node.node_func(1, 2) == 4
         assert node(1, 2) == 4

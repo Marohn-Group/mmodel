@@ -37,7 +37,10 @@ class MetaDataFormatter:
                 metadata_list.append("")
                 continue
 
-            value = getattr(obj, key, None)
+            if key == "self": # allow reference self
+                value = obj
+            else:
+                value = getattr(obj, key, None)
 
             # the formatter returns list for potential multiliners
             if key in self.formatter:
@@ -216,7 +219,7 @@ wrapper80 = TextWrapper(
 
 modelformatter = MetaDataFormatter(
     {
-        "model_func": format_func,
+        "self": format_func,
         "returns": format_returns,
         "graph": format_obj_name,
         "handler": format_obj_name,
@@ -225,7 +228,7 @@ modelformatter = MetaDataFormatter(
         "doc": format_value,
     },
     [
-        "model_func",
+        "self",
         "returns",
         "graph",
         "handler",

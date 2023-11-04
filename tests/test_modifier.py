@@ -25,7 +25,7 @@ def test_loop_input(example_func):
     assert loop_mod(1, [1, 2, 3], 4) == [6, 7, 8]
 
 
-def test_loop_metadata(example_func):
+def test_loop_metadata():
     """Test loop_input modifier metadata."""
 
     loop_mod = loop_input("b")

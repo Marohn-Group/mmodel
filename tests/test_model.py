@@ -32,6 +32,8 @@ class TestModel:
         assert model_instance.signature == mmodel_signature
         assert model_instance.returns == ["k", "m"]
         assert model_instance.modifiers == []
+        # doc works for inspect.getdoc and help()
+        assert inspect.getdoc(model_instance) == model_instance.doc
 
     def test_model_str(self, model_instance):
         """Test model representation."""
@@ -188,6 +190,7 @@ class TestModel:
         )
         assert new_model.name == "new_model"
         assert new_model.doc == "Model description."
+        assert new_model.__doc__ == "Model description."
         assert new_model.handler == MemHandler
         assert model.graph is not new_model.graph
         assert model.defaults == new_model.defaults

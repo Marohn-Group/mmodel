@@ -13,7 +13,7 @@ class Node:
 
     def __init__(self, name, func, inputs=None, output=None, modifiers=None, **kwargs):
         # static
-        self.name = name
+        self.name = self.__name__ = name
         self.output = output
         # properties
 
@@ -28,8 +28,11 @@ class Node:
         self._node_func = modify_func(self._base_func, self._modifiers)
         self.__signature__ = signature(self._node_func)
 
-        # kwargs can overwrite properties like doc, functype, etc.
-        self.__dict__.update(**kwargs)
+        # kwargs can overwrite values like doc, functype, etc.
+        # self.__dict__.update(**kwargs)
+        # avoid set property values
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
     def convert_func(self, func, inputs):
         """Convert function to a node function.
