@@ -386,7 +386,7 @@ class TestMGraphOperation:
 
         node = mmodel_G.get_node("add")
         assert node == mmodel_G.nodes["add"]
-    
+
     def test_get_node_obj(self, mmodel_G):
         """Test get_node_obj method."""
 
