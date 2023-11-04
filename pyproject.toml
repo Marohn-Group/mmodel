@@ -49,7 +49,7 @@ omit = ['tests/*']
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py310, py311, coverage, docs
+envlist = py310, py311, py312, coverage, docs
 isolated_build = True
 
 [gh-actions]
