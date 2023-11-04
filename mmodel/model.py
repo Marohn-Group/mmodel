@@ -36,11 +36,11 @@ class Model:
         name,
         graph,
         handler,
+        handler_kwargs: dict = None,
         modifiers: list = None,
         returns: list = None,
-        handler_kwargs: dict = None,
-        doc: str = "",
         defaults: dict = None,
+        doc: str = "",
         **kwargs,
     ):
         assert self._is_valid_graph(graph)
