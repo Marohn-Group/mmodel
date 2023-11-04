@@ -1,15 +1,12 @@
-from mmodel.signature import modify_signature, add_signature, convert_signature
+from mmodel.signature import modify_signature, add_signature, convert_signature, check_signature
 from inspect import signature
-import numpy as np
 from mmodel.metadata import nodeformatter
 from mmodel.utility import construction_dict, modify_func
-import types
+
 
 
 class Node:
     """A node class that takes case of node operations."""
-
-    _sigless_functype = (np.ufunc, types.BuiltinFunctionType)
 
     def __init__(self, name, func, inputs=None, output=None, modifiers=None, **kwargs):
         # static
@@ -44,14 +41,15 @@ class Node:
         For numpy.ufunc and builtin type, "inputs" value is required.
         """
 
-        if type(func) in self._sigless_functype:
+        if not check_signature(func):
             if not inputs:
                 raise Exception(
-                    f"node {repr(self.name)} numpy.ufunc type function "
-                    "requires 'inputs'"
+                    f"node {repr(self.name)} function "
+                    "requires 'inputs' to be specified"
                 )
-            func = add_signature(func, inputs)
-        elif inputs:
+            else:
+               func = add_signature(func, inputs)
+        elif inputs: 
             func = modify_signature(func, inputs)
         else:
             func = convert_signature(func)

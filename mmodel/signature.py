@@ -132,3 +132,17 @@ def add_defaults(signature, default_dict):
         )
 
     return Signature(sorted(param_list, key=param_sorter))
+
+def check_signature(func):
+    """Check if the function has a signature.
+
+    The function checks if the function has a signature. If the
+    function has a signature, the function returns True. If the
+    function does not have a signature, the function returns False.
+    """
+
+    try:
+        signature(func)
+        return True
+    except ValueError:
+        return False

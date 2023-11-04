@@ -181,10 +181,10 @@ class TestSignatureModification:
         assert node([1, 2]) == 3
         assert "Sum of array elements over a given axis." in node.doc
 
-    def test_sigless_exception(self):
+    def test_signature_less_exception(self):
         """Test exception when a node does not have inputs defined."""
 
         with pytest.raises(
-            Exception, match="node 'Test' numpy.ufunc type function requires 'inputs'"
+            Exception, match="node 'Test' function requires 'inputs' to be specified"
         ):
-            Node("Test", sum)
+            Node("Test", np.add)
