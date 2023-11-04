@@ -30,7 +30,7 @@ that behaves like a Python function - **graph and model**.
 The **graph** is a directed acyclic graph (DAG) to represent a non-linear
 the procedure, with nodes presenting individual functions and edges representing
 parameter flow. The graph is created with a custom ``networkx`` graph class
-while retaining all of its graph algorithms and methods. The class ``ModelGraph``
+while retaining all of its graph algorithms and methods. The class ``Graph``
 handles the graph construction.
 
 The **model** can be created given the graph, the graph handler, and the modifiers.

@@ -48,11 +48,11 @@ Indices and tables
    :caption: Reference
    :hidden:
 
+   ref_node
    ref_graph
    ref_model
    ref_handler
    ref_modifier
    ref_filter
-   ref_parser
-   ref_shortcut
+   ref_signature
    

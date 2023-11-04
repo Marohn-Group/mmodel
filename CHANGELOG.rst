@@ -7,6 +7,43 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
+[Unreleased]
+------------
+
+Major changes to internal APIs. Only Python >= 3.10 are supported.
+
+Changed
+^^^^^^^
+
+- Change Python requirement to 3.10.
+- Change ``ModelGraph`` to ``Graph``.
+- Graph node definition uses mmodel.Node object.
+- Change ``draw`` module to ``visualizer`` module.
+- Custom metadata and plotting are through MetadataFormatter
+  and Visualizer class objects.
+- Node function parameters are positional or keyword arguments
+  instead of keyword only.
+- Default values can only be applied to Model class objects.
+- Change Model ``description`` attribute to ``doc``.
+- ``Node.edit``, ``Graph.edit_node``, and ``Model.edit`` methods
+  generate new node, graph, and model objects.
+- Handler additional arguments are supplied as a dictionary using
+  ``handler_kwargs`` parameter when instantiating Model object.
+- Change plotting diagram method to ``visualize`` and ``outfile``.
+- ``loop_modifier`` adds "_loop" to function signature parameter.
+
+Removed
+^^^^^^^
+
+- Remove ``shorcut`` module.
+
+Added
+^^^^^
+
+- Add ``node`` module for node definition.
+- Add ``signature`` module for function signature operations.
+
+
 [0.6.2] - 2023-06-23
 --------------------
 

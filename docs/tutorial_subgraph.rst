@@ -48,7 +48,7 @@ uses. Here we loop the "log_base" parameter from the Quickstart example.
         handler=MemHandler,
         modifiers=[loop_input("log_base"})],
     )
-    looped_graph = G.replace_subgraph(H, "loop_node", loop_node, output="looped_z")
+    looped_graph = G.replace_subgraph(H, Node("loop_node", loop_node, output="looped_z"))
 
     looped_model = Model("looped_model", looped_graph, loop_node.handler)
 

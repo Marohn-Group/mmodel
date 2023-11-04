@@ -35,7 +35,7 @@ the definition also works.)
 
 .. code-block:: python
 
-    from mmodel import ModelGraph, Model, MemHandler
+    from mmodel import Graph, Model, Node, MemHandler
     # create graph edges
     grouped_edges = [
         ("add", ["log", "function node"]),
@@ -50,12 +50,12 @@ and modifiers.
 
     # define note objects
     node_objects = [
-        ("add", np.add, "sum_xy", ["x", "y"]),
-        ("log", math.log, "log_xy", ["sum_xy", "log_base"]),
-        ("function node", func, "result"),
+        Node("add", np.add, ["x", "y"], "sum_xy"),
+        Node("log", math.log,  ["sum_xy", "log_base"], "log_xy"),
+        Node("function node", func, output="result"),
     ]
 
-    G = ModelGraph(name="example_graph")
+    G = Graph(name="example_graph")
     G.add_grouped_edges_from(grouped_edges)
     G.set_node_objects_from(node_objects)
 
@@ -65,7 +65,7 @@ of the model are determined based on the node information.
 
 .. code-block:: python
 
-    example_model = Model("example_model", G, handler=MemHandler, description="Test model.")
+    example_model = Model("example_model", G, handler=MemHandler, doc="Test model.")
 
 The model behaves like a Python function, with additional metadata. The graph can
 be plotted using the ``draw`` method.
@@ -74,7 +74,7 @@ be plotted using the ``draw`` method.
 
     >>> print(example_model)
     example_model(log_base, x, y)
-    returns: z
+    returns: result
     graph: example_graph
     handler: MemHandler
 
@@ -83,7 +83,7 @@ be plotted using the ``draw`` method.
     >>> example_model(2, 5, 3) # (5 + 3)log(5 + 3, 2) + 6
     30.0
 
-    >>> example_model.draw()
+    >>> example_model.visualize()
 
 The resulting graph contains the model metadata and detailed node information.
 
@@ -104,7 +104,7 @@ Example: Use ``loop_input`` modifier on the graph to loop the nodes that require
 
 .. code-block:: python 
 
-    from mmodel import loop_input
+    from mmodel.modifier import loop_input
 
     H = G.subgraph(inputs=["log_base"])
     H.name = "example_subgraph"
@@ -112,10 +112,7 @@ Example: Use ``loop_input`` modifier on the graph to loop the nodes that require
 
     looped_G = G.replace_subgraph(
         H,
-        "loop_node",
-        loop_node,
-        output="looped_z",
-        modifiers=[loop_input("log_base")],
+        Node("loop_node", loop_node, output="looped_z", modifiers=[loop_input("log_base")]),
     )
     looped_G.name = "looped_graph"
 
@@ -130,28 +127,29 @@ We can inspect the loop node as well as the new model.
     looped_model(log_base, x, y)
     returns: looped_z
     graph: looped_graph
-    handler: MemHandler()
+    handler: MemHandler
     
-    >>> print(looped_model.node_metadata("loop_node"))
+    >>> print(looped_model.get_node_obj("loop_node"))
     submodel(log_base, sum_xy)
     return: looped_z
-    functype: mmodel.Model
+    functype: <class 'mmodel.model.Model'>
     modifiers:
-      - loop_input('log_base')
+    - loop_input('log_base')
 
     >>> looped_model([2, 4], 5, 3) # (5 + 3)log(5 + 3, 2) + 6
     [30.0, 18.0]
 
 
-Use the ``draw`` method to draw the graph. There are three styles
-"plain", "short", and "verbose", which differ by the level of detail of the
-node information. A graph output is displayed in Jupyter Notebook
-or can be saved using the export option.
+Use the ``visualize`` method to draw the graph. For a graph, a simple diagram
+with node name only plot is shown, and for a model, the diagram shows detailed
+node and model information. Customized plotting objects can be created
+using the Visualizer class.
+
 
 .. code-block:: python
 
     G.draw(style="short")
-    example_model.draw(style="plain", export="example.pdf") # default to draw_graph
+    example_model.visualize(outfile="example.pdf") # default to draw_graph
 
 Installation
 ------------

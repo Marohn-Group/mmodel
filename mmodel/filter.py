@@ -12,7 +12,7 @@ def subnodes_by_inputs(graph, inputs: list) -> list:
 
     subgraph_nodes = []
 
-    for node, sig in nx.get_node_attributes(graph, "sig").items():
+    for node, sig in nx.get_node_attributes(graph, "signature").items():
         sig_params = sig.parameters
         for param in inputs:
             if param in sig_params:
@@ -35,9 +35,7 @@ def subnodes_by_outputs(graph, outputs: list) -> list:
 
     subgraph_nodes = []
     for node, output in nx.get_node_attributes(graph, "output").items():
-
         if output in outputs:
-
             subgraph_nodes.append(node)
             subgraph_nodes.extend(nx.ancestors(graph, node))
 

@@ -69,7 +69,6 @@ class Test_H5Data:
 
     @pytest.fixture
     def h5_filename(self, tmp_path):
-
         # "/" is basically join, tmp_path is pathlib.Path object
         # the file does not exist at this point
         # the tmpdir only saves the three most recent runs
@@ -156,7 +155,7 @@ class HandlerTester:
     def test_handler_info(self, handler_instance):
         """Test the signature and name of the handler."""
 
-        assert handler_instance.__name__ == "handler"
+        # assert handler_instance.__name__ == "handler"
         assert list(handler_instance.__signature__.parameters) == ["a", "b", "d", "f"]
 
     def test_execution(self, handler_instance):
@@ -169,13 +168,15 @@ class HandlerTester:
         """Test when node exception a custom exception is outputted."""
 
         exception_pattern = """\
-        An exception occurred for node 'log':
+        An exception occurred when executing node 'log':
+        --- exception info ---
+        ValueError: math domain error
         --- node info ---
         log
         
         logarithm\\(c, b\\)
         return: m
-        functype: callable
+        functype: function
 
         Logarithm operation.
         --- input info ---
@@ -200,12 +201,12 @@ class TestBasicHandler(HandlerTester):
     @pytest.fixture
     def handler_instance(self, mmodel_G):
         """Create the handler instance."""
-        return BasicHandler("handler", mmodel_G, ["k", "m"])
+        return BasicHandler(mmodel_G, ["k", "m"])
 
     @pytest.fixture
     def handler_instance_mod(self, mmodel_G):
         """Create the handler instance with the intermediate value for returns."""
-        return BasicHandler("handler", mmodel_G, ["c"])
+        return BasicHandler(mmodel_G, ["c"])
 
 
 class TestMemHandler(HandlerTester):
@@ -214,12 +215,12 @@ class TestMemHandler(HandlerTester):
     @pytest.fixture
     def handler_instance(self, mmodel_G):
         """Create the handler instance."""
-        return MemHandler("handler", mmodel_G, ["k", "m"])
+        return MemHandler(mmodel_G, ["k", "m"])
 
     @pytest.fixture
     def handler_instance_mod(self, mmodel_G):
         """Create the handler instance with the intermediate value for returns."""
-        return MemHandler("handler", mmodel_G, ["c"])
+        return MemHandler(mmodel_G, ["c"])
 
 
 class TestH5Handler(HandlerTester):
@@ -231,7 +232,6 @@ class TestH5Handler(HandlerTester):
 
     @pytest.fixture
     def h5_filename(self, tmp_path):
-
         # "/" is basically join, tmp_path is pathlib.Path object
         # the file does not exist at this point
         # the tmpdir only saves the three most recent runs
@@ -245,13 +245,9 @@ class TestH5Handler(HandlerTester):
         The scope of the tmp_path is "function", the file
         object and model instances are destroyed after each test function.
         """
-        return H5Handler(
-            "handler", mmodel_G, ["k", "m"], fname=h5_filename, gname="test run"
-        )
+        return H5Handler(mmodel_G, ["k", "m"], fname=h5_filename, gname="test run")
 
     @pytest.fixture
     def handler_instance_mod(self, mmodel_G, h5_filename):
         """Create handler instance with the intermediate value for returns."""
-        return H5Handler(
-            "handler", mmodel_G, ["c"], fname=h5_filename, gname="test run"
-        )
+        return H5Handler(mmodel_G, ["c"], fname=h5_filename, gname="test run")

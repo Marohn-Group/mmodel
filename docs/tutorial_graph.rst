@@ -24,9 +24,9 @@ Aside from the ``networkx`` operations,
 
 .. code-block:: python
 
-    from mmodel import ModelGraph
+    from mmodel import Graph, Node
     
-    G = ModelGraph()
+    G = Graph()
 
     G.add_grouped_edge(['a', 'b'], 'c')
 
@@ -43,12 +43,12 @@ Similarly, with multiple grouped edges
         ('c', ['d', 'e']),
     ]
 
-    G = ModelGraph()
+    G = Graph()
 
     G.add_grouped_edges_from(grouped_edges)
     
     >>> print(G)
-    ModelGraph with 5 nodes and 4 edges
+    Graph with 5 nodes and 4 edges
 
 Set node objects
 -----------------
@@ -78,7 +78,7 @@ The latter accepts a list of node objects.
         return x - y
 
 
-    G.set_node_object(node="a", func=add, output="z")
+    G.set_node_object(Node(node="a", func=add, output="z"))
 
 
     >>> print(G.node_metadata("a"))
@@ -86,15 +86,15 @@ The latter accepts a list of node objects.
 
     add(x, y)
     return: z
-    functype: callable
+    functype: function
 
     The sum of x and y.
 
     # or with multiple node objects
     # both nodes add input values but outputs in different parameter
     node_objects = [
-        ("a", add, "z"),
-        ("b", subtract, "m"),
+        Node("a", add, output="z"),
+        Node("b", subtract, output="m"),
     ]
     G.set_node_objects_from(node_objects)
 
@@ -103,7 +103,7 @@ The latter accepts a list of node objects.
 
     subtract(x, y)
     return: m
-    functype: callable
+    functype: function
 
     The difference between x and y.
 
@@ -115,8 +115,8 @@ The latter accepts a list of node objects.
 
 .. Note:: 
 
-    To have the docstring properly displayed in node's metadata, it needs to start
-    with an upper case letter and ends with a period.
+    To have the function docstring properly displayed in node's metadata,
+    it needs to start with an upper case letter and ends with a period.
 
 The name of the parameters that pass through each edge is determined and stored
 in the edge attribute "var". 
@@ -142,14 +142,14 @@ not affected.
         """Sum of x and y."""
         return a + b
 
-    G.set_node_object(node="a", func=add, output="z", inputs=["m", "n"])
+    G.set_node_object(Node("a", func=add, output="z", inputs=["m", "n"]))
 
     >>> print(G.node_metadata("a"))
     a
 
     add(m, n)
     return: z
-    functype: callable
+    functype: function
 
     Sum of x and y.
 
@@ -174,40 +174,40 @@ mmodel can identify the above functions, and replace the signature:
 
     from operator import add
 
-    G.set_node_object(node="a", func=add, output="z", inputs=["m", "n"])
+    G.set_node_object(Node("a", func=add, output="z", inputs=["m", "n"]))
 
     import numpy as np
 
-    G.set_node_object(node="b", func=np.sum, output="z", inputs=["m", "n"])
+    G.set_node_object(Node("b", func=np.sum, output="z", inputs=["m", "n"]))
 
 
-    >>> print(G.node_metadata("a"))
+    >>> print(G.get_node_obj("a"))
     a
 
     add(m, n)
     return: z
-    functype: builtin
+    functype: builtin_function_or_method
 
     Same as a + b.
 
 
-    >>> print(G.node_metadata('b'))
+    >>> print(G.get_node_obj("b"))
     b
 
     sum(m, n)
-    return: z
-    functype: callable
+    return: d
+    functype: function
 
     Sum of array elements over a given axis.
 
-The ``set_node_object`` method can also accept additional keyword arguments that is
+The ``set_node_object`` method can also accept additional keyword arguments that are
 stored in the graph node attribute. The "doc" attribute is reserved for the docstring
 of the function, however, it can be overridden by the user.
 
 Function with variable length of arguments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In mmodel graph, the argument length of a node is fixed. For a function with variable
+In mmodel graph, the argument length of a node is fixed. For a function with a variable
 length of arguments, additional arguments can be provided using the input function.
 
 
@@ -217,16 +217,16 @@ length of arguments, additional arguments can be provided using the input functi
         return a + b, kwargs
 
 
-    G.set_node_object(node="a", func=test_func_kwargs, output="z", inputs=["m", "n", "p"])
+    G.set_node_object(Node(node="a", func=test_func_kwargs, output="z", inputs=["m", "n", "p"]))
 
-    >>> print(G.node_metadata("a"))
+    >>> print(G.get_node_obj("a"))
     a
 
     test_func_kwargs(m, n, p)
     return: z
-    functype: callable
+    functype: function
 
-    >>> G.nodes["a"]["func"](m=1, n=2, p=4)
+    >>> G.get_node_obj("a")(m=1, n=2, p=4)
     (3, {'p': 4})
 
 Function with default arguments
@@ -240,16 +240,16 @@ of parameters.
     def test_func_defaults(m, n, p=2):
         return m + n + p
     
-    G.set_node_object(node="a", func=test_func_defaults, output="z", inputs=["m", "n"])
+    G.set_node_object(Node("a", func=test_func_defaults, output="z", inputs=["m", "n"]))
 
-    >>> print(G.node_metadata("a"))
+    >>> print(G.get_node_obj("a"))
     a
 
     test_func_defaults(m, n)
     return: z
-    functype: callable
+    functype: function
     
-    >>> G.nodes["a"]["func"](m=1, n=2)
+    >>> G.get_node_obj("a")(m=1, n=2)
     5
 
 .. Note::
@@ -266,13 +266,13 @@ The name and graph string behaves as the networkx graphs. To add the name to the
 .. code-block:: python
     
     # during graph definition
-    G = ModelGraph(name="ModelGraph Example")
+    G = Graph(name="Graph Example")
 
     # after definition
     # G.graph['name'] = 'ModelGraph Example'
 
     >>> print(G)
-    ModelGraph named 'ModelGraph Example' with 0 nodes and 0 edges
+    Graph named 'Graph Example' with 0 nodes and 0 edges
 
 Mutability
 ------------
@@ -285,5 +285,5 @@ of the graph.
     G.copy() # shallow copy
     G.deepcopy() # deep copy
 
-For more ways to interact with ModelGraph, and networkx.graph see
+For more ways to interact with Graph, and networkx.graph see
 :doc:`graph reference </ref_graph>`.

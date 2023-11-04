@@ -1,14 +1,23 @@
-from mmodel.utility import parse_input, is_node_attr_defined, is_edge_attr_defined
-from mmodel.metadata import modelformatter, textwrap80, format_metadata
-from mmodel.draw import draw_graph
+from mmodel.utility import (
+    modify_func,
+    construction_dict,
+    is_node_attr_defined,
+    is_edge_attr_defined,
+    modelgraph_returns,
+)
+
 import networkx as nx
+from mmodel.metadata import modelformatter
+from mmodel.signature import add_defaults
+from inspect import signature
+from mmodel.visualizer import visualizer
 
 
 class Model:
     """Create model callable.
 
     :param str name: Model name
-    :param object graph: ModelGraph instance (digraph)
+    :param object graph: Graph instance (digraph)
     :param class handler: Handler class that handles model execution and
         the keyword arguments. The parameter format is (HandlerClass, {})
         By default, the handler takes the graph as the first parameter.
@@ -22,40 +31,71 @@ class Model:
         topological search.
     """
 
-    _model_keys = ["name", "graph", "handler", "modifiers", "description", "returns"]
-
     def __init__(
         self,
         name,
         graph,
         handler,
         modifiers: list = None,
-        description: str = "",
         returns: list = None,
+        handler_kwargs: dict = None,
+        doc: str = "",
+        defaults: dict = None,
         **kwargs,
     ):
-
         assert self._is_valid_graph(graph)
         self.name = self.__name__ = name
-
         # create a copy of the graph
         self._graph = nx.freeze(graph.deepcopy())
-        self.returns = returns or self._graph.returns  # tuples
-        self.modifiers = modifiers or list()
+        self._returns = returns or modelgraph_returns(graph)  # tuples
+        self._modifiers = modifiers or list()
         self.handler = handler
-        self.handler_args = kwargs
-        self.description = description
+        self._handler_kwargs = handler_kwargs or {}
+        self._defaults = defaults or {}
+        self.doc = doc
+        self.__dict__.update(kwargs)
 
-        executor = handler(name, self._graph, self.returns, **kwargs)
-        self.execution_order = [node for node, _ in executor.order]
-
-        for mdf in self.modifiers:
-            executor = mdf(executor)
-
-        self.__signature__ = executor.__signature__
-
+        # create the runner using handler
+        self._runner = handler(self._graph, self._returns, **self._handler_kwargs)
+        self._runner.__name__ = self.name
         # final callable
-        self._executor = executor
+        self._model_func = modify_func(self._runner, self._modifiers)
+        self.__signature__ = add_defaults(signature(self._model_func), self._defaults)
+
+    @property
+    def signature(self):
+        """Model signature for inspection."""
+        return self.__signature__
+
+    @property
+    def graph(self):
+        """The graph attribute output a copy of the graph."""
+        return self._graph.deepcopy()
+
+    @property
+    def returns(self):
+        """Shallow copy of the returns."""
+        return self._returns.copy()
+
+    @property
+    def modifiers(self):
+        """Shallow copy of the modifiers."""
+        return self._modifiers.copy()
+
+    @property
+    def defaults(self):
+        """Shallow copy of the defaults."""
+        return self._defaults.copy()
+
+    @property
+    def handler_kwargs(self):
+        """Shallow copy of the handler arguments."""
+        return self._handler_kwargs.copy()
+
+    @property
+    def model_func(self):
+        """The model function."""
+        return self._model_func
 
     def __call__(self, *args, **kwargs):
         """Execute the model.
@@ -64,40 +104,10 @@ class Model:
         the handler class.
         """
 
-        # process inputs
-        inputs = parse_input(self.__signature__, *args, **kwargs)
-
-        return self._executor(**inputs)
-
-    def _metadata_dict(self, verbose):
-        """Return a dictionary with metadata keys."""
-
-        short_dict = {"model": self, "returns": self.returns}
-
-        additonal_dict = {
-            "graph": self._graph,
-            "handler": self.handler,
-            "handler args": self.handler_args,
-            "modifiers": self.modifiers,
-            "description": self.description,
-        }
-
-        if verbose:
-            return {**short_dict, **additonal_dict}
-        else:
-            return short_dict
-
-    def metadata_str(
-        self, verbose=True, formatter=modelformatter, textwrapper=textwrap80
-    ):
-        """Parse metadata string of the Model instance."""
-        return format_metadata(self._metadata_dict(verbose), formatter, textwrapper)
-
-    def __str__(self):
-        """Output callable information."""
-
-        str_list = self.metadata_str()
-        return "\n".join(str_list).rstrip()
+        bound = self.signature.bind(*args, **kwargs)
+        # defaults are added in the signature property
+        bound.apply_defaults()
+        return self._model_func(**bound.arguments)
 
     @staticmethod
     def _is_valid_graph(G):
@@ -114,39 +124,24 @@ class Model:
             G
         ), f"invalid graph ({G.name}): graph contains cycles."
 
-        assert is_node_attr_defined(G, "func", "callable")
+        assert is_node_attr_defined(G, "node_obj")
         # the following might occur when the node object is incorrectly constructed
         assert is_node_attr_defined(G, "output")
-        assert is_node_attr_defined(G, "sig", "signature")
+        assert is_node_attr_defined(G, "signature")
         assert is_edge_attr_defined(G, "var", "variable")
-
         return True
-
-    @property
-    def graph(self):
-        """The graph attribute output a copy of the graph."""
-        return self._graph.deepcopy()
 
     def get_node(self, node):
         """Quick access to node within the model."""
 
         return self._graph.nodes[node]
 
-    def get_node_func(self, node):
-        """Quick access to node base callable within the model.
+    def get_node_obj(self, node):
+        """Quick access to node object within the model."""
 
-        The function helps extract the original function within
-        the node.
-        """
+        return self._graph.nodes[node]["node_obj"]
 
-        return self._graph.nodes[node]["_func"]
-
-    def node_metadata(self, *args, **kwargs):
-        """View a specific node."""
-
-        return self._graph.node_metadata(*args, **kwargs)
-
-    def draw(self, style="verbose", export=None):
+    def visualize(self, outfile=None):
         """Draw the graph of the model.
 
         Draws the default styled graph.
@@ -158,7 +153,20 @@ class Model:
             is needed.
         """
 
-        return draw_graph(self._graph, str(self), style, export)
+        return visualizer(self._graph, str(self), outfile)
+
+    def __str__(self):
+        return modelformatter(self)
+
+    def edit_node(self, node, **kwargs):
+        """Edit node object.
+
+        A new model is created in the process.
+        """
+
+        graph = self._graph.edit_node(node, **kwargs)
+
+        return self.edit(graph=graph)
 
     def edit(self, **kwargs):
         """Edit components of the model to create a new model.
@@ -168,5 +176,9 @@ class Model:
         a new model with the same graph.
         """
 
-        model_dict = {key: getattr(self, key) for key in self._model_keys}
-        return self.__class__(**{**model_dict, **kwargs})
+        constructor_dict = construction_dict(
+            self, ["graph", "returns", "modifiers", "handler_kwargs", "defaults"]
+        )
+        constructor_dict.update(kwargs)
+
+        return self.__class__(**constructor_dict)

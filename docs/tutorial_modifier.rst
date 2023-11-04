@@ -9,7 +9,8 @@ be applied first. For example to add a loop modifier to the node 'add':
 
 .. code-block:: python
 
-    G = ModelGraph()
+    from mmodel import Graph, Node
+    G = Graph()
 
 
     def add(a, b):
@@ -26,16 +27,15 @@ be applied first. For example to add a loop modifier to the node 'add':
 
     G.add_edge("add", "squared")
     # set object without modifiers
-    G.set_node_object("squared", squared, "d")
+    G.set_node_object(Node("squared", squared, "d"))
 
     # set object with modifier
-    G.set_node_object("add", add, "c", modifiers=[loop_input(parameter='b')])
+    G.set_node_object(Node("add", add, "c", modifiers=[loop_input(parameter='b')]))
 
     # post modification
     # a new copy of the graph is created
-    from mmodel import modify_node
 
-    H = modify_node(G, "add", modifiers=[loop_input('b')])
+    H = G.edit_node("add", modifiers=[loop_input('b')])
 
 Similarly, use "modifiers" argument to define model modifiers.
 

@@ -4,15 +4,19 @@ The configuration file provides several default graph fixtures
 and test functions.
 
 1. `standard_G` - test graph generated using DiGraph, scope: function
-2. `mmodel_G` - test graph generated using ModelGraph. scope: function
+2. `mmodel_G` - test graph generated using Graph. scope: function
 """
 
 
 import pytest
 from inspect import signature, Signature, Parameter
 import networkx as nx
-from mmodel.graph import ModelGraph
-from mmodel.parser import node_parser
+from mmodel.graph import Graph
+import operator
+import math
+import numpy as np
+
+from mmodel.node import Node
 import math
 from functools import wraps
 
@@ -27,24 +31,16 @@ def addition(a, constant=2):
     return a + constant
 
 
-def subtraction(c, d):
-    """Subtraction operation."""
-    return c - d
-
-
-def power(c, f):
-    """The value of c raise to the power of f."""
-    return c**f
-
-
-def multiplication(e, g):
-    """Multiply e and g."""
-    return e * g
-
-
 def logarithm(c, b):
     """Logarithm operation."""
     return math.log(c, b)
+
+
+add_node = Node("add", addition, inputs=["a"], output="c")
+sub_node = Node("subtract", operator.sub, ["c", "d"], "e")
+power_node = Node("power", math.pow, ["c", "f"], "g")
+multi_node = Node("multiply", np.multiply, ["e", "g"], "k")
+log_node = Node("log", logarithm, output="m")
 
 
 @pytest.fixture()
@@ -60,63 +56,23 @@ def standard_G():
     node_list = [
         (
             "add",
-            {
-                "_func": addition,
-                "func": addition,
-                "output": "c",
-                "sig": signature(addition),
-                "modifiers": [],
-                "doc": "Add a constant to the value a.",
-                "functype": "callable",
-            },
+            {"node_obj": add_node, "signature": add_node.signature, "output": "c"},
         ),
         (
             "subtract",
-            {
-                "_func": subtraction,
-                "func": subtraction,
-                "output": "e",
-                "sig": signature(subtraction),
-                "modifiers": [],
-                "doc": "Subtraction operation.",
-                "functype": "callable",
-            },
+            {"node_obj": sub_node, "signature": sub_node.signature, "output": "e"},
         ),
         (
             "power",
-            {
-                "_func": power,
-                "func": power,
-                "output": "g",
-                "sig": signature(power),
-                "modifiers": [],
-                "doc": "The value of c raise to the power of f.",
-                "functype": "callable",
-            },
+            {"node_obj": power_node, "signature": power_node.signature, "output": "g"},
         ),
         (
             "multiply",
-            {
-                "_func": multiplication,
-                "func": multiplication,
-                "output": "k",
-                "sig": signature(multiplication),
-                "modifiers": [],
-                "doc": "Multiply e and g.",
-                "functype": "callable",
-            },
+            {"node_obj": multi_node, "signature": multi_node.signature, "output": "k"},
         ),
         (
             "log",
-            {
-                "_func": logarithm,
-                "func": logarithm,
-                "output": "m",
-                "sig": signature(logarithm),
-                "modifiers": [],
-                "doc": "Logarithm operation.",
-                "functype": "callable",
-            },
+            {"node_obj": log_node, "signature": log_node.signature, "output": "m"},
         ),
     ]
 
@@ -128,8 +84,8 @@ def standard_G():
         ("add", "log", {"var": "c"}),
     ]
 
-    G = nx.DiGraph(name="test_graph", parser=node_parser)
-    G.graph["type"] = "ModelGraph"  # for comparison
+    G = nx.DiGraph(name="test_graph")
+    G.graph["type"] = "mmodel_graph"  # for comparison
 
     G.add_nodes_from(node_list)
     G.add_edges_from(edge_list)
@@ -139,7 +95,7 @@ def standard_G():
 
 @pytest.fixture()
 def mmodel_G():
-    """Mock test graph generated using ModelGraph.
+    """Mock test graph generated using Graph.
 
     The results are:
     k = (a + 2 - d)(a + b)^f
@@ -151,15 +107,9 @@ def mmodel_G():
         (["subtract", "power"], "multiply"),
     ]
 
-    node_objects = [
-        ("add", addition, "c"),
-        ("subtract", subtraction, "e"),
-        ("power", power, "g"),
-        ("multiply", multiplication, "k"),
-        ("log", logarithm, "m"),
-    ]
+    node_objects = [add_node, sub_node, power_node, multi_node, log_node]
 
-    G = ModelGraph(name="test_graph")
+    G = Graph(name="test_graph")
     G.add_grouped_edges_from(grouped_edges)
     G.set_node_objects_from(node_objects)
     return G
@@ -183,7 +133,7 @@ def mmodel_signature():
 def value_modifier():
     """Return a modifier function that adds value to the result."""
 
-    def modifier(value):
+    def add_value(value):
         def mod(func):
             @wraps(func)
             def wrapped(*args, **kwargs):
@@ -193,26 +143,28 @@ def value_modifier():
 
         return mod
 
-    return modifier
+    return add_value
 
 
 def graph_equal(G1, G2):
     """Test if graphs have the same nodes, edges, and attributes.
+    The node_obj object is deepcopied, so the object id is different.
 
     Dictionary comparison does not care about key orders.
     """
 
-    assert dict(G1.nodes) == dict(G2.nodes)
+    for node in G1.nodes:
+        assert node in G2.nodes
+        for attr in G1.nodes[node]:
+            if attr == "node_obj":
+                assert G1.nodes[node][attr].__dict__ == G2.nodes[node][attr].__dict__
+            else:
+                assert G1.nodes[node][attr] == G2.nodes[node][attr]
+
     assert dict(G1.edges) == dict(G2.edges)
 
     # test graph attributes
-    # ModelGraph adds parser attribute, here we test if the functions
-    # are the same.
-    for key in G1.graph:
-        if key == "parser":
-            assert G1.graph[key]._parser_dict == G2.graph[key]._parser_dict
-        else:
-            assert G1.graph[key] == G2.graph[key]
+    assert G1.graph == G2.graph
     assert G1.name == G2.name
 
     return True

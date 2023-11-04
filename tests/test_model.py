@@ -5,8 +5,9 @@ import networkx as nx
 from copy import deepcopy
 from textwrap import dedent
 import numpy as np
+import re
 
-from mmodel import Model, BasicHandler, H5Handler, MemHandler, ModelGraph
+from mmodel import Model, BasicHandler, H5Handler, MemHandler, Graph, Node
 from mmodel.modifier import loop_input
 
 
@@ -20,7 +21,7 @@ class TestModel:
             "A long description that tests if the model module"
             " wraps the Model output string description at 90 characters."
         )
-        return Model("model_instance", mmodel_G, BasicHandler, description=description)
+        return Model("model_instance", mmodel_G, BasicHandler, doc=description)
 
     def test_model_attr(self, model_instance, mmodel_signature):
         """Test the model has the correct name, signature, returns."""
@@ -28,15 +29,9 @@ class TestModel:
         assert model_instance.name == "model_instance"
         assert model_instance.__name__ == "model_instance"
         assert model_instance.__signature__ == mmodel_signature
+        assert model_instance.signature == mmodel_signature
         assert model_instance.returns == ["k", "m"]
         assert model_instance.modifiers == []
-        assert model_instance.execution_order == [
-            "add",
-            "subtract",
-            "power",
-            "log",
-            "multiply",
-        ]
 
     def test_model_str(self, model_instance):
         """Test model representation."""
@@ -48,7 +43,7 @@ class TestModel:
         handler: BasicHandler
 
         A long description that tests if the model module wraps the Model output string
-          description at 90 characters."""
+        description at 90 characters."""
 
         assert str(model_instance) == dedent(model_str)
 
@@ -80,40 +75,49 @@ class TestModel:
 
         The function has an output and execution should ignore the output.
         """
-        G = ModelGraph()
+        G = Graph()
         G.add_node("Test")
-        G.set_node_object("Test", lambda x: x, output=None)
-        model = Model("test_model", G, BasicHandler, description="Test model.")
+        G.set_node_object(Node("Test", lambda x: x))
+        model = Model("test_model", G, BasicHandler, doc="Test model.")
 
         assert model(1) == None  # test if the return is None
 
     def test_model_with_no_inputs(self):
         """Test model with no inputs."""
 
-        G = ModelGraph()
+        G = Graph()
         G.add_node("Test")
-        G.set_node_object("Test", lambda: 1, "value")
-        model = Model("test_model", G, BasicHandler, description="Test model.")
+        G.set_node_object(Node("Test", lambda: 1, output="value"))
+        model = Model("test_model", G, BasicHandler, doc="Test model.")
 
         assert model() == 1
 
     def test_get_node(self, model_instance, mmodel_G):
         """Test get_node method of the model."""
+        node_attr = model_instance.get_node("log")
 
-        assert model_instance.get_node("log") == mmodel_G.nodes["log"]
+        assert (
+            node_attr.pop("node_obj").__dict__
+            == mmodel_G.nodes["log"].pop("node_obj").__dict__
+        )
 
-    def test_get_node_func(self, model_instance, mmodel_G):
-        """Test get_node_func method."""
+        assert node_attr == mmodel_G.nodes["log"]
 
-        assert model_instance.get_node_func("log") == mmodel_G.nodes["log"]["_func"]
+    def test_get_node_obj(self, model_instance, mmodel_G):
+        """Test get_node_object method of the model."""
 
-    def test_model_draw(self, model_instance):
+        assert (
+            model_instance.get_node_obj("log").__dict__
+            == mmodel_G.nodes["log"]["node_obj"].__dict__
+        )
+
+    def test_model_visualize(self, model_instance):
         """Test if the draw method of the model_instance.
 
-        The draw methods are tested in test_draw module. Here we make sure
+        The draw methods are tested in visualizer module. Here we make sure
         the label is correct.
         """
-        dot_graph = model_instance.draw()
+        dot_graph = model_instance.visualize()
 
         assert str(model_instance).replace("\n", r"\l") in dot_graph.source
 
@@ -124,41 +128,26 @@ class TestModel:
         """
 
         filename = tmp_path / "test_draw.dot"
-        model_instance.draw(export=filename)
+        model_instance.visualize(outfile=filename)
         reference = str(model_instance).replace("\n", "").replace(r"\l", "")
 
         with open(filename, "r") as f:
-
             assert reference in f.read().replace("\n", "").replace(r"\l", "").replace(
                 "\\", ""
             )
-
-    def test_model_node_metadata(self, model_instance):
-        """Test if view node outputs information correctly."""
-
-        node_s = """\
-        log
-
-        logarithm(c, b)
-        return: m
-        functype: callable
-
-        Logarithm operation."""
-
-        assert model_instance.node_metadata("log") == dedent(node_s)
 
     def test_model_with_handler_argument(self, mmodel_G, tmp_path):
         """Test if the argument works with the H5Handler."""
 
         path = tmp_path / "h5model_test.h5"
-        h5model = Model("h5 model", mmodel_G, H5Handler, fname=path)
+        h5model = Model("h5 model", mmodel_G, H5Handler, handler_kwargs={"fname": path})
 
         assert h5model(a=10, d=15, f=1, b=2) == (-36, math.log(12, 2))
 
         # the output of the path is the repr instead of the string
         assert "handler: H5Handler" in str(h5model)
-        assert "handler args" in str(h5model)
-        assert f"- fname: {path}" in str(h5model).replace("\n  ", "")
+        assert "handler_kwargs" in str(h5model)
+        assert re.search(r"- fname: .*? \[\.\.\.\]", str(h5model))
 
     def test_model_returns_order(self, mmodel_G):
         """Test model with custom returns order.
@@ -179,62 +168,43 @@ class TestModel:
         assert model.returns == ["m", "k", "c"]
         assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36, 12)
 
-    def test_model_edit(self, model_instance):
+    def test_model_edit(self, mmodel_G):
         """Test model editing.
 
         The function should return a new model instance.
         """
 
-        new_model = model_instance.edit(
-            name="new_model", handler=MemHandler, description="Model description."
+        model = Model(
+            "model_instance",
+            mmodel_G,
+            BasicHandler,
+            defaults={"a": 10, "b": 2},
+            doc="Old doc",
+            add_args="additional arguments",
+        )
+
+        new_model = model.edit(
+            name="new_model", handler=MemHandler, doc="Model description."
         )
         assert new_model.name == "new_model"
-        assert new_model.description == "Model description."
+        assert new_model.doc == "Model description."
         assert new_model.handler == MemHandler
-        assert model_instance.graph is not new_model.graph
-
+        assert model.graph is not new_model.graph
+        assert model.defaults == new_model.defaults
+        assert new_model.add_args == "additional arguments"
         assert new_model(a=10, d=15, f=1, b=2) == (-36, math.log(12, 2))
 
+    def test_model_defaults(self, mmodel_G):
+        """Test model with default values."""
 
-class TestModelMetaData:
-    """Test the model instance metadata."""
-
-    @pytest.fixture
-    def func(self):
-        """A test function."""
-
-        def _func(a, b):
-            return a + b
-
-        return _func
-
-    @pytest.fixture
-    def G(self):
-        """An graph with one node."""
-
-        G = ModelGraph(name="meta test graph")
-        G.add_node("Test")
-        return G
-
-    def test_metadata_dict(self, func, G):
-        """Test metadata_dict that has all key and value pairs.
-
-        Test both the verbose and non-verbose versions.
-        """
-        G.set_node_object("Test", func, output="c")
-        model = Model("test_model", G, BasicHandler, description="Test model.")
-
-        assert sorted(list(model._metadata_dict(True).keys())) == [
-            "description",
-            "graph",
-            "handler",
-            "handler args",
-            "model",
-            "modifiers",
-            "returns",
-        ]
-
-        assert sorted(list(model._metadata_dict(False).keys())) == ["model", "returns"]
+        model = Model(
+            "model_instance",
+            mmodel_G,
+            BasicHandler,
+            defaults={"a": 10, "b": 2},
+        )
+        assert list(model.signature.parameters.keys()) == ["d", "f", "a", "b"]
+        assert model(d=15, f=1) == (-36, math.log(12, 2))
 
 
 class TestModifiedModel:
@@ -249,7 +219,8 @@ class TestModifiedModel:
             mmodel_G,
             BasicHandler,
             modifiers=[loop_input("a")],
-            description="Modified model.",
+            doc="Modified model.",
+            add_args="additional arguments",
         )
 
     def test_mod_model_attr(self, mod_model_instance):
@@ -260,7 +231,7 @@ class TestModifiedModel:
     def test_mod_model_execution(self, mod_model_instance):
         """Test if adding modifier changes the handler attribute (returns)."""
 
-        assert mod_model_instance(a=[1, 2], b=2, d=3, f=1) == [
+        assert mod_model_instance(a_loop=[1, 2], b=2, d=3, f=1) == [
             (0, math.log(3, 2)),
             (4, 2),
         ]
@@ -268,15 +239,27 @@ class TestModifiedModel:
     def test_model_str(self, mod_model_instance):
         """Test the string representation with modifiers."""
         mod_model_s = """\
-        mod_model_instance(a, b, d, f)
+        mod_model_instance(a_loop, b, d, f)
         returns: (k, m)
         graph: test_graph
         handler: BasicHandler
         modifiers:
-          - loop_input('a')
+        - loop_input('a')
         
         Modified model."""
         assert str(mod_model_instance) == dedent(mod_model_s)
+
+    def test_model_edit_node(self, mod_model_instance):
+        """Test if the edit method works with node."""
+
+        new_model = mod_model_instance.edit_node("log", func=math.log2, inputs=["c"])
+
+        assert new_model is not mod_model_instance
+
+        assert list(new_model.signature.parameters.keys()) == ["a_loop", "d", "f"]
+        assert new_model.add_args == "additional arguments"
+        assert new_model.returns == ["k", "m"]
+        assert new_model(a_loop=[1, 2], d=15, f=1) == [(-36, math.log2(3)), (-44, 2)]
 
 
 class TestModelValidation:
@@ -333,13 +316,14 @@ class TestModelValidation:
         with pytest.raises(
             Exception,
             match=(
-                r"invalid graph \(test_graph\): callable 'func' "
-                r"is not defined for node\(s\) \['test'\]"
+                r"invalid graph \(test_graph\): node_obj 'node_obj' "
+                r"is not defined for node\(s\) \['test'\]."
             ),
         ):
             Model._is_valid_graph(G)
 
-        G.nodes["test"]["func"] = test
+        # manual adding the object
+        G.nodes["test"]["node_obj"] = Node("test", test, output="c", inputs=["a", "b"])
 
         with pytest.raises(
             Exception,
@@ -355,13 +339,13 @@ class TestModelValidation:
         with pytest.raises(
             Exception,
             match=(
-                r"invalid graph \(test_graph\): signature 'sig' "
+                r"invalid graph \(test_graph\): signature 'signature' "
                 r"is not defined for node\(s\) \['test'\]"
             ),
         ):
             Model._is_valid_graph(G)
 
-        G.nodes["test"]["sig"] = inspect.signature(test)
+        G.nodes["test"]["signature"] = inspect.signature(test)
 
         with pytest.raises(
             Exception,
@@ -374,41 +358,10 @@ class TestModelValidation:
 
         # the last one will pass even tho it is empty
 
-        G.edges["log", "test"]["var"] = None
+        G.edges["log", "test"]["var"] = "t"
         assert Model._is_valid_graph(G)
 
     def test_is_valid_graph_passing(self, mmodel_G):
         """Test is_valid_graph that correctly passing."""
 
         assert Model._is_valid_graph(mmodel_G)
-
-
-class TestModelSpecialFunc:
-    """Test models with builtin or numpy.ufunc."""
-
-    @pytest.fixture
-    def model(self):
-        """Basic Model with builtin and ufunc nodes."""
-
-        G = ModelGraph()
-        G.add_edge("func_a", "func_b")
-
-        G.set_node_object("func_a", np.add, "x", inputs=["a", "b"])
-        G.set_node_object("func_b", math.ceil, "p", inputs=["x"])
-
-        return Model(
-            "model_instance",
-            G,
-            BasicHandler,
-            description="Model with builtin and ufunc.",
-        )
-
-    def test_model_signature(self, model):
-        """Test model signature."""
-
-        assert list(inspect.signature(model).parameters.keys()) == ["a", "b"]
-
-    def test_model_execution(self, model):
-        """Test model result."""
-
-        assert model(3, 1.9) == 5

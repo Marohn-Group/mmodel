@@ -1,17 +1,11 @@
 from collections import UserDict
-from mmodel.utility import graph_topological_sort, param_counter
+from mmodel.utility import graph_topological_sort, param_counter, modelgraph_signature
 from datetime import datetime
 import h5py
 import string
 import random
-
-ERROR_FORMAT = """\
-An exception occurred for node '{node}':
---- node info ---
-{node_str}
---- input info ---
-{input_str}
-"""
+from textwrap import dedent
+import sys
 
 
 class TopologicalHandler:
@@ -32,11 +26,10 @@ class TopologicalHandler:
 
     DataClass: type = callable
 
-    def __init__(self, name, graph, returns: list, **datacls_kwargs):
-
-        self.__name__ = name
+    def __init__(self, graph, returns: list, **datacls_kwargs):
+        # self.__name__ = name
         # __signature__ allows the inspect module to properly generate the signature
-        self.__signature__ = graph.signature
+        self.__signature__ = modelgraph_signature(graph)
         self.returns = returns
         self.order = graph_topological_sort(graph)
         self.graph = graph
@@ -54,34 +47,53 @@ class TopologicalHandler:
 
         return result
 
+    def node_exception(self, data, node_data, node, node_attr):
+        """Exception handler for individual node.
+
+        Overwrite this function for different exception formatting.
+        """
+
+        exception_format = dedent(
+            """\
+        An exception occurred when executing node '{node}':
+        --- exception info ---
+        {exc_str}
+        --- node info ---
+        {node_str}
+        --- input info ---
+        {input_str}
+        """
+        )
+        node_obj = node_attr["node_obj"]
+        # format the error message
+        input_str = "\n".join(
+            [f"{key} = {repr(value)}" for key, value in node_data.items()]
+        )
+        exc_type, exc_value, _ = sys.exc_info()
+        exc_str = f"{exc_type.__name__}: {exc_value}"
+        msg = exception_format.format(
+            node=node, exc_str=exc_str, node_str=str(node_obj), input_str=input_str
+        )
+        raise Exception(msg)
+
     def run_node(self, data, node, node_attr):
         """Run the individual node."""
 
-        # Only parameters without defaults are applied
+        kwargs = {key: data[key] for key in node_attr["signature"].parameters}
+        node_obj = node_attr["node_obj"]
 
-        kwargs = {
-            key: data[key]
-            for key, param in node_attr["sig"].parameters.items()
-            if (param.default is param.empty)
-        }
         try:
             # execute
-            func_result = node_attr["func"](**kwargs)
+            func_result = node_obj.node_func(**kwargs)
             output = node_attr["output"]
             if output:  # skip the None
                 data[output] = func_result
 
         except:  # exception occurred while running the node
-
             if hasattr(data, "close"):
                 data.close()
-            # format the error message
-            node_str = self.graph.node_metadata(node)
-            input_str = "\n".join(
-                [f"{key} = {repr(value)}" for key, value in kwargs.items()]
-            )
-            msg = ERROR_FORMAT.format(node=node, input_str=input_str, node_str=node_str)
-            raise Exception(msg)
+
+            self.node_exception(data, kwargs, node, node_attr)
 
     def finish(self, data, returns):
         """Finish execution."""
@@ -136,7 +148,6 @@ class H5Data:
     """
 
     def __init__(self, data, fname, gname):
-
         self.fname = fname
 
         self.f = h5py.File(self.fname, "a")
@@ -195,12 +206,11 @@ class MemHandler(TopologicalHandler):
 
     DataClass = MemData
 
-    def __init__(self, name, graph, returns: list):
+    def __init__(self, graph, returns: list):
         """Add counter to the object."""
 
         counter = param_counter(graph, returns)
-
-        super().__init__(name, graph, returns, counter=counter)
+        super().__init__(graph, returns, counter=counter)
 
 
 class H5Handler(TopologicalHandler):
@@ -212,5 +222,5 @@ class H5Handler(TopologicalHandler):
 
     DataClass = H5Data
 
-    def __init__(self, name, graph, returns, fname: str, gname: str = ""):
-        super().__init__(name, graph, returns, fname=fname, gname=gname)
+    def __init__(self, graph, returns, fname: str, gname: str = ""):
+        super().__init__(graph, returns, fname=fname, gname=gname)

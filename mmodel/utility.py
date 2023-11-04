@@ -1,6 +1,7 @@
 from inspect import Signature, Parameter
 import networkx as nx
 
+
 # graph properties
 def modelgraph_signature(graph):
     """Obtain the signature from the model graph.
@@ -12,11 +13,8 @@ def modelgraph_signature(graph):
     """
 
     parameters = {}
-    for sig in nx.get_node_attributes(graph, "sig").values():
-        for pname, param in sig.parameters.items():
-            # remove the default values
-            if param.default is param.empty and param not in parameters:
-                parameters.update({pname: param})
+    for sig in nx.get_node_attributes(graph, "signature").values():
+        parameters.update(sig.parameters)
 
     for output in nx.get_node_attributes(graph, "output").values():
         parameters.pop(output, None)  # if doesn't exist return None
@@ -28,24 +26,17 @@ def modelgraph_returns(graph):
     """Obtain the return parameter from the model graph.
 
     The assumption is that all return parameter names are unique.
-    The function checks all returns values and all intermediate values (edge values)
 
     :returns: list of variable names based on note outputs
     :rtype: list
     """
 
-    returns = []
-    intermediate = []
-
-    for node in graph.nodes():
-        if graph.nodes[node]["output"]:  # skip None
-            returns.append(graph.nodes[node]["output"])
-    for edge in graph.edges():
-        intermediate.append(graph.edges[edge]["var"])
-
-    final_returns = list(set(returns) - set(intermediate))
-    final_returns.sort()
-    return final_returns
+    returns_list = []
+    for node, output in nx.get_node_attributes(graph, "output").items():
+        if graph.out_degree(node) == 0 and output is not None:
+            returns_list.append(output)
+    returns_list.sort()
+    return returns_list
 
 
 def param_sorter(parameter):
@@ -64,26 +55,6 @@ def param_sorter(parameter):
         return parameter.kind, True, parameter.name
     else:
         return parameter.kind, False, parameter.name
-
-
-def replace_signature_with_object(signature, replacement_dict):
-    """Replace signature with a dictionary of (key, pair).
-
-    The function is used to replace several input parameters with an object.
-    The signature is the original signature. The dictionary key should be the
-    replacement object, and the values should be a list of the target
-    parameters to be replaced. The replacement allows unused parameters, they
-    are skipped.
-    """
-
-    params = dict(signature.parameters)
-    for func, target_list in replacement_dict.items():
-        for target in target_list:
-            # del params[target]
-            params.pop(target, None)
-        params[func] = Parameter(func, 1)
-
-    return signature.replace(parameters=sorted(params.values(), key=param_sorter))
 
 
 def graph_topological_sort(graph):
@@ -107,9 +78,7 @@ def graph_topological_sort(graph):
     return topological_order
 
 
-def replace_subgraph(
-    graph, subgraph, name, func, output=None, inputs=None, modifiers=None
-):
+def replace_subgraph(graph, subgraph, subgraph_node):
     """Replace subgraph with a node.
 
     Find all parent nodes, not in the subgraph but child nodes in the
@@ -130,51 +99,15 @@ def replace_subgraph(
     for node in subgraph.nodes():
         for parent in graph.predecessors(node):
             if parent not in subgraph:
-                new_edges.append((parent, name))
+                new_edges.append((parent, subgraph_node.name))
         for child in graph.successors(node):
             if child not in subgraph:
-                new_edges.append((name, child))
+                new_edges.append((subgraph_node.name, child))
 
     graph.remove_nodes_from(subgraph.nodes)
     # remove unique edges
     graph.add_edges_from(set(new_edges))
-
-    graph.set_node_object(
-        name, func=func, output=output, inputs=inputs, modifiers=modifiers
-    )
-
-    return graph
-
-
-def modify_node(
-    graph, node, func=None, output=None, inputs=None, modifiers=None, inplace=False
-):
-    """Modify node.
-
-    The result is a new graph with the node object modified.
-    :param str output: change the output of the node. If the node is not
-        terminal, the output should not be changed.
-    :param bool inplace: if True, the original graph is modified.
-
-    .. Note::
-
-        If the original node has output, the node cannot be modified to None.
-        If the original node has inputs, the modification cannot remove the
-        original input (set to [] does not change anything).
-
-        For the above two cases, a copy of the graph should be created and run
-        ``set_node_object`` again to reset the node object.
-
-    """
-    if not inplace:
-        graph = graph.deepcopy()
-
-    func = func or graph.nodes[node]["_func"]
-    modifiers = modifiers or graph.nodes[node]["modifiers"]
-    output = output or graph.nodes[node]["output"]
-    graph.set_node_object(
-        node, func=func, output=output, inputs=inputs, modifiers=modifiers
-    )
+    graph.set_node_object(subgraph_node)
 
     return graph
 
@@ -218,9 +151,8 @@ def param_counter(graph, returns):
     """
 
     value_list = []
-    for sig in nx.get_node_attributes(graph, "sig").values():
+    for sig in nx.get_node_attributes(graph, "signature").values():
         for key, param in sig.parameters.items():
-
             if param.default is param.empty:
                 value_list.append(key)
 
@@ -232,17 +164,6 @@ def param_counter(graph, returns):
         count[value] = count.get(value, 0) + 1
 
     return count
-
-
-def parse_input(signature, *args, **kwargs):
-    """parse argument based on signature and input.
-
-    The default value is automatically filled.
-    """
-
-    values = signature.bind(*args, **kwargs)
-    values.apply_defaults()
-    return values.arguments
 
 
 def is_node_attr_defined(graph, attr: str, attr_name: str = None):
@@ -297,3 +218,32 @@ def is_edge_attr_defined(graph, attr: str, attr_name: str = None):
         )
 
     return True
+
+
+def construction_dict(obj, property_list=None, exclude_list=None):
+    """Return a dictionary that contains object construction parameters.
+
+    The property list and exclude list need to be manually input.
+    The exclude list is used for object attributes that are not
+    part of the object construction, but public attributes.
+    The object attribute omits private ('_') values, but includes all
+    public attributes that are not in the exclude list.
+    """
+    property_list = property_list or []
+    exclude_list = exclude_list or []
+
+    ppt_dict = {key: getattr(obj, key) for key in property_list}
+    attr_dict = {
+        key: value
+        for key, value in obj.__dict__.items()
+        if not key.startswith("_") and key not in exclude_list
+    }
+    return {**ppt_dict, **attr_dict}
+
+
+def modify_func(func, modifiers):
+    """Apply modifiers to node_func."""
+
+    for mod in modifiers:
+        func = mod(func)
+    return func

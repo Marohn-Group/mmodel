@@ -4,6 +4,6 @@ Graph
 :mod:`graph` module
 ----------------------
 
-.. autoclass:: mmodel.graph.ModelGraph
+.. autoclass:: mmodel.graph.Graph
     :members:
     :show-inheritance:

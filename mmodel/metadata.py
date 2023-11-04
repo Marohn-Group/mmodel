@@ -6,19 +6,20 @@ of the wrapping of the metadata.
 """
 
 import inspect
-from textwrap import TextWrapper
+from textwrap import TextWrapper, shorten
+from dataclasses import dataclass, field
 
 
+@dataclass(frozen=True)
 class MetaDataFormatter:
     """Metadata Formatter."""
 
-    def __init__(self, formatter: dict, metaorder: list = None):
-        """Initiate the formatter."""
+    formatter: dict
+    metaorder: list
+    textwrapper: callable
+    shorten: list = field(default_factory=list)
 
-        self.formatter = formatter
-        self.metaorder = metaorder
-
-    def __call__(self, metadata):
+    def __call__(self, obj):
         """Convert metadata dictionary to string.
 
         The process returns a list of metadata by lines.
@@ -29,20 +30,35 @@ class MetaDataFormatter:
         :param list metaorder: metadata key order, entry is None if linebreak needed.
             Defaults to dictionary key order.
         """
-        metaorder = self.metaorder if self.metaorder is not None else metadata.keys()
-        metadata_str_list = []
-        for key in metaorder:
-            if key is None:
-                metadata_str_list.append("")
-                continue
-            elif key not in metadata:
-                continue
-            if key in self.formatter:
-                metadata_str_list.extend(self.formatter[key](key, metadata[key]))
-            else:
-                metadata_str_list.extend([f"{key}: {metadata[key]}"])
 
-        return metadata_str_list
+        metadata_list = []
+        for key in self.metaorder:
+            if key == "_":  # linebreak
+                metadata_list.append("")
+                continue
+
+            value = getattr(obj, key, None)
+
+            # the formatter returns list for potential multiliners
+            if key in self.formatter:
+                entry = self.formatter[key](key, value)
+            else:
+                entry = [f"{key}: {value}"]
+
+            if key in self.shorten:
+                # replace the original list
+                entry = [shorten(ele, width=self.textwrapper.width) for ele in entry]
+
+            metadata_list.extend(entry)
+
+        metadata_wrapped = []
+        for line in metadata_list:
+            if line:
+                metadata_wrapped.extend(self.textwrapper.wrap(line))
+            else:
+                metadata_wrapped.append("")
+
+        return "\n".join(metadata_wrapped).strip()
 
 
 def format_func(key, value):
@@ -57,13 +73,22 @@ def format_func(key, value):
 def format_list(key, value):
     """Format the metadata value that is a list."""
 
-    if value:
-        str_list = [f"{key}:"]
-        for v in value:
-            str_list.append(f"\t- {v}")
-        return str_list
-    else:
+    if not value:
+        # return [f"{key}: []"]
         return []
+    elements = [f"\t- {v}" for v in value]
+    return [f"{key}:"] + elements
+
+
+def format_dictargs(key, value):
+    """Format the metadata value that is a dictionary."""
+
+    if not value:
+        # return [f"{key}: []"]
+        return []
+
+    elements = [f"\t- {k}: {v}" for k, v in value.items()]
+    return [f"{key}:"] + elements
 
 
 def modifier_metadata(closure):
@@ -86,7 +111,6 @@ def modifier_metadata(closure):
         return closure.__name__
 
     else:  # closure takes arguments
-
         # In some rare cases, the closure is a nested function.
         # For example, in the tests, the nested closure reflects the
         # path of the parent function. Here we remove the nested
@@ -110,20 +134,25 @@ def format_modifierlist(key, value):
     return format_list(key, modifier_str_list)
 
 
-def format_dictargs(key, value):
-    """Format the metadata value that is a dictionary."""
+def format_shortdocstring(key, value):
+    """Format function docstring.
 
+    Only the short docstring is parsed. The built-in and
+    ufunc type docstring location is not consistent
+    some module/function has the repr at the first line,
+    and some don't.
+    Here we try to grab the first line that starts with
+    an upper case and ends with a period.
+    """
     if value:
-        str_list = [f"{key}:"]
-
-        for k, v in value.items():
-            mod_str = f"\t- {k}: {v}"
-            str_list.append(mod_str)
-
-        return str_list
-
-    else:
-        return []
+        for line in value.splitlines():
+            line = line.strip()
+            if line and line[0].isupper() and line.endswith("."):
+                doc = line
+                break
+    else:  # no docstring
+        doc = ""
+    return [f"{doc}"]
 
 
 def format_args(key, value):
@@ -131,13 +160,9 @@ def format_args(key, value):
 
     The formatter is for the handler metadata.
     """
-    if value:
-        func, kwargs = value
-        return [
-            f"{key}: {func.__name__}({', '.join(repr(v) for v in kwargs.values())})"
-        ]
-    else:
-        return []
+
+    func, kwargs = value
+    return [f"{key}: {func.__name__}({', '.join(repr(v) for v in kwargs.values())})"]
 
 
 def format_returns(key, value):
@@ -150,7 +175,7 @@ def format_returns(key, value):
 
     return_len = len(value)
 
-    if return_len == 0:
+    if not return_len:
         returns_str = "None"
     elif return_len == 1:
         returns_str = value[0]
@@ -162,95 +187,65 @@ def format_returns(key, value):
 
 def format_value(key, value):
     """Format the metadata without displaying the key."""
-    if value:
-        return [value]
-    else:
-        return []
+
+    return [value]
 
 
-def format_obj(key, value):
+def format_obj_name(key, value):
     """Format the metadata value that is an object.
 
-    Only show the name of the object. This is used for graph objects.
+    Only show the name of the object. This is used for
+    graph and handler objects.
     The object needs to have __name__ or name attribute defined.
+    If neither is defined, display the string representation.
     """
 
-    name = getattr(value, "__name__", getattr(value, "name", None))
-    if name:
-        return [f"{key}: {name}"]
-    else:
-        return []
+    name = getattr(value, "__name__", getattr(value, "name", str(value)))
+    return [f"{key}: {name}"]
+
+
+# customized textwrapper
+wrapper80 = TextWrapper(
+    width=80,
+    subsequent_indent="",
+    replace_whitespace=False,
+    expand_tabs=True,
+    tabsize=0,
+)
 
 
 modelformatter = MetaDataFormatter(
     {
-        "model": format_func,
+        "model_func": format_func,
         "returns": format_returns,
-        "graph": format_obj,
-        "handler": format_obj,
-        "handler args": format_dictargs,
+        "graph": format_obj_name,
+        "handler": format_obj_name,
+        "handler_kwargs": format_dictargs,
         "modifiers": format_modifierlist,
-        "description": format_value,
+        "doc": format_value,
     },
     [
-        "model",
+        "model_func",
         "returns",
         "graph",
         "handler",
-        "handler args",
+        "handler_kwargs",
         "modifiers",
-        None,
-        "description",
+        "_",
+        "doc",
     ],
+    wrapper80,
+    shorten=["handler_kwargs", "modifiers"],
 )
 
 nodeformatter = MetaDataFormatter(
     {
-        "node": format_value,
-        "func": format_func,
+        "name": format_value,
+        "node_func": format_func,
+        "output": lambda key, value: [f"return: {value}"],
         "modifiers": format_modifierlist,
-        "doc": format_value,
+        "doc": format_shortdocstring,
     },
-    ["node", None, "func", "return", "functype", "modifiers", None, "doc"],
+    ["name", "_", "node_func", "output", "functype", "modifiers", "_", "doc"],
+    wrapper80,
 )
-
-
-def textwrapper(width: int = 80, indent: int = 2):
-    """Wrap metadata content.
-
-    The width defaults to 80 characters. The resulting wrapping has no
-    initial indentation. The indent parameter is the subsequent indent
-    parameter in the wrap function. The tabsize is the same as
-    the indent.
-    """
-
-    return TextWrapper(
-        width=width,
-        subsequent_indent=" " * indent,
-        replace_whitespace=False,
-        expand_tabs=True,
-        tabsize=indent,
-    )
-
-
-# Standard textwrapper with 80 characters.
-textwrap80 = textwrapper(80, 2)
-# shorted textwarpper with 5o characters for nodes.
-textwrap50 = textwrapper(50, 2)
-
-
-def format_metadata(metadata, formatter, textwrapper):
-    """Format and wrap the metadata."""
-
-    metadata_list = formatter(metadata)
-
-    if textwrapper:
-        metadata_wrapped = []
-        for line in metadata_list:
-            if line:
-                metadata_wrapped.extend(textwrapper.wrap(line))
-            else:
-                metadata_wrapped.append("")
-        return metadata_wrapped
-
-    return metadata_list

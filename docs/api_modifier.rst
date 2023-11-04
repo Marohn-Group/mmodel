@@ -37,10 +37,7 @@ Here is an example of a loop modifier:
     intended to reduce overhead during model definition (model changes all parameters
     to positional-or-keyword-arguments).
 
-    For individual functions, if necessary, ``signature_binding_modifier()`` 
-    can be used to add the binding and check the steps.
-
-    A modifier for ``MModel`` requires to have a proper signature. If the modifier changes the
+    A modifier for mmodel requires to have a proper signature. If the modifier changes the
     function signal, add ``__signature__`` attribute with ``inspect.Signature`` to the wrapped
     function.
 
