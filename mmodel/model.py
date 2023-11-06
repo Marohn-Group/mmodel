@@ -8,27 +8,25 @@ from mmodel.utility import (
 
 import networkx as nx
 from mmodel.metadata import modelformatter
-from mmodel.signature import add_defaults
+from mmodel.signature import restructure_signature
 from inspect import signature
 from mmodel.visualizer import visualizer
 
 
 class Model:
-    """Create model callable.
+    """Create the model callable.
 
     :param str name: Model name
     :param object graph: Graph instance (digraph)
     :param class handler: Handler class that handles model execution and
-        the keyword arguments. The parameter format is (HandlerClass, {})
-        By default, the handler takes the graph as the first parameter.
-        For additional arguments, add an argument to the dictionary afterward.
+        the keyword arguments.
+    :param dict handler_kwargs: keyword arguments for the handler class.
     :param list modifiers: modifiers used for the whole graph model executable.
-        The parameter is Optional and defaults to an empty list. For each modifier,
-        the format is (modifier, {}). All modifiers should have the function as
-        the first argument.
-    :param str description: model description
     :param list returns: The order of returns of the model; defaults to the
         topological search.
+    :param str doc: model docstring
+    :param dict defaults: default values for the model signature.
+    :param bool kw_only: whether to convert signature to keyword-only signature
     """
 
     def __init__(
@@ -55,8 +53,6 @@ class Model:
         self.doc = self.__doc__ = doc
 
         # update the kwargs
-        # self.__dict__.update(kwargs)
-        # avoid set property values
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -64,17 +60,23 @@ class Model:
         self._runner = handler(self._graph, self._returns, **self._handler_kwargs)
         self._runner.__name__ = self.name
         # final callable
-        self._model_func = modify_func(self._runner, self._modifiers)
-        self.__signature__ = add_defaults(signature(self._model_func), self._defaults)
+        # model_func can be modified externally
+        self.model_func = modify_func(self._runner, self._modifiers)
+
+    @property
+    def __signature__(self):
+        """Model signature for inspection."""
+        return self.signature
 
     @property
     def signature(self):
         """Model signature for inspection."""
-        return self.__signature__
+
+        return restructure_signature(signature(self.model_func), self._defaults)
 
     @property
     def graph(self):
-        """The graph attribute output a copy of the graph."""
+        """The graph attribute outputs a copy of the graph."""
         return self._graph.deepcopy()
 
     @property
@@ -97,22 +99,19 @@ class Model:
         """Shallow copy of the handler arguments."""
         return self._handler_kwargs.copy()
 
-    @property
-    def model_func(self):
-        """The model function."""
-        return self._model_func
-
     def __call__(self, *args, **kwargs):
         """Execute the model.
 
         The inputs from the keyword arguments are parsed and passed to the
         the handler class.
         """
-
         bound = self.signature.bind(*args, **kwargs)
         # defaults are added in the signature property
         bound.apply_defaults()
-        return self._model_func(**bound.arguments)
+        return self.model_func(**bound.arguments)
+
+    def __str__(self):
+        return modelformatter(self)
 
     @staticmethod
     def _is_valid_graph(G):
@@ -159,9 +158,6 @@ class Model:
         """
 
         return visualizer(self._graph, str(self), outfile)
-
-    def __str__(self):
-        return modelformatter(self)
 
     def edit_node(self, node, **kwargs):
         """Edit node object.

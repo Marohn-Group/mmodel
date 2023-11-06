@@ -36,7 +36,10 @@ class TopologicalHandler:
         self.datacls_kwargs = datacls_kwargs
 
     def __call__(self, **kwargs):
-        """Execute graph model by layer."""
+        """Execute graph model by layer.
+        The data object is not stored as an attribute to avoid repeated
+        use and reduce memory usage.
+        """
 
         data = self.DataClass(kwargs, **self.datacls_kwargs)
 
@@ -48,7 +51,7 @@ class TopologicalHandler:
         return result
 
     def node_exception(self, data, node_data, node, node_attr):
-        """Exception handler for individual node.
+        """Exception handler for individual nodes.
 
         Overwrite this function for different exception formatting.
         """

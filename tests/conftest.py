@@ -36,7 +36,7 @@ def logarithm(c, b):
     return math.log(c, b)
 
 
-add_node = Node("add", addition, inputs=["a"], output="c")
+add_node = Node("add", addition, output="c")
 sub_node = Node("subtract", operator.sub, ["c", "d"], "e")
 power_node = Node("power", math.pow, ["c", "f"], "g")
 multi_node = Node("multiply", np.multiply, ["e", "g"], "k")

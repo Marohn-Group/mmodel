@@ -30,7 +30,7 @@ Changed
 - Handler additional arguments are supplied as a dictionary using
   ``handler_kwargs`` parameter when instantiating Model object.
 - Change plotting diagram method to ``visualize`` and ``outfile``.
-- ``loop_modifier`` adds "_loop" to function signature parameter.
+- ``loop_modifier`` adds "_loop" to the function signature parameter.
 - Improved node exception messages.
 
 Removed
@@ -43,6 +43,7 @@ Added
 
 - Add ``node`` module for node definition.
 - Add ``signature`` module for function signature operations.
+- Add "inputs" length checking during node definition.
 
 
 [0.6.2] - 2023-06-23

@@ -34,11 +34,33 @@ def modify_signature(func, inputs):
     """
 
     sig = signature(func)
-    param = list(dict(sig.parameters).keys())
+    parameters = dict(sig.parameters)
+    old_param = list(parameters.keys())
+
+    # check if input parameters are less than the parameters required
+    # excludes parameters with defaults
+    required = []
+    defaults = []
+    if_var_keyword = False
+    for param in parameters.values():
+        if (param.kind <= 1 or param.kind == 3) and param.default is Parameter.empty:
+            required.append(param.name)
+        elif param.default is not Parameter.empty:
+            defaults.append(param.name)
+        elif param.kind == 4:
+            if_var_keyword = True
+
+    # check if the inputs are enough for the function
+    if len(required) > len(inputs):
+        raise ValueError("Not enough inputs for the function")
+
+    # check if the inputs are too much for the function
+    if len(required) + len(defaults) < len(inputs) and not if_var_keyword:
+        raise ValueError("Too many inputs for the function")
 
     new_param = []
     for element in inputs:
-        new_param.append(Parameter(element, kind=1))
+        new_param.append(Parameter(element, kind=Parameter.POSITIONAL_OR_KEYWORD))
     new_sig = Signature(new_param)
 
     @wraps(func)
@@ -47,7 +69,7 @@ def modify_signature(func, inputs):
 
         adjusted_kwargs = {}
         for i, p in enumerate(inputs):
-            adjusted_kwargs[param[i]] = arguments.pop(p)
+            adjusted_kwargs[old_param[i]] = arguments.pop(p)
 
         args, kwargs = split_arguments(sig, adjusted_kwargs)
         return func(*args, **kwargs)
@@ -69,7 +91,7 @@ def add_signature(func, inputs):
 
     new_param = []
     for element in inputs:
-        new_param.append(Parameter(element, kind=1))
+        new_param.append(Parameter(element, kind=Parameter.POSITIONAL_OR_KEYWORD))
 
     new_sig = Signature(new_param)
 
@@ -85,10 +107,9 @@ def add_signature(func, inputs):
 def convert_signature(func):
     """Convert function signature to pos_or_keywords.
 
-    The method ignores "args", and "kwargs". If additional
-    kwargs are required, use modify_signature with new inputs.
-    Note the function removes all the default values. To keep
-    the default values, use modify_signature with new inputs.
+    The method ignores "args", and "kwargs".
+    Note the signature does not include parameters with default values.
+    Use inputs to include the parameters.
     """
 
     sig = signature(func)
@@ -96,8 +117,12 @@ def convert_signature(func):
 
     param_list = []
     for param in parameters.values():
-        if param.kind <= 1 or param.kind == 3:
-            param_list.append(Parameter(param.name, kind=1))
+        if (param.kind == 1 or param.kind == 3) and param.default is Parameter.empty:
+            param_list.append(param)
+        elif param.kind == 0:  # defaults cannot be add to pos only parameter
+            param_list.append(
+                Parameter(param.name, kind=Parameter.POSITIONAL_OR_KEYWORD)
+            )
 
     new_sig = Signature(parameters=param_list)
 
@@ -111,14 +136,21 @@ def convert_signature(func):
     return wrapped
 
 
-def add_defaults(signature, default_dict):
-    """Add defaults to signature.
+def restructure_signature(
+    signature, default_dict, kind=Parameter.POSITIONAL_OR_KEYWORD
+):
+    """Add defaults to signature for Model.
 
-    Here the parameter kinds are replaced with POSITIONAL_OR_KEYWORD,
-    and defaults are applied. Note the final signature are sorted.
+    Here the parameter kinds are replaced with kind (defaults
+    to POSITIONAL_OR_KEYWORD), and defaults are applied.
+    The final signatures are sorted. The function is used in
+    the Model signature definition, therefore no VAR_POSITIONAL
+    or VAR_KEYWORD should be in the signature.
+
 
     :param inspect.Signature signature: signature to add defaults
     :param dict default_dict: default values for the parameters
+    :param int kind: parameter kind
     """
 
     param_list = []
@@ -126,14 +158,15 @@ def add_defaults(signature, default_dict):
         param_list.append(
             Parameter(
                 param.name,
-                kind=Parameter.POSITIONAL_OR_KEYWORD,
+                kind=kind,
                 default=default_dict.get(param.name, Parameter.empty),
             )
         )
 
     return Signature(sorted(param_list, key=param_sorter))
 
-def check_signature(func):
+
+def has_signature(func):
     """Check if the function has a signature.
 
     The function checks if the function has a signature. If the
@@ -146,3 +179,20 @@ def check_signature(func):
         return True
     except ValueError:
         return False
+
+
+def check_signature(func):
+    """Check if the function signature has parameters with default values.
+
+    If the function has position-only, or var-positional,
+    or var-keyword, or default values, the function returns False.
+    """
+
+    sig = signature(func)
+    for param in sig.parameters.values():
+        if (
+            param.kind not in [Parameter.KEYWORD_ONLY, Parameter.POSITIONAL_OR_KEYWORD]
+            or param.default is not Parameter.empty
+        ):
+            return False
+    return True
