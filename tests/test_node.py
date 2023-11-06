@@ -47,6 +47,8 @@ class TestSetNodeObject:
             == "value_modifier.<locals>.add_value.<locals>.mod"
         )
         assert list(node.signature.parameters.keys()) == ["a", "b"]
+        assert node.functype == "function"
+        assert node.__signature__ == node.signature
         assert node.doc == "Base function."
         assert node.add_attr == "additional attribute"
 
@@ -78,6 +80,8 @@ class TestSetNodeObject:
         assert new_node([5, 20]) == 6  # the modifier is the same
         assert new_node.add_attr == "additional attribute"
         assert new_node.doc == "new doc"
+        print(type(new_node.func))
+        assert new_node.functype == "numpy._ArrayFunctionDispatcher"
 
     def test_node_property(self, node):
         """Test if node modifiers and inputs are copies.

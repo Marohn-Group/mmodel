@@ -249,3 +249,17 @@ def test_is_edge_attr_defined():
         ),
     ):
         util.is_edge_attr_defined(g, "w", "weight")
+
+
+def test_parse_functype(func):
+    """Test parse_functype."""
+
+    import numpy as np
+    import math
+    import operator
+
+    assert util.parse_functype(func) == "function"
+    assert util.parse_functype(math.acos) == "builtin_function_or_method"
+    assert util.parse_functype(operator.add) == "builtin_function_or_method"
+    assert util.parse_functype(np.sum) == "numpy._ArrayFunctionDispatcher"
+    assert util.parse_functype(np.add) == "numpy.ufunc"

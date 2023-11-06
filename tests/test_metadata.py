@@ -46,7 +46,7 @@ class TestMetaDataFormatter:
         """Test key not in metadata."""
 
         formatter = meta.MetaDataFormatter({}, ["a"], wrap)
-        assert formatter(SNs(b=1)) == "a: None"
+        assert formatter(SNs(b=1)) == ""
 
     def test_formatter_order_defined(self, wrap):
         """Test the order of formatter if metaorder is defined."""
@@ -87,7 +87,7 @@ class TestMetaDataFormatter:
     def test_shorten(self, wrap):
         """Test shorten options."""
 
-        formatter = meta.MetaDataFormatter({}, ["a"], wrap, shorten=["a"])
+        formatter = meta.MetaDataFormatter({}, ["a"], wrap, ["a"])
         assert (
             formatter(SNs(a="This is a test string for testing shorten options."))
             == "a: This is a [...]"
@@ -103,7 +103,7 @@ class TestMetaDataFormatter:
         - Again a very [...]"""
 
         formatter = meta.MetaDataFormatter(
-            {"a": meta.format_list}, ["a"], wrap, shorten=["a"]
+            {"a": meta.format_list}, ["a"], wrap, ["a"]
         )
         assert formatter(
             SNs(
@@ -122,6 +122,7 @@ class TestFormatFunction:
     def test_format_func(self):
         """Test format_func function."""
 
+        assert meta.format_func("a", None) == []
         assert meta.format_func("a", lambda x: x) == ["<lambda>(x)"]
 
     def test_format_list(self):
@@ -175,12 +176,8 @@ class TestFormatFunction:
         ]
 
         # lambda
-        assert meta.format_shortdocstring("test", (lambda x: x).__doc__) == [""]
+        assert meta.format_shortdocstring("test", (lambda x: x).__doc__) == []
 
-    def test_format_args(self):
-        """Test format_args function."""
-
-        assert meta.format_args("a", (lambda x: x, {"x": 1})) == ["a: <lambda>(1)"]
 
     def test_foramt_returns(self):
         """Test format_returns function."""
@@ -192,6 +189,7 @@ class TestFormatFunction:
     def test_format_value(self):
         """Test format_value function."""
 
+        assert meta.format_value("a", None) == []
         assert meta.format_value("a", "str") == ["str"]
 
     def test_format_obj_name(self):
@@ -199,6 +197,7 @@ class TestFormatFunction:
 
         obj = SNs(name="object")
         assert meta.format_obj_name("a", obj) == ["a: object"]
+        assert meta.format_obj_name('a', None) == []
 
     def test_format_obj_name_func(self):
         """Test format_obj_name on function."""
@@ -279,7 +278,7 @@ class TestFormatedString:
             b="str",
             c=lambda x: x,
             d=["element1", 2],
-            e=(lambda x: x, {"x": 1}),
+            e={},
             f="c",
             g=["d", "e"],
             h=SNs(name="object"),
@@ -298,7 +297,6 @@ class TestFormatedString:
             {
                 "c": meta.format_func,
                 "d": meta.format_list,
-                "e": meta.format_args,
                 "f": meta.format_returns,
                 "g": meta.format_returns,
                 "h": meta.format_obj_name,
@@ -307,6 +305,7 @@ class TestFormatedString:
                 "k": meta.format_value,
                 "m": meta.format_value,
                 "o": lambda key, value: [f"p: {repr(value)}"],
+                "empty": lambda k, v: [f'{k}: {v}'],
                 "last": meta.format_shortdocstring,  # empty string
             },
             [
@@ -335,7 +334,7 @@ class TestFormatedString:
                 expand_tabs=True,
                 tabsize=2,
             ),
-            shorten=["j", "m"],
+            ["j", "m"],
         )
 
     def test_format_metadata(self, metadata_obj, formatter):
@@ -353,7 +352,6 @@ class TestFormatedString:
         d:
           - element1
           - 2
-        e: <lambda>(1)
         f: c
         g: (d, e)
         h: object

@@ -1,10 +1,3 @@
-"""Handle node, graph and model metadata.
-
-The two core types of functions are formatter and wrapper. The formatter
-takes care of the formatting of the metadata, and the wrapper takes care
-of the wrapping of the metadata.
-"""
-
 import inspect
 from textwrap import TextWrapper, shorten
 from dataclasses import dataclass, field
@@ -14,10 +7,10 @@ from dataclasses import dataclass, field
 class MetaDataFormatter:
     """Metadata Formatter."""
 
-    formatter: dict
-    metaorder: list
-    textwrapper: callable
-    shorten: list = field(default_factory=list)
+    format_dict: dict
+    meta_order: list
+    text_wrapper: callable
+    shorten_list: list = field(default_factory=list)
 
     def __call__(self, obj):
         """Convert metadata dictionary to string.
@@ -26,38 +19,40 @@ class MetaDataFormatter:
         If the formatter is not found in the formatter dictionary,
         the default string output is "key: value".
 
-        :param dict metadata: metadata dictionary
-        :param list metaorder: metadata key order, entry is None if linebreak needed.
+        :param dict format_dict: format function dictionary
+        :param list meta_order: metadata key order, entry is None if linebreak needed.
             Defaults to dictionary key order.
         """
 
         metadata_list = []
-        for key in self.metaorder:
+        for key in self.meta_order:
             if key == "_":  # linebreak
                 metadata_list.append("")
                 continue
 
-            if key == "self": # allow reference self
+            if key == "self":  # allow reference self
                 value = obj
             else:
                 value = getattr(obj, key, None)
 
-            # the formatter returns list for potential multiliners
-            if key in self.formatter:
-                entry = self.formatter[key](key, value)
-            else:
+            # the format functions return a list, for potential multi-liners strings
+            if key in self.format_dict:
+                entry = self.format_dict[key](key, value)
+            elif value:
                 entry = [f"{key}: {value}"]
+            else:
+                entry = []
 
-            if key in self.shorten:
+            if key in self.shorten_list:
                 # replace the original list
-                entry = [shorten(ele, width=self.textwrapper.width) for ele in entry]
+                entry = [shorten(ele, width=self.text_wrapper.width) for ele in entry]
 
             metadata_list.extend(entry)
 
         metadata_wrapped = []
         for line in metadata_list:
             if line:
-                metadata_wrapped.extend(self.textwrapper.wrap(line))
+                metadata_wrapped.extend(self.text_wrapper.wrap(line))
             else:
                 metadata_wrapped.append("")
 
@@ -69,6 +64,9 @@ def format_func(key, value):
 
     The key name is not shown in the string output.
     The result is func(args1, args2, ...)."""
+
+    if not value:
+        return []
 
     return [f"{value.__name__}{inspect.signature(value)}"]
 
@@ -147,25 +145,16 @@ def format_shortdocstring(key, value):
     Here we try to grab the first line that starts with
     an upper case and ends with a period.
     """
-    if value:
-        for line in value.splitlines():
-            line = line.strip()
-            if line and line[0].isupper() and line.endswith("."):
-                doc = line
-                break
-    else:  # no docstring
-        doc = ""
+    if not value:
+        return []
+
+    for line in value.splitlines():
+        line = line.strip()
+        if line and line[0].isupper() and line.endswith("."):
+            doc = line
+            break
+
     return [f"{doc}"]
-
-
-def format_args(key, value):
-    """Format the metadata value that has the value of (func, kwargs).
-
-    The formatter is for the handler metadata.
-    """
-
-    func, kwargs = value
-    return [f"{key}: {func.__name__}({', '.join(repr(v) for v in kwargs.values())})"]
 
 
 def format_returns(key, value):
@@ -191,7 +180,10 @@ def format_returns(key, value):
 def format_value(key, value):
     """Format the metadata without displaying the key."""
 
-    return [value]
+    if not value:
+        return []
+
+    return [f"{value}"]
 
 
 def format_obj_name(key, value):
@@ -202,6 +194,9 @@ def format_obj_name(key, value):
     The object needs to have __name__ or name attribute defined.
     If neither is defined, display the string representation.
     """
+
+    if not value:
+        return []
 
     name = getattr(value, "__name__", getattr(value, "name", str(value)))
     return [f"{key}: {name}"]
@@ -238,7 +233,7 @@ modelformatter = MetaDataFormatter(
         "doc",
     ],
     wrapper80,
-    shorten=["handler_kwargs", "modifiers"],
+    ["handler_kwargs", "modifiers"],
 )
 
 nodeformatter = MetaDataFormatter(

@@ -247,3 +247,19 @@ def modify_func(func, modifiers):
     for mod in modifiers:
         func = mod(func)
     return func
+
+
+def parse_functype(func):
+    """Parse function type.
+
+    For functions that are not a standard callable, returns
+    the module name, such as numpy.ufunc.
+    """
+
+    tp = type(func)
+
+    if tp.__module__ == "builtins":
+        return tp.__qualname__
+
+    else:
+        return f"{tp.__module__}.{tp.__qualname__}"
