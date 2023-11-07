@@ -128,7 +128,7 @@ class Model:
             G
         ), f"invalid graph ({G.name}): graph contains cycles."
 
-        assert is_node_attr_defined(G, "node_obj")
+        assert is_node_attr_defined(G, "node_object")
         # the following might occur when the node object is incorrectly constructed
         assert is_node_attr_defined(G, "output")
         assert is_node_attr_defined(G, "signature")
@@ -143,7 +143,7 @@ class Model:
     def get_node_obj(self, node):
         """Quick access to node object within the model."""
 
-        return self._graph.nodes[node]["node_obj"]
+        return self._graph.nodes[node]["node_object"]
 
     def visualize(self, outfile=None):
         """Draw the graph of the model.

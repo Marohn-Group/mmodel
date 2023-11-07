@@ -67,7 +67,7 @@ class TopologicalHandler:
         {input_str}
         """
         )
-        node_obj = node_attr["node_obj"]
+        node_object = node_attr["node_object"]
         # format the error message
         input_str = "\n".join(
             [f"{key} = {repr(value)}" for key, value in node_data.items()]
@@ -75,7 +75,7 @@ class TopologicalHandler:
         exc_type, exc_value, _ = sys.exc_info()
         exc_str = f"{exc_type.__name__}: {exc_value}"
         msg = exception_format.format(
-            node=node, exc_str=exc_str, node_str=str(node_obj), input_str=input_str
+            node=node, exc_str=exc_str, node_str=str(node_object), input_str=input_str
         )
         raise Exception(msg)
 
@@ -83,11 +83,11 @@ class TopologicalHandler:
         """Run the individual node."""
 
         kwargs = {key: data[key] for key in node_attr["signature"].parameters}
-        node_obj = node_attr["node_obj"]
+        node_object = node_attr["node_object"]
 
         try:
             # execute
-            func_result = node_obj.node_func(**kwargs)
+            func_result = node_object.node_func(**kwargs)
             output = node_attr["output"]
             if output:  # skip the None
                 data[output] = func_result

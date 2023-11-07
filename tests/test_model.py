@@ -99,8 +99,8 @@ class TestModel:
         node_attr = model_instance.get_node("log")
 
         assert (
-            node_attr.pop("node_obj").__dict__
-            == mmodel_G.nodes["log"].pop("node_obj").__dict__
+            node_attr.pop("node_object").__dict__
+            == mmodel_G.nodes["log"].pop("node_object").__dict__
         )
 
         assert node_attr == mmodel_G.nodes["log"]
@@ -110,7 +110,7 @@ class TestModel:
 
         assert (
             model_instance.get_node_obj("log").__dict__
-            == mmodel_G.nodes["log"]["node_obj"].__dict__
+            == mmodel_G.nodes["log"]["node_object"].__dict__
         )
 
     def test_model_visualize(self, model_instance):
@@ -319,14 +319,16 @@ class TestModelValidation:
         with pytest.raises(
             Exception,
             match=(
-                r"invalid graph \(test_graph\): node_obj 'node_obj' "
+                r"invalid graph \(test_graph\): node_object 'node_object' "
                 r"is not defined for node\(s\) \['test'\]."
             ),
         ):
             Model._is_valid_graph(G)
 
         # manual adding the object
-        G.nodes["test"]["node_obj"] = Node("test", test, output="c", inputs=["a", "b"])
+        G.nodes["test"]["node_object"] = Node(
+            "test", test, output="c", inputs=["a", "b"]
+        )
 
         with pytest.raises(
             Exception,

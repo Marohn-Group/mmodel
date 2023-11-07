@@ -199,7 +199,7 @@ def test_modify_node(mmodel_G, value_modifier):
     mod_G = mmodel_G.edit_node("subtract", modifiers=[value_modifier(value=1)])
 
     # add one to the final value
-    assert mod_G.nodes["subtract"]["node_obj"](1, 2) == 0
+    assert mod_G.nodes["subtract"]["node_object"](1, 2) == 0
 
 
 def test_is_node_attr_defined():

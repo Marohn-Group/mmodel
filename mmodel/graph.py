@@ -24,11 +24,11 @@ class Graph(nx.DiGraph):
 
     graph_attr_dict_factory = {"type": "mmodel_graph"}.copy
 
-    def set_node_object(self, node_obj):
+    def set_node_object(self, node_object):
         """Add or update the functions of an existing node."""
-        self.nodes[node_obj.name]["node_obj"] = node_obj
-        self.nodes[node_obj.name]["signature"] = node_obj.signature
-        self.nodes[node_obj.name]["output"] = node_obj.output
+        self.nodes[node_object.name]["node_object"] = node_object
+        self.nodes[node_object.name]["signature"] = node_object.signature
+        self.nodes[node_object.name]["output"] = node_object.output
         self.update_graph()
 
     def set_node_objects_from(self, node_objects: list):
@@ -37,9 +37,9 @@ class Graph(nx.DiGraph):
         The method is the same as adding a node object.
         """
 
-        for node_obj in node_objects:
+        for node_object in node_objects:
             # unzipping works for input with or without modifiers
-            self.set_node_object(node_obj)
+            self.set_node_object(node_object)
 
     def add_edge(self, u_of_edge, v_of_edge, **attr):
         """Modify add_edge to update the edge attribute in the end."""
@@ -113,9 +113,9 @@ class Graph(nx.DiGraph):
 
         return super().subgraph(subgraph_nodes).deepcopy()
 
-    def replace_subgraph(self, subgraph, node_obj):
+    def replace_subgraph(self, subgraph, node_object):
         """Replace subgraph with a node."""
-        return replace_subgraph(self, subgraph, node_obj)
+        return replace_subgraph(self, subgraph, node_object)
 
     def get_node(self, node):
         """Get node attributes from the graph."""
@@ -125,16 +125,16 @@ class Graph(nx.DiGraph):
     def get_node_obj(self, node):
         """Get node object from the graph."""
 
-        return self.nodes[node]["node_obj"]
+        return self.nodes[node]["node_object"]
 
     def edit_node(self, node, **kwargs):
         """Edit node attributes.
         Returns a new graph.
         """
-        node_obj = self.nodes[node]["node_obj"].edit(**kwargs)
+        node_object = self.nodes[node]["node_object"].edit(**kwargs)
 
         graph = self.deepcopy()
-        graph.set_node_object(node_obj)
+        graph.set_node_object(node_object)
 
         return graph
 

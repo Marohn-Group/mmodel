@@ -30,9 +30,9 @@ class TestAddEdge:
         c_node = Node("func_c", func_c, output="t")
 
         G = Graph()
-        G.add_node("func_a", node_obj=a_node, output="o", signature=a_node.signature)
-        G.add_node("func_b", node_obj=b_node, output="q", signature=b_node.signature)
-        G.add_node("func_c", node_obj=c_node, output="t", signature=c_node.signature)
+        G.add_node("func_a", node_object=a_node, output="o", signature=a_node.signature)
+        G.add_node("func_b", node_object=b_node, output="q", signature=b_node.signature)
+        G.add_node("func_c", node_object=c_node, output="t", signature=c_node.signature)
 
         return G
 
@@ -140,7 +140,7 @@ class TestSetNodeObject:
     def test_set_node_object(self, base_G, node):
         """Test node basic attributes."""
 
-        assert base_G.nodes["func_a"]["node_obj"].__dict__ == node.__dict__
+        assert base_G.nodes["func_a"]["node_object"].__dict__ == node.__dict__
         assert base_G.nodes["func_a"]["output"] == "o"
         assert base_G.nodes["func_a"]["signature"] == node.signature
 
@@ -169,16 +169,16 @@ class TestSetNodeObject:
         The doc parsing is also tested in metadata and node modules.
         """
 
-        node = mmodel_G.nodes["add"]["node_obj"]
+        node = mmodel_G.nodes["add"]["node_object"]
         assert node.doc == "Add a constant to the value a."
 
-        node = mmodel_G.nodes["log"]["node_obj"]
+        node = mmodel_G.nodes["log"]["node_object"]
         assert node.doc == "Logarithm operation."
 
-        node = mmodel_G.nodes["power"]["node_obj"]
+        node = mmodel_G.nodes["power"]["node_object"]
         assert node.doc == "Return x**y (x to the power of y)."
 
-        node = mmodel_G.nodes["subtract"]["node_obj"]
+        node = mmodel_G.nodes["subtract"]["node_object"]
         assert node.doc == "Same as a - b."
 
 
@@ -237,7 +237,7 @@ class TestGraphBasics:
 
         Logarithm operation."""
 
-        assert str(mmodel_G.nodes["log"]["node_obj"]) == dedent(node_s)
+        assert str(mmodel_G.nodes["log"]["node_object"]) == dedent(node_s)
 
 
 class TestNetworkXGraphOperation:
@@ -359,14 +359,14 @@ class TestMGraphOperation:
         def func(a, b, c, d):
             return a + b + c + d
 
-        node_obj = Node(
+        node_object = Node(
             "test",
             func,
             output="z",
             inputs=["c", "e", "x", "y"],
             modifiers=[value_modifier(value=1)],
         )
-        graph = mmodel_G.replace_subgraph(subgraph, node_obj)
+        graph = mmodel_G.replace_subgraph(subgraph, node_object)
 
         # a copy is created
         assert graph != mmodel_G
@@ -376,7 +376,7 @@ class TestMGraphOperation:
         assert list(node_dict["signature"].parameters) == ["c", "e", "x", "y"]
         assert node_dict["output"] == "z"
 
-        assert node_dict["node_obj"] == node_obj
+        assert node_dict["node_object"] == node_object
         # Test the edge attributes
         assert graph.edges["add", "test"]["var"] == "c"
         assert graph.edges["subtract", "test"]["var"] == "e"
@@ -390,16 +390,16 @@ class TestMGraphOperation:
     def test_get_node_obj(self, mmodel_G):
         """Test get_node_obj method."""
 
-        node_obj = mmodel_G.get_node_obj("add")
-        assert node_obj == mmodel_G.nodes["add"]["node_obj"]
+        node_object = mmodel_G.get_node_obj("add")
+        assert node_object == mmodel_G.nodes["add"]["node_object"]
 
     def test_edit_node(self, mmodel_G, value_modifier):
         """Test edit_node method."""
 
-        old_obj = mmodel_G.nodes["subtract"]["node_obj"]
+        old_obj = mmodel_G.nodes["subtract"]["node_object"]
 
         G = mmodel_G.edit_node("subtract", modifiers=[value_modifier(value=2)])
-        new_obj = G.nodes["subtract"]["node_obj"]
+        new_obj = G.nodes["subtract"]["node_object"]
         # add one to the final value
         assert new_obj(1, 2) == 1
         assert new_obj != old_obj
@@ -407,7 +407,7 @@ class TestMGraphOperation:
     def test_edit_node_new_signature(self, mmodel_G, value_modifier):
         """Test edit_node method."""
 
-        old_obj = mmodel_G.nodes["add"]["node_obj"]
+        old_obj = mmodel_G.nodes["add"]["node_object"]
 
         def add(first, second):
             return first + second
@@ -416,7 +416,7 @@ class TestMGraphOperation:
         G = mmodel_G.edit_node(
             "add", func=add, modifiers=[value_modifier(value=2)], inputs=None
         )
-        new_obj = G.nodes["add"]["node_obj"]
+        new_obj = G.nodes["add"]["node_object"]
         # add one to the final value
         assert list(new_obj.signature.parameters.keys()) == ["first", "second"]
         assert list(modelgraph_signature(G).parameters.keys()) == [

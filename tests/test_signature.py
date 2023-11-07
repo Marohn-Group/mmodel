@@ -103,6 +103,38 @@ def test_modify_signature_inputs_number():
         modify_signature(tfunc, ["a", "b", "c", "d"])
 
 
+def test_modify_signature_pos_expand():
+    """Test if the given inputs are not enough, the function raises exception."""
+
+    def func(a, b, c=3, /, d=4, *args):
+        return a + b + c + d + sum(args)
+
+    mod_func = modify_signature(func, ["a", "b", "c", "d", "e", "f"])
+    assert mod_func(1, 2, 3, 4, 5, 6) == 21
+
+    mod_func = modify_signature(func, ["a", "b"])
+    assert mod_func(1, 2) == 10
+
+    with pytest.raises(ValueError, match="Not enough inputs for the function"):
+        modify_signature(tfunc, ["a"])
+
+
+def test_modify_signature_with_kw_only():
+    """Test if the given inputs are not enough, the function raises exception."""
+
+    def func(a, b, c=3, /, d=4, *args, f=5):
+        return a + b + c + d + sum(args) - f
+
+    mod_func = modify_signature(func, ["a", "b", "c", "d", "f"])
+    print(signature(mod_func))
+    assert mod_func(1, 2, 3, 4, 6) == 4
+
+    # mod_func = modify_signature(func, ["a", "b"])
+    # assert mod_func(1, 2) == 10
+
+    # with pytest.raises(ValueError, match="Not enough inputs for the function"):
+    #     modify_signature(tfunc, ["a"])
+
 def test_convert_signature():
     """Test the convert_signature function."""
 

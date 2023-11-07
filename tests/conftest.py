@@ -56,23 +56,31 @@ def standard_G():
     node_list = [
         (
             "add",
-            {"node_obj": add_node, "signature": add_node.signature, "output": "c"},
+            {"node_object": add_node, "signature": add_node.signature, "output": "c"},
         ),
         (
             "subtract",
-            {"node_obj": sub_node, "signature": sub_node.signature, "output": "e"},
+            {"node_object": sub_node, "signature": sub_node.signature, "output": "e"},
         ),
         (
             "power",
-            {"node_obj": power_node, "signature": power_node.signature, "output": "g"},
+            {
+                "node_object": power_node,
+                "signature": power_node.signature,
+                "output": "g",
+            },
         ),
         (
             "multiply",
-            {"node_obj": multi_node, "signature": multi_node.signature, "output": "k"},
+            {
+                "node_object": multi_node,
+                "signature": multi_node.signature,
+                "output": "k",
+            },
         ),
         (
             "log",
-            {"node_obj": log_node, "signature": log_node.signature, "output": "m"},
+            {"node_object": log_node, "signature": log_node.signature, "output": "m"},
         ),
     ]
 
@@ -148,7 +156,7 @@ def value_modifier():
 
 def graph_equal(G1, G2):
     """Test if graphs have the same nodes, edges, and attributes.
-    The node_obj object is deepcopied, so the object id is different.
+    The node_object object is deepcopied, so the object id is different.
 
     Dictionary comparison does not care about key orders.
     """
@@ -156,7 +164,7 @@ def graph_equal(G1, G2):
     for node in G1.nodes:
         assert node in G2.nodes
         for attr in G1.nodes[node]:
-            if attr == "node_obj":
+            if attr == "node_object":
                 assert G1.nodes[node][attr].__dict__ == G2.nodes[node][attr].__dict__
             else:
                 assert G1.nodes[node][attr] == G2.nodes[node][attr]

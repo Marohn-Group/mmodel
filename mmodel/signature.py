@@ -1,6 +1,7 @@
 from inspect import signature, Parameter, Signature
 from functools import wraps
 from mmodel.utility import param_sorter
+from collections import defaultdict
 
 
 def split_arguments(sig, arguments):
@@ -35,27 +36,54 @@ def modify_signature(func, inputs):
 
     sig = signature(func)
     parameters = dict(sig.parameters)
-    old_param = list(parameters.keys())
 
     # check if input parameters are less than the parameters required
     # excludes parameters with defaults
-    required = []
-    defaults = []
-    if_var_keyword = False
-    for param in parameters.values():
-        if (param.kind <= 1 or param.kind == 3) and param.default is Parameter.empty:
-            required.append(param.name)
-        elif param.default is not Parameter.empty:
-            defaults.append(param.name)
-        elif param.kind == 4:
-            if_var_keyword = True
+    sig_dict = defaultdict(list)
+    sig_default_dict = defaultdict(list)
+
+    for param in sig.parameters.values():
+        sig_dict[param.kind].append(param.name)
+        if param.default is not Parameter.empty:
+            sig_default_dict[param.kind].append(param.name)
+
+    sig_count = [len(sig_dict[key]) for key in [0, 1, 2, 3, 4]]
+    nd_sig_count = [
+        len(sig_dict[key]) - len(sig_default_dict[key]) for key in [0, 1, 2, 3, 4]
+    ]
+
+    # there are four cases for max_length
+    # case 1: var_kw - max = unlimited
+    # case 1: kw_only, no var_kw - max = pos + pos_or_kw + kw_only
+    # case 3: var_pos, no var_kw, no kw_only - max = unlimited
+    # case 4: no var_pos, no kw_only, no var_kw - max = pos + pos_or_kw
+    pos_expand = False
+    if sig_count[4] > 0:
+        max_length = None
+    elif sig_count[3] > 0:
+        max_length = sig_count[0] + sig_count[1] + sig_count[3]
+    elif sig_count[2] > 0:
+        max_length = None
+        pos_expand = True
+    else:
+        max_length = sig_count[0] + sig_count[1]
+
+    # there are three cases for min_length (nd = non-default)
+    # case 1: nd kw_only - min = nd kw + pos_or_kw + pos
+    # case 2: nd pos_or_kw, no nd kw_only - min = nd pos_or_kw + pos
+    # case 3: no nd pos_or_kw, no nd kw_only - min = nd pos
+
+    if nd_sig_count[3] > 0:
+        min_length = nd_sig_count[3] + sig_count[1] + sig_count[0]
+    elif nd_sig_count[1] > 0:
+        min_length = nd_sig_count[1] + sig_count[0]
+    else:
+        min_length = nd_sig_count[0]
 
     # check if the inputs are enough for the function
-    if len(required) > len(inputs):
+    if min_length > len(inputs):
         raise ValueError("Not enough inputs for the function")
-
-    # check if the inputs are too much for the function
-    if len(required) + len(defaults) < len(inputs) and not if_var_keyword:
+    elif max_length is not None and max_length < len(inputs):
         raise ValueError("Too many inputs for the function")
 
     new_param = []
@@ -63,16 +91,32 @@ def modify_signature(func, inputs):
         new_param.append(Parameter(element, kind=Parameter.POSITIONAL_OR_KEYWORD))
     new_sig = Signature(new_param)
 
+    # remove the *args and **kwargs
+    param_list = sig_dict[0] + sig_dict[1] + sig_dict[3]
+    param_pair = list(zip(param_list, inputs))
+
     @wraps(func)
     def wrapped(*args, **kwargs):
         arguments = new_sig.bind(*args, **kwargs).arguments
 
-        adjusted_kwargs = {}
-        for i, p in enumerate(inputs):
-            adjusted_kwargs[old_param[i]] = arguments.pop(p)
+        # all parameters are positional
+        if pos_expand:
+            return func(*arguments.values())
 
-        args, kwargs = split_arguments(sig, adjusted_kwargs)
-        return func(*args, **kwargs)
+        # if keyword argument exists in the original signature
+        adjusted_args = []
+        adjusted_kwargs = {}
+
+        for old_key, new_key in param_pair:
+            if old_key in sig_dict[0]:
+                adjusted_args.append(arguments.pop(new_key))
+            else:
+                adjusted_kwargs[old_key] = arguments.pop(new_key)
+
+        adjusted_kwargs.update(arguments)
+        # args, kwargs = split_arguments(sig, adjusted_kwargs)
+
+        return func(*adjusted_args, **adjusted_kwargs)
 
     wrapped.__signature__ = new_sig
     return wrapped

@@ -53,7 +53,7 @@ class Node:
         If the "inputs" is None, the signature is changed keyword only,
         and the default values are removed.
 
-        The keyword-only design reduced binding overhead during function
+        The keyword-only design reduced binding overhead during the function
         calls, and allow more consistency between node, modifier and model.
         """
 
