@@ -84,13 +84,13 @@ class Graph(nx.DiGraph):
 
         for u, v in self.edges:
             if self.nodes[u] and self.nodes[v]:
-                # the edge "var" is not defined if the parent node does not
+                # the edge "output" is not defined if the parent node does not
                 # have "output" attribute or the child node does not have
                 # the parameter
                 # extract the parameter dictionary
                 v_sig = self.nodes[v]["signature"].parameters
                 if self.nodes[u]["output"] in v_sig:
-                    self.edges[u, v]["var"] = self.nodes[u]["output"]
+                    self.edges[u, v]["output"] = self.nodes[u]["output"]
 
     # graph operations
     def subgraph(self, nodes=None, inputs=None, outputs=None):

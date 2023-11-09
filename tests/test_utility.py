@@ -159,8 +159,8 @@ def test_replace_subgraph_terminal(mmodel_G):
     assert "test" in graph
 
     # Test the edge attributes
-    assert graph.edges["add", "test"]["var"] == "c"
-    assert graph.edges["subtract", "test"]["var"] == "e"
+    assert graph.edges["add", "test"]["output"] == "c"
+    assert graph.edges["subtract", "test"]["output"] == "e"
 
 
 def test_replace_subgraph_middle(mmodel_G):
@@ -185,9 +185,9 @@ def test_replace_subgraph_middle(mmodel_G):
     assert "test" in graph
 
     # Test the edge attributes
-    assert graph.edges["add", "test"]["var"] == "c"
+    assert graph.edges["add", "test"]["output"] == "c"
     # test node is connected to multiply node
-    assert graph.edges["test", "multiply"]["var"] == "e"
+    assert graph.edges["test", "multiply"]["output"] == "e"
 
 
 def test_modify_node(mmodel_G, value_modifier):
@@ -220,9 +220,9 @@ def test_is_node_attr_defined():
 
     with pytest.raises(
         Exception,
-        match=r"invalid graph: weight 'w' is not defined for node\(s\) \[2, 3\]",
+        match=r"invalid graph: attribute 'w' is not defined for node\(s\) \[2, 3\]",
     ):
-        util.is_node_attr_defined(g, "w", "weight")
+        util.is_node_attr_defined(g, "w")
 
 
 def test_is_edge_attr_defined():
@@ -244,11 +244,11 @@ def test_is_edge_attr_defined():
     with pytest.raises(
         Exception,
         match=(
-            r"invalid graph: weight 'w' is "
+            r"invalid graph: attribute 'w' is "
             r"not defined for edge\(s\) \[\(2, 3\), \(3, 4\)\]"
         ),
     ):
-        util.is_edge_attr_defined(g, "w", "weight")
+        util.is_edge_attr_defined(g, "w")
 
 
 def test_parse_functype(func):

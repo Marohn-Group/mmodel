@@ -132,7 +132,7 @@ class Model:
         # the following might occur when the node object is incorrectly constructed
         assert is_node_attr_defined(G, "output")
         assert is_node_attr_defined(G, "signature")
-        assert is_edge_attr_defined(G, "var", "variable")
+        assert is_edge_attr_defined(G, "output")
         return True
 
     def get_node(self, node):

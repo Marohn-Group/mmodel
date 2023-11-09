@@ -32,6 +32,8 @@ Changed
 - Change plotting diagram method to ``visualize`` and ``outfile``.
 - ``loop_modifier`` adds "_loop" to the function signature parameter.
 - Improved node exception messages.
+- Change the edge attribute from "var" to "output".
+- Change attribute undefined message.
 
 Removed
 ^^^^^^^

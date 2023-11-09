@@ -119,7 +119,7 @@ The latter accepts a list of node objects.
     it needs to start with an upper case letter and ends with a period.
 
 The name of the parameters that pass through each edge is determined and stored
-in the edge attribute "var". 
+in the edge attribute "variable". 
 
 .. note::
     

@@ -41,15 +41,15 @@ class TestAddEdge:
 
         base_G.add_edge("func_a", "func_b")
 
-        assert base_G.edges["func_a", "func_b"]["var"] == "o"
+        assert base_G.edges["func_a", "func_b"]["output"] == "o"
 
     def test_add_edges_from(self, base_G):
         """Test add_edges_from updates the graph and edge variable."""
 
         base_G.add_edges_from([["func_a", "func_b"], ["func_a", "func_c"]])
 
-        assert base_G.edges["func_a", "func_b"]["var"] == "o"
-        assert base_G.edges["func_a", "func_c"]["var"] == "o"
+        assert base_G.edges["func_a", "func_b"]["output"] == "o"
+        assert base_G.edges["func_a", "func_c"]["output"] == "o"
 
     def test_update_edge_vals(self, base_G):
         """Test edge updates.
@@ -61,13 +61,13 @@ class TestAddEdge:
         """
 
         base_G.add_edge("func_a", "func_d")
-        assert "var" not in base_G.edges["func_a", "func_d"]
+        assert "output" not in base_G.edges["func_a", "func_d"]
 
         def func_d(t, w):
             return t + w
 
         base_G.add_node("func_d", func=func_d, output="x", sig=signature(func_d))
-        assert "var" not in base_G.edges["func_a", "func_d"]
+        assert "output" not in base_G.edges["func_a", "func_d"]
 
     def test_add_grouped_edge_without_list(self, base_G):
         """Test add_grouped_edge.
@@ -77,7 +77,7 @@ class TestAddEdge:
 
         base_G.add_grouped_edge("func_a", "func_b")
 
-        assert base_G.edges["func_a", "func_b"]["var"] == "o"
+        assert base_G.edges["func_a", "func_b"]["output"] == "o"
 
     def test_add_grouped_edge_with_list(self, base_G):
         """Test add_grouped_edge.
@@ -160,8 +160,8 @@ class TestSetNodeObject:
             [Node("func_b", func_b, output=["q"]), Node("func_c", func_c, output=["t"])]
         )
 
-        assert base_G.edges["func_a", "func_b"] == {"var": "o"}
-        assert base_G.edges["func_a", "func_c"] == {"var": "o"}
+        assert base_G.edges["func_a", "func_b"] == {"output": "o"}
+        assert base_G.edges["func_a", "func_c"] == {"output": "o"}
 
     def test_node_metadata(self, mmodel_G):
         """Test node metadata.
@@ -291,7 +291,7 @@ class TestNetworkXGraphOperation:
 
         # partial subgraph
         H = G.subgraph(["subtract", "multiply"])
-        assert H.adj == {"subtract": {"multiply": {"var": "e"}}, "multiply": {}}
+        assert H.adj == {"subtract": {"multiply": {"output": "e"}}, "multiply": {}}
 
         # empty subgraph
         H = G.subgraph([])
@@ -310,7 +310,7 @@ class TestNetworkXGraphOperation:
 
         H = mmodel_G.subgraph(["subtract", "multiply"]).deepcopy()
 
-        assert H.adj == {"subtract": {"multiply": {"var": "e"}}, "multiply": {}}
+        assert H.adj == {"subtract": {"multiply": {"output": "e"}}, "multiply": {}}
 
         # check the graph attribute is no longer the same dictionary`
         assert H.graph is not mmodel_G.graph
@@ -378,8 +378,8 @@ class TestMGraphOperation:
 
         assert node_dict["node_object"] == node_object
         # Test the edge attributes
-        assert graph.edges["add", "test"]["var"] == "c"
-        assert graph.edges["subtract", "test"]["var"] == "e"
+        assert graph.edges["add", "test"]["output"] == "c"
+        assert graph.edges["subtract", "test"]["output"] == "e"
 
     def test_get_node(self, mmodel_G):
         """Test get_node method."""

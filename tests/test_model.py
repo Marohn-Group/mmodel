@@ -319,7 +319,7 @@ class TestModelValidation:
         with pytest.raises(
             Exception,
             match=(
-                r"invalid graph \(test_graph\): node_object 'node_object' "
+                r"invalid graph \(test_graph\): attribute 'node_object' "
                 r"is not defined for node\(s\) \['test'\]."
             ),
         ):
@@ -333,7 +333,7 @@ class TestModelValidation:
         with pytest.raises(
             Exception,
             match=(
-                r"invalid graph \(test_graph\): output 'output' "
+                r"invalid graph \(test_graph\): attribute 'output' "
                 r"is not defined for node\(s\) \['test'\]"
             ),
         ):
@@ -344,7 +344,7 @@ class TestModelValidation:
         with pytest.raises(
             Exception,
             match=(
-                r"invalid graph \(test_graph\): signature 'signature' "
+                r"invalid graph \(test_graph\): attribute 'signature' "
                 r"is not defined for node\(s\) \['test'\]"
             ),
         ):
@@ -355,7 +355,7 @@ class TestModelValidation:
         with pytest.raises(
             Exception,
             match=(
-                r"invalid graph \(test_graph\): variable 'var' "
+                r"invalid graph \(test_graph\): attribute 'output' "
                 r"is not defined for edge\(s\) \[\('log', 'test'\)\]"
             ),
         ):
@@ -363,7 +363,7 @@ class TestModelValidation:
 
         # the last one will pass even tho it is empty
 
-        G.edges["log", "test"]["var"] = "t"
+        G.edges["log", "test"]["output"] = "t"
         assert Model._is_valid_graph(G)
 
     def test_is_valid_graph_passing(self, mmodel_G):

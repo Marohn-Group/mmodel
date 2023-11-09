@@ -67,5 +67,5 @@ class Visualizer:
 plain_visualizer = Visualizer(lambda node, ndict: node, lambda u, v, edict: "")
 visualizer = Visualizer(
     lambda node, ndict: nodeformatter(ndict["node_object"]),
-    lambda u, v, edict: edict["var"],
+    lambda u, v, edict: edict["output"],
 )

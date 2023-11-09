@@ -166,15 +166,13 @@ def param_counter(graph, returns):
     return count
 
 
-def is_node_attr_defined(graph, attr: str, attr_name: str = None):
+def is_node_attr_defined(graph, attr: str):
     """Check if all graph nodes have the attribute defined.
 
     :param str attr: attribute string.
-    :param str attr_name: the detailed name of the attribute.
 
     Raise an exception if the attribute is undefined.
     """
-    attr_name = attr_name or attr
 
     if graph.name:
         graph_str = f"graph ({graph.name})"
@@ -188,19 +186,18 @@ def is_node_attr_defined(graph, attr: str, attr_name: str = None):
 
     if node_list:
         raise Exception(
-            f"invalid {graph_str}: {attr_name} "
+            f"invalid {graph_str}: attribute "
             f"{repr(attr)} is not defined for node(s) {node_list}."
         )
 
     return True
 
 
-def is_edge_attr_defined(graph, attr: str, attr_name: str = None):
+def is_edge_attr_defined(graph, attr: str):
     """Check if all graph edges have the target attribute defined.
 
     Raise an exception if the attribute is undefined.
     """
-    attr_name = attr_name or attr
 
     if graph.name:
         graph_str = f"graph ({graph.name})"
@@ -213,7 +210,7 @@ def is_edge_attr_defined(graph, attr: str, attr_name: str = None):
             edge_list.append((u, v))
     if edge_list:
         raise Exception(
-            f"invalid {graph_str}: {attr_name} {repr(attr)}"
+            f"invalid {graph_str}: attribute {repr(attr)}"
             f" is not defined for edge(s) {edge_list}."
         )
 
