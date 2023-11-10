@@ -122,7 +122,7 @@ class Graph(nx.DiGraph):
 
         return self.nodes[node]
 
-    def get_node_obj(self, node):
+    def get_node_object(self, node):
         """Get node object from the graph."""
 
         return self.nodes[node]["node_object"]

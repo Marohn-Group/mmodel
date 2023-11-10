@@ -140,7 +140,7 @@ class Model:
 
         return self._graph.nodes[node]
 
-    def get_node_obj(self, node):
+    def get_node_object(self, node):
         """Quick access to node object within the model."""
 
         return self._graph.nodes[node]["node_object"]

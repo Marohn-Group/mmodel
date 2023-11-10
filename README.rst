@@ -129,7 +129,7 @@ We can inspect the loop node as well as the new model.
     graph: looped_graph
     handler: MemHandler
     
-    >>> print(looped_model.get_node_obj("loop_node"))
+    >>> print(looped_model.get_node_object("loop_node"))
     submodel(log_base, sum_xy)
     return: looped_z
     functype: <class 'mmodel.model.Model'>

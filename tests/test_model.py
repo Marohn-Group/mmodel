@@ -109,7 +109,7 @@ class TestModel:
         """Test get_node_object method of the model."""
 
         assert (
-            model_instance.get_node_obj("log").__dict__
+            model_instance.get_node_object("log").__dict__
             == mmodel_G.nodes["log"]["node_object"].__dict__
         )
 

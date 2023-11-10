@@ -181,7 +181,7 @@ mmodel can identify the above functions, and replace the signature:
     G.set_node_object(Node("b", func=np.sum, output="z", inputs=["m", "n"]))
 
 
-    >>> print(G.get_node_obj("a"))
+    >>> print(G.get_node_object("a"))
     a
 
     add(m, n)
@@ -191,7 +191,7 @@ mmodel can identify the above functions, and replace the signature:
     Same as a + b.
 
 
-    >>> print(G.get_node_obj("b"))
+    >>> print(G.get_node_object("b"))
     b
 
     sum(m, n)
@@ -219,14 +219,14 @@ length of arguments, additional arguments can be provided using the input functi
 
     G.set_node_object(Node(node="a", func=test_func_kwargs, output="z", inputs=["m", "n", "p"]))
 
-    >>> print(G.get_node_obj("a"))
+    >>> print(G.get_node_object("a"))
     a
 
     test_func_kwargs(m, n, p)
     return: z
     functype: function
 
-    >>> G.get_node_obj("a")(m=1, n=2, p=4)
+    >>> G.get_node_object("a")(m=1, n=2, p=4)
     (3, {'p': 4})
 
 Function with default arguments
@@ -242,14 +242,14 @@ of parameters.
     
     G.set_node_object(Node("a", func=test_func_defaults, output="z", inputs=["m", "n"]))
 
-    >>> print(G.get_node_obj("a"))
+    >>> print(G.get_node_object("a"))
     a
 
     test_func_defaults(m, n)
     return: z
     functype: function
     
-    >>> G.get_node_obj("a")(m=1, n=2)
+    >>> G.get_node_object("a")(m=1, n=2)
     5
 
 .. Note::
