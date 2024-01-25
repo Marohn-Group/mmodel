@@ -177,6 +177,10 @@ class Model:
         a new model with the same graph.
         """
 
+        # reset returns when the graph is changed
+        if "graph" in kwargs and "returns" not in kwargs:
+            kwargs["returns"] = None
+
         constructor_dict = construction_dict(
             self, ["graph", "returns", "modifiers", "handler_kwargs", "defaults"]
         )
