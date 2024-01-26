@@ -4,7 +4,7 @@ The configuration file provides several default graph fixtures
 and test functions.
 
 1. `standard_G` - test graph generated using DiGraph, scope: function
-2. `mmodel_G` - test graph generated using Graph. scope: function
+2. `mmodel_G` - test graph generated using Graph, scope: function
 """
 
 
@@ -156,7 +156,7 @@ def value_modifier():
 
 def graph_equal(G1, G2):
     """Test if graphs have the same nodes, edges, and attributes.
-    The node_object object is deepcopied, so the object id is different.
+    The node_object object is deep copied, so the object ID is different.
 
     Dictionary comparison does not care about key orders.
     """

@@ -22,7 +22,7 @@ class Model:
         the keyword arguments.
     :param dict handler_kwargs: keyword arguments for the handler class.
     :param list modifiers: modifiers used for the whole graph model executable.
-    :param list returns: The order of returns of the model; defaults to the
+    :param list returns: The order of model returns; defaults to the
         topological search.
     :param str doc: model docstring
     :param dict defaults: default values for the model signature.
@@ -172,8 +172,8 @@ class Model:
     def edit(self, **kwargs):
         """Edit components of the model to create a new model.
 
-        It is not recommended to edit the graph component of the model.
-        Although it does create a new model, "edit" is for creating
+        Editing the graph component of the model is not recommended.
+        Although it does create a new model, "edit" is for building
         a new model with the same graph.
         """
 

@@ -155,7 +155,7 @@ def test_convert_signature():
     assert new_func(a=1, b=2, c=3, d=4, e=5) == 17
     assert new_func(1, 2, 3, 4, e=5) == 17
 
-    # check it removes the default signature
+    # check if it removes the default signature
     with pytest.raises(TypeError, match="got an unexpected keyword argument 'f'"):
         new_func(a=1, b=2, c=3, d=4, e=5, f=6)
 

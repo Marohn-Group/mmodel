@@ -7,9 +7,9 @@ def modelgraph_signature(graph):
     """Obtain the signature from the model graph.
 
     :param DiGraph graph: networkx.Digraph() object,
-        with 'signature', and 'output' defined for nodes
+        with 'signature' and 'output' defined for nodes
         and "parameters" for edges.
-        The args are a dictionary of inspected signature.
+        The args are a dictionary of inspected signatures.
     """
 
     parameters = {}
@@ -64,8 +64,8 @@ def graph_topological_sort(graph):
     However, it does not carry the node attributes. The method
     outputs a list of nodes for each generation.
 
-    :return: topological order of the graph. Returns a list of nodes and its
-        attribute.
+    :return: topological order of the graph. Returns a list of nodes and their
+        attributes.
     :rtype: list
 
     """
@@ -81,10 +81,10 @@ def graph_topological_sort(graph):
 def replace_subgraph(graph, subgraph, subgraph_node):
     """Replace subgraph with a node.
 
-    Find all parent nodes, not in the subgraph but child nodes in the
+    Find all parent nodes, not in the subgraph, but child nodes in the
     subgraph. (All child nodes of subgraph nodes are in the subgraph).
-    The edge attribute is passed down to the new edge. Here a new graph is
-    created by deep copy the original graph.
+    The edge attribute is passed down to the new edge. Here, a new graph is
+    created by deep copying the original graph.
 
     :param graph model_graph: model_graph to modify.
     :param graph subgraph: subgraph that is being replaced by a node
@@ -222,9 +222,9 @@ def construction_dict(obj, property_list=None, exclude_list=None):
 
     The property list and exclude list need to be manually input.
     The exclude list is used for object attributes that are not
-    part of the object construction, but public attributes.
-    The object attribute omits private ('_') values, but includes all
-    public attributes that are not in the exclude list.
+    part of the object construction but are public attributes.
+    The object attribute omits private ('_') values but includes all
+    public attributes not in the exclude list.
     """
     property_list = property_list or []
     exclude_list = exclude_list or []
@@ -250,7 +250,7 @@ def parse_functype(func):
     """Parse function type.
 
     For functions that are not a standard callable, returns
-    the module name, such as numpy.ufunc.
+    the module name, such as ``numpy.ufunc``.
     """
 
     tp = type(func)

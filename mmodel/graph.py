@@ -57,8 +57,8 @@ class Graph(nx.DiGraph):
         """Add linked edge.
 
         For mmodel, a group edge (u, v) allows u or v
-        to be a list of nodes. Represents several nodes
-        flowing into one node or the other way around.
+        to be a list of nodes. A grouped edge represents one or several
+        nodes flowing into one node.
         """
 
         if isinstance(u, list) and isinstance(v, list):
@@ -152,15 +152,15 @@ class Graph(nx.DiGraph):
     def deepcopy(self):
         """Deepcopy graph.
 
-        The graph.copy method is a shallow copy. Deepcopy creates copy for the
-        attributes dictionary.
+        The ``graph.copy`` method is a shallow copy. Deepcopy creates a copy for 
+        the attributes dictionary.
         `graph.copy<https://networkx.org/documentation/stable/reference/classes
         /generated/networkx.Graph.copy.html>_`
 
-        However, for subgraphs, deepcopy is incredibly inefficient because
+        However, for subgraphs, ``deepcopy`` is incredibly inefficient because
         subgraph contains '_graph', which stores the original graph.
         An alternative method is to copy the code from the copy method,
-        but use deepcopy for the items.
+        but use ``deepcopy`` for the items.
 
         The parser is redefined in the new graph.
         """

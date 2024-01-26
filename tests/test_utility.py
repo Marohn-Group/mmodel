@@ -63,7 +63,7 @@ def test_param_sorter_order(func):
 def test_modelgraph_signature(mmodel_G, mmodel_signature):
     """Test graph_signature.
 
-    Two functions in the mmodel_G have parameter
+    Two functions in the mmodel_G have the parameter
     'b' - one with default and one without. The final signature
     should have a default value.
     """
@@ -74,7 +74,7 @@ def test_modelgraph_signature(mmodel_G, mmodel_signature):
 def test_parse_parameters():
     """Test parse_parameters.
 
-    Here we test when the default value is at the end or in the middle.
+    Here, we test when the default value is at the end or in the middle.
     """
 
     sig, porder, dargs = util.parse_parameters(["a", "b", ("c", 2)])

@@ -161,8 +161,8 @@ def format_returns(key, value):
     """Format the metadata value that has a list of returns.
 
     The formatter is for the returns metadata. If the "returns" value is empty,
-    the output is None. If the returns only have 1 value, return the value, else
-    return the values separated by commas in a tuple representation.
+    the output is None. If the returns only have one value, return the value; otherwise
+    , return the values separated by commas in a tuple representation.
     """
 
     return_len = len(value)
