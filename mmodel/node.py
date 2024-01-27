@@ -3,12 +3,12 @@ from mmodel.signature import (
     add_signature,
     convert_signature,
     has_signature,
-    check_signature
+    check_signature,
 )
 from inspect import signature
 from mmodel.metadata import nodeformatter
 from mmodel.utility import construction_dict, modify_func, parse_functype
-
+from mmodel.model import Model
 
 class Node:
     """A node class that formats node function and metadata."""
@@ -36,17 +36,17 @@ class Node:
     @property
     def __signature__(self):
         """Node signature for inspection."""
-        return self.signature
+        return signature(self.node_func)
 
     @property
     def signature(self):
         """Return signature."""
-        return signature(self.node_func)
+        return self.__signature__
 
     def convert_func(self, func, inputs):
         """Convert function to a node function.
 
-        For numpy.ufunc and builtin type, "inputs" value is required.
+        For ``numpy.ufunc`` and builtin type, the "inputs" argument is required.
 
         If inputs are provided, the signature is
         changed based on the inputs and keyword-only.
@@ -54,15 +54,15 @@ class Node:
         and the default values are removed.
 
         The keyword-only design reduced binding overhead during the function
-        calls, and allow more consistency between node, modifier and model.
+        calls, and allow more consistency between node, modifier, and model.
         """
+
+        if isinstance(func, Model):
+            func = func.model_func
 
         if not has_signature(func):
             if not inputs:
-                raise Exception(
-                    f"node {repr(self.name)} function "
-                    "requires 'inputs' to be specified"
-                )
+                raise Exception(f"'inputs' required for node {repr(self.name)}")
             else:
                 func = add_signature(func, inputs)
         elif inputs:
@@ -94,8 +94,15 @@ class Node:
         return self.__class__(**con_dict)
 
     def __call__(self, *args, **kwargs):
-        """The node function is forced to be keyword argument only."""
-        return self.node_func(*args, **kwargs)
+        """Node function callable.
+
+        The ``node_func`` method is used internally. The ``__call__`` method
+        is used for external calls.
+        """
+
+        bound = self.signature.bind(*args, **kwargs)
+        bound.apply_defaults()  # There's no defaults allowed, added regardless
+        return self.node_func(**bound.arguments)
 
     def __str__(self):
         return nodeformatter(self)

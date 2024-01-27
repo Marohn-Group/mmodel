@@ -62,17 +62,26 @@ class Model:
         # final callable
         # model_func can be modified externally
         self.model_func = modify_func(self._runner, self._modifiers)
+        # apply defaults to model_func
+        self.model_func.__signature__ = restructure_signature(
+            signature(self.model_func), self._defaults
+        )
 
     @property
-    def __signature__(self):
-        """Model signature for inspection."""
-        return self.signature
+    def order(self):
+        """The order of the node execution."""
+        return list(zip(*self._runner.order))[0]
 
     @property
     def signature(self):
         """Model signature for inspection."""
+        return self.__signature__
 
-        return restructure_signature(signature(self.model_func), self._defaults)
+    @property
+    def __signature__(self):
+        """Model signature for inspection."""
+
+        return self.model_func.__signature__
 
     @property
     def graph(self):

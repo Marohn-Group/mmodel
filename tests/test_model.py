@@ -32,6 +32,7 @@ class TestModel:
         assert model_instance.signature == mmodel_signature
         assert model_instance.returns == ["k", "m"]
         assert model_instance.modifiers == []
+        assert model_instance.order == ("add", "subtract", "power", "log", "multiply")
         # doc works for inspect.getdoc and help()
         assert inspect.getdoc(model_instance) == model_instance.doc
 
@@ -71,6 +72,27 @@ class TestModel:
 
         assert model_instance(10, 2, 15, 1) == (-36, math.log(12, 2))
         assert model_instance(a=1, d=2, f=3, b=4) == (27, math.log(3, 4))
+
+    def test_model_execution_binding(self, model_instance):
+        """Test if the model execution checks the argument binding."""
+
+        with pytest.raises(
+            TypeError,
+            match="missing a required argument: 'f'",
+        ):
+            model_instance(10, 2, 15)
+
+        with pytest.raises(
+            TypeError,
+            match="too many positional arguments",
+        ):
+            model_instance(10, 2, 15, 1, 13)
+
+        with pytest.raises(
+            TypeError,
+            match="got an unexpected keyword argument 'g'",
+        ):
+            model_instance(10, 2, 15, 1, g=13)
 
     def test_metadata_without_no_return(self):
         """Test metadata that doesn't have a return.

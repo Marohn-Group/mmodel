@@ -6,7 +6,7 @@ def loop_input(parameter: str):
     """Modify function to iterate one given parameter.
 
     :param list parameter: target parameter to loop
-        The target parameter name is changed to f"{param}_iter"
+        The target parameter name is changed to f"{param}_loop"
     """
 
     def loop(func):
@@ -20,11 +20,11 @@ def loop_input(parameter: str):
         new_sig = Signature(param_list)
 
         @wraps(func)
-        def loop_wrapped(*args, **kwargs):
-            arguments = new_sig.bind(*args, **kwargs).arguments
-            loop_values = arguments.pop(f"{parameter}_loop")
+        def loop_wrapped(**kwargs):
+            """Isolate the loop parameter and loop over the values."""
+            loop_values = kwargs.pop(f"{parameter}_loop")
 
-            return [func(**arguments, **{parameter: value}) for value in loop_values]
+            return [func(**kwargs, **{parameter: value}) for value in loop_values]
 
         loop_wrapped.__signature__ = new_sig
         return loop_wrapped
@@ -37,7 +37,7 @@ def zip_loop_inputs(parameters: list):
     """Modify function to iterate the parameters pairwise.
 
     :param list parameters: list of the parameters to loop
-        only one parameter is allowed. If the string of parameters is
+        only one parameter is allowed. If a string of the parameters is
         provided, the parameters should be delimited by ", ".
     """
 
@@ -45,14 +45,14 @@ def zip_loop_inputs(parameters: list):
         sig = signature(func)
 
         @wraps(func)
-        def loop_wrapped(*args, **kwargs):
-            arguments = sig.bind(*args, **kwargs).arguments
-            loop_values = [arguments.pop(param) for param in parameters]
+        def loop_wrapped(**kwargs):
+            # arguments = sig.bind(*args, **kwargs).arguments
+            loop_values = [kwargs.pop(param) for param in parameters]
 
             result = []
             for value in zip(*loop_values):  # unzip the values
                 loop_value_dict = dict(zip(parameters, value))
-                rv = func(**arguments, **loop_value_dict)
+                rv = func(**kwargs, **loop_value_dict)
                 result.append(rv)
 
             return result
@@ -75,9 +75,9 @@ def format_time(dt, precision):
 def profile_time(number=1, repeat=1, verbose=False, precision=2):
     """Profile the execution time of a function.
 
-    The modifier behaves similarly to the timeit module. However,
+    The modifier behaves similarly to the *timeit* module. However,
     the modifier does not suppress garbage collection during the function
-    execution, therefore, the result might be slightly different.
+    execution; therefore, the result might be slightly different.
     """
     import timeit
 
@@ -85,13 +85,13 @@ def profile_time(number=1, repeat=1, verbose=False, precision=2):
 
     def timeit_modifier(func):
         @wraps(func)
-        def wrapped(*args, **kwargs):
+        def wrapped(**kwargs):
             time_list = []
 
             for _ in range(repeat):
                 t0 = timer()
                 for _ in range(number):
-                    result = func(*args, **kwargs)
+                    result = func(**kwargs)
                 t1 = timer()
                 time_list.append((t1 - t0) / number)
 

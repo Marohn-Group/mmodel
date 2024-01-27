@@ -1,8 +1,9 @@
-from mmodel import Node
+from mmodel import Node, Model, BasicHandler
 import pytest
 from inspect import Signature, Parameter
 from textwrap import dedent
 import numpy as np
+import math
 
 
 @pytest.fixture
@@ -38,7 +39,7 @@ class TestSetNodeObject:
         assert node.name == "func_a"
         assert node.__name__ == "func_a"
         assert node.func(1, 2) == 3
-        assert node.node_func(1, 2) == 4
+        assert node.node_func(a=1, b=2) == 4  # kw only
         assert node(1, 2) == 4
         assert node.output == "o"
         assert node.inputs == ["a", "b"]
@@ -151,6 +152,19 @@ class TestNodeConstruction:
 
         assert str(node) == dedent(node_s)
 
+    def test_node_callable(self):
+        """Test the node callable checks the input correctly.
+        """
+
+        node = Node("Test", lambda x: x)
+        with pytest.raises(TypeError, match="too many positional arguments"):
+            node(1, 2)
+
+        with pytest.raises(TypeError, match="missing a required argument: 'x'"):
+            node()
+
+        with pytest.raises(TypeError, match="got an unexpected keyword argument 'y'"):
+            node(x=1, y=4)
 
 class TestSignatureModification:
     """Test node object input for builtin func and ufunc."""
@@ -187,7 +201,24 @@ class TestSignatureModification:
     def test_signature_less_exception(self):
         """Test exception when a node does not have inputs defined."""
 
-        with pytest.raises(
-            Exception, match="node 'Test' function requires 'inputs' to be specified"
-        ):
+        with pytest.raises(Exception, match="'inputs' required for node 'Test'"):
             Node("Test", np.add)
+
+    def test_model_as_function(self, mmodel_G):
+        """Test ``model_func`` is used when the function input is a Model instance."""
+
+        model = Model("model_instance", mmodel_G, BasicHandler)
+        node = Node("Test", model)
+        assert node(1, 4, d=2, f=3) == (27, math.log(3, 4))
+
+        # check the model_func is used
+        # the underlying function does not check inputs
+        # it gives key error due to the dictionary access
+        assert node.node_func(a=1, b=4, d=2, f=3) == (27, math.log(3, 4))
+
+        with pytest.raises(KeyError, match="'f'"):
+            node.node_func(a=1, b=4, d=2)
+
+        # the g value is ignored
+        # this is a planned behavior
+        node.node_func(a=1, b=4, d=2, f=3, g=4)

@@ -96,12 +96,11 @@ def modify_signature(func, inputs):
     param_pair = list(zip(param_list, inputs))
 
     @wraps(func)
-    def wrapped(*args, **kwargs):
-        arguments = new_sig.bind(*args, **kwargs).arguments
+    def wrapped(**kwargs):
 
         # all parameters are positional
         if pos_expand:
-            return func(*arguments.values())
+            return func(*kwargs.values())
 
         # if keyword argument exists in the original signature
         adjusted_args = []
@@ -109,12 +108,11 @@ def modify_signature(func, inputs):
 
         for old_key, new_key in param_pair:
             if old_key in sig_dict[0]:
-                adjusted_args.append(arguments.pop(new_key))
+                adjusted_args.append(kwargs.pop(new_key))
             else:
-                adjusted_kwargs[old_key] = arguments.pop(new_key)
+                adjusted_kwargs[old_key] = kwargs.pop(new_key)
 
-        adjusted_kwargs.update(arguments)
-        # args, kwargs = split_arguments(sig, adjusted_kwargs)
+        adjusted_kwargs.update(kwargs)
 
         return func(*adjusted_args, **adjusted_kwargs)
 
@@ -126,7 +124,7 @@ def add_signature(func, inputs):
     """Add signature to ufunc and builtin function.
 
     Numpy's ufunc and builtin type do not have signatures,
-    therefore a new signature is created and the input arguments
+    therefore, a new signature is created, and the input arguments
     are mapped as positional-only values.
 
     :param callable func: function to change signature
@@ -140,9 +138,8 @@ def add_signature(func, inputs):
     new_sig = Signature(new_param)
 
     @wraps(func)
-    def wrapped(*args, **kwargs):
-        arguments = new_sig.bind(*args, **kwargs).arguments
-        return func(*arguments.values())
+    def wrapped(**kwargs):
+        return func(*kwargs.values())
 
     wrapped.__signature__ = new_sig
     return wrapped
@@ -163,7 +160,7 @@ def convert_signature(func):
     for param in parameters.values():
         if (param.kind == 1 or param.kind == 3) and param.default is Parameter.empty:
             param_list.append(param)
-        elif param.kind == 0:  # defaults cannot be add to pos only parameter
+        elif param.kind == 0:  # defaults cannot be added to pos only parameter
             param_list.append(
                 Parameter(param.name, kind=Parameter.POSITIONAL_OR_KEYWORD)
             )
@@ -171,9 +168,9 @@ def convert_signature(func):
     new_sig = Signature(parameters=param_list)
 
     @wraps(func)
-    def wrapped(*args, **kwargs):
-        arguments = new_sig.bind(*args, **kwargs).arguments
-        args, kwargs = split_arguments(sig, arguments)
+    def wrapped(**kwargs):
+        # arguments = new_sig.bind(*args, **kwargs).arguments
+        args, kwargs = split_arguments(sig, kwargs)
         return func(*args, **kwargs)
 
     wrapped.__signature__ = new_sig

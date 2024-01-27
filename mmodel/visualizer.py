@@ -17,16 +17,16 @@ default_graph_settings = {
 
 
 def format_label(label):
-    """Format label for graphviz.
+    r"""Format label for graphviz.
 
-    The function replaces newlines with the graphviz left aligned line break.
-    However if the ``\n`` is escaped, change it to ``\\\\n``.
+    The function replaces newlines with the graphviz left-aligned line break.
+    However, if the "\n" is escaped, change it to "\\\\n".
     """
     return re.sub(r"(?<!\\)\n", r"\\l", label).replace("\\n", "\\\\n") + r"\l"
 
 
 class Visualizer:
-    """Visualizer class for drawing networkx graph."""
+    """Visualizer class for drawing a *NetworkX* graph."""
 
     def __init__(
         self,

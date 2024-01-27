@@ -6,8 +6,8 @@ import networkx as nx
 def modelgraph_signature(graph):
     """Obtain the signature from the model graph.
 
-    :param DiGraph graph: networkx.Digraph() object,
-        with 'signature' and 'output' defined for nodes
+    :param DiGraph graph: ``networkx.Digraph`` object,
+        with "signature" and "output" defined for nodes
         and "parameters" for edges.
         The args are a dictionary of inspected signatures.
     """
@@ -239,7 +239,7 @@ def construction_dict(obj, property_list=None, exclude_list=None):
 
 
 def modify_func(func, modifiers):
-    """Apply modifiers to node_func."""
+    """Apply modifiers to function."""
 
     for mod in modifiers:
         func = mod(func)
