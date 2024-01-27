@@ -1,8 +1,8 @@
-Creating a model graph
-======================
+Build a model graph
+=============================
 
 A directed acyclic graph (DAG) is a directed graph without any cycles.
-The model graphs in ``mmodel`` are based on the DAG, where each node represents
+The model graphs in *mmodel* are based on the DAG, where each node represents
 an execution step, and each edge represents the data flow from one callable
 to another. DAG structure allows us to create model graphs with nonlinear
 nodes.
@@ -10,17 +10,17 @@ nodes.
 Define a graph
 --------------
 
-The ``ModelGraph`` class is the main graph class to establish a model graph.
+The ``Graph`` class is the main graph class to establish a model graph.
 The class inherits from ``networkx.DiGraph``, which is compatible with all
-``networkx`` operations
+*NetworkX* operations
 (see `documentation <https://networkx.org/documentation/stable/>`_).
 To create and modify the graph,
 see the documentation for adding 
 `nodes <https://networkx.org/documentation/stable/tutorial.html#nodes>`_
 and adding `edges <https://networkx.org/documentation/stable/tutorial.html#edges>`_.
 
-Aside from the ``networkx`` operations,
-``mmodel`` provides ``add_grouped_edge`` and ``add_grouped_edges_from`` to add edges.
+Aside from the *NetworkX* operations,
+*mmodel* provides ``add_grouped_edge`` and ``add_grouped_edges_from`` to add edges.
 
 .. code-block:: python
 
@@ -54,7 +54,7 @@ Set node objects
 -----------------
 
 Each node in the graph represents an execution, and the edges represent the data
-flow. Therefore we need to link the node to its execution method. In ``mmodel``
+flow. Therefore, we need to link the node to its execution method. In *mmodel*
 a node object is a combination of:
 
 1. callable, function, or function-like ("func")
@@ -107,33 +107,28 @@ The latter accepts a list of node objects.
 
     The difference between x and y.
 
+
+The object is stored as a node attribute, and the function signature
+(`inspect.Signature`) is stored. The parameter values are converted
+to signature objects.
+The note output is a single variable. If the node outputs multiple variables,
+the return tuple is assigned to the defined output variable.
+
 .. Note::
 
-    The object is stored as a node attribute and the function signature
-    (`inspect.Signature`) is stored. The parameter values are converted
-    to signature objects.
+    To have the function docstring correctly displayed in the node's metadata,
+    it needs to start with an upper case letter and end with a period.
 
-.. Note:: 
 
-    To have the function docstring properly displayed in node's metadata,
-    it needs to start with an upper case letter and ends with a period.
-
-The name of the parameters that pass through each edge is determined and stored
-in the edge attribute "variable". 
-
-.. note::
-    
-    The note output is a single variable. If the node outputs the multiple variables
-    the return tuple is assigned to the defined output variable.
 
 Change function input parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To avoid re-defining functions using different input parameters, or for functions
+To avoid re-defining functions using different input parameters or for functions
 that only allow positional arguments (built-in functions and numpy.ufunc), the
 "inputs" parameter of the ``set_node_object`` can change the node signature.
 The signature replacement is a thin wrapper with a very small performance overhead.
-The signature change only occurs at the node level, the original function is
+The signature change only occurs at the node level. The original function is
 not affected.
 
 .. code-block:: python
@@ -155,7 +150,7 @@ not affected.
 
 .. Note:: 
 
-    The graph variable flows restricts to keyword arguments only for function parameters.
+    The graph variable flows are restricted to keyword arguments only for function parameters.
     They can be modified by changing the inputs of the function, and the modified
     function allows keyword arguments.
 
@@ -166,9 +161,9 @@ There are different types of functions that ``inspect.signature`` cannot extract
 the parameters from, namely:
 
 1. python's built-in functions
-2. ``numpy`` ufuncs
+2. *NumPy* ufuncs
 
-mmodel can identify the above functions, and replace the signature:
+mmodel can identify the above functions and replace the signature:
 
 .. code-block:: python
 
@@ -207,7 +202,7 @@ of the function, however, it can be overridden by the user.
 Function with variable length of arguments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In mmodel graph, the argument length of a node is fixed. For a function with a variable
+In a *mmodel* graph, the argument length of a node is fixed. For a function with a variable
 length of arguments, additional arguments can be provided using the input function.
 
 
@@ -260,7 +255,7 @@ of parameters.
 Name and docstring
 ----------------------
 
-The name and graph string behaves as the networkx graphs. To add the name to the graph:
+The name and graph string behaves as the *networkx* graphs. To add the name to the graph:
 
 
 .. code-block:: python
@@ -285,5 +280,5 @@ of the graph.
     G.copy() # shallow copy
     G.deepcopy() # deep copy
 
-For more ways to interact with Graph, and networkx.graph see
+For more ways to interact with ``Graph`` and ``networkx.graph`` see
 :doc:`graph reference </ref_graph>`.

@@ -1,11 +1,7 @@
 Handler API
 ===========
 
-.. autosummary::
-
-    mmodel.handler
-
-Handlers in ``mmodel`` represent different execution methods for the provided
+Handlers in *mmodel* represent different execution methods for the provided
 graph. Currently, all handlers are executed in topological order,
 inherited from ``TopologicalHandler``.
 
@@ -25,7 +21,9 @@ Modify the ``Model`` class if these conditions cannot be satisfied.
 Handler Data class and TopologicalHandler
 ------------------------------------------
 Handler data stores the input value and all return values of the node execution.
-To define a custom handler a Data class should be defined, 
+To define a custom handler, a Data class should be defined, 
 and it should have `__getitem__` and `__setitem__` methods.
 If the Model inherits the TopologicalHandler, the class DataClass should be
 defined as the Handler data class.
+
+See :doc:`handler reference </ref_handler>` for the handler reference.

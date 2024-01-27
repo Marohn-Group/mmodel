@@ -1,17 +1,17 @@
-MModel
+mmodel
 ======
 
 |GitHub version| |PyPI version shields.io| |PyPI pyversions| |Unittests|
 |Docs|
 
-MModel is a lightweight and modular model-building framework
+*mmodel* is a lightweight and modular model-building framework
 for small-scale and nonlinear models. The package aims to solve
 scientific program prototyping and distribution difficulties, making
 it easier to create modular, fast, and user-friendly packages.
 
-For using mmodel in a complex scientific workflow, please refer to
+For using *mmodel* in a complex scientific workflow, please refer to
 the `mrfmsim <https://marohn-group.github.io/mrfmsim-docs/overview.html>`__
-on how mmodel improves the development of magnetic resonance force
+on how *mmodel* improves the development of magnetic resonance force
 microscopy (MRFM) experiments.
 
 Quickstart
@@ -30,7 +30,7 @@ To create a nonlinear model that has the result of
 
         return sum_xy * log_xy + 6
 
-The graph is defined using grouped edges (the ``networkx`` syntax of edge
+The graph is defined using grouped edges (the *NetworkX* syntax of edge
 the definition also works.)
 
 .. code-block:: python
@@ -67,8 +67,8 @@ of the model are determined based on the node information.
 
     example_model = Model("example_model", G, handler=MemHandler, doc="Test model.")
 
-The model behaves like a Python function, with additional metadata. The graph can
-be plotted using the ``draw`` method.
+The model behaves like a Python function with additional metadata. The graph can
+be plotted using the ``visualize`` method.
 
 .. code-block:: python
 
@@ -95,8 +95,8 @@ The resulting graph contains the model metadata and detailed node information.
 ..   :width: 300
 ..   :alt: example model graph
 
-One key feature of ``mmodel`` that differs from other workflow is modifiers, 
-which modify callables post definition. Modifiers work on both the node level
+One key feature of ``mmodel`` that differs from other workflows is modifiers, 
+which modify callables post-definition. Modifiers work on both the node level
 and model level.
 
 Example: Use ``loop_input`` modifier on the graph to loop the nodes that require the
@@ -141,15 +141,16 @@ We can inspect the loop node as well as the new model.
 
 
 Use the ``visualize`` method to draw the graph. For a graph, a simple diagram
-with node name only plot is shown, and for a model, the diagram shows detailed
+with only node names shown, and for a model, the diagram shows detailed
 node and model information. Customized plotting objects can be created
 using the Visualizer class.
 
 
 .. code-block:: python
 
-    G.draw(style="short")
-    example_model.visualize(outfile="example.pdf") # default to draw_graph
+    G.visualize()
+    # draw the graph and output to a pdf file
+    example_model.visualize(outfile="example.pdf")
 
 Installation
 ------------
@@ -159,7 +160,7 @@ Graphviz installation
 
 To view the graph, Graphviz needs to be installed:
 `Graphviz Installation <https://graphviz.org/download/>`_
-For windows installation, please choose "add Graphviz to the
+For Windows installation, please choose "add Graphviz to the
 system PATH for all users/current users" during the setup.
 
 MModel installation
@@ -173,25 +174,24 @@ Development installation
 ^^^^^^^^^^^^^^^^^^^^^^^^
 MModel uses `poetry <https://python-poetry.org/docs/>`_ as
 the build system. The package works with both pip and poetry
-installation. For macos systems, sometimes `brew install` results
-in unexpected installation path, it is recommended to install
+installation. For macOS systems, sometimes `brew install` results
+in an unexpected installation path; it is recommended to install
 with conda::
 
     conda install -c conda-forge pygraphviz
 
-To install test and docs, despondencies run::
+To install dependencies for "test" and "docs"::
 
     pip install .[test] .[docs]
 
-To run the tests in different python environments and cases 
-(py38, py39, py310, py311, coverage and docs)::
+To run the tests in different Python environments and cases 
+(py310, py311, coverage and docs)::
 
     tox
 
 To create the documentation, run under the "/docs" directory::
 
     make html
-
 
 .. |GitHub version| image:: https://badge.fury.io/gh/peterhs73%2FMModel.svg
    :target: https://github.com/Marohn-Group/mmodel

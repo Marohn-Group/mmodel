@@ -39,6 +39,7 @@ Indices and tables
    :caption: API Guideline
    :hidden:
 
+   api_signature
    api_handler
    api_modifier
 
@@ -55,4 +56,7 @@ Indices and tables
    ref_modifier
    ref_filter
    ref_signature
+   ref_metadata
+   ref_visualizer
+   ref_utility
    
