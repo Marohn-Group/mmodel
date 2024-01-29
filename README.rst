@@ -163,6 +163,12 @@ To view the graph, Graphviz needs to be installed:
 For Windows installation, please choose "add Graphviz to the
 system PATH for all users/current users" during the setup.
 
+For macOS systems, sometimes `brew install` results
+in an unexpected installation path, it is recommended to install
+with conda::
+
+    conda install -c conda-forge pygraphviz
+
 MModel installation
 ^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -174,11 +180,7 @@ Development installation
 ^^^^^^^^^^^^^^^^^^^^^^^^
 MModel uses `poetry <https://python-poetry.org/docs/>`_ as
 the build system. The package works with both pip and poetry
-installation. For macOS systems, sometimes `brew install` results
-in an unexpected installation path; it is recommended to install
-with conda::
-
-    conda install -c conda-forge pygraphviz
+installation.
 
 To install dependencies for "test" and "docs"::
 
