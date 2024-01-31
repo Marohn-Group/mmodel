@@ -96,7 +96,6 @@ def modify_signature(func, inputs):
 
     @wraps(func)
     def wrapped(**kwargs):
-
         # all parameters are positional
         if pos_expand:
             return func(*kwargs.values())

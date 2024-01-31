@@ -3,10 +3,8 @@ from mmodel import Graph
 from mmodel.utility import modelgraph_signature
 from mmodel.node import Node
 import pytest
-from functools import wraps
 from inspect import signature
 from textwrap import dedent
-import inspect
 
 
 class TestAddEdge:

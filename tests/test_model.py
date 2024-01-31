@@ -4,9 +4,7 @@ import math
 import networkx as nx
 from copy import deepcopy
 from textwrap import dedent
-import numpy as np
 import re
-
 from mmodel import Model, BasicHandler, H5Handler, MemHandler, Graph, Node
 from mmodel.modifier import loop_input
 

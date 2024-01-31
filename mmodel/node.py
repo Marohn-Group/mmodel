@@ -10,6 +10,7 @@ from mmodel.metadata import nodeformatter
 from mmodel.utility import construction_dict, modify_func, parse_functype
 from mmodel.model import Model
 
+
 class Node:
     """A node class that formats node function and metadata."""
 

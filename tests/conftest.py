@@ -9,21 +9,19 @@ and test functions.
 
 
 import pytest
-from inspect import signature, Signature, Parameter
+from inspect import Signature, Parameter
 import networkx as nx
 from mmodel.graph import Graph
 import operator
 import math
 import numpy as np
-
 from mmodel.node import Node
-import math
 from functools import wraps
 
 
 # define the global functions for two graph
 # both graphs reference the same set of functions in nodes
-# in graph testing they should be equal
+# in graph testing, they should be equal
 
 
 def addition(a, constant=2):

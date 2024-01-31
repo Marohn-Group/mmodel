@@ -42,10 +42,8 @@ def zip_loop_inputs(parameters: list):
     """
 
     def zip_loop(func):
-
         @wraps(func)
         def loop_wrapped(**kwargs):
-
             loop_values = [kwargs.pop(param) for param in parameters]
 
             result = []
