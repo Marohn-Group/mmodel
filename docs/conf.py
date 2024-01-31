@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = 'MModel'
-copyright = '2023, Peter Sun'
+copyright = '2022 - 2024, Peter Sun'
 author = 'Peter Sun'
 
 # The full version, including alpha/beta/rc tags
