@@ -11,8 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy
-        uses: peterhs73/sphinx-docs-action@v0.2.0
+        uses: peterhs73/sphinx-docs-action@v0.2.1
         with:
+          python-version: 3.10
           docs-source: docs/
           pyproject-path: .[docs]
           external-repo: Marohn-Group/mmodel-docs
