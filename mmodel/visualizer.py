@@ -1,9 +1,7 @@
 import graphviz
 from copy import deepcopy
-from mmodel.metadata import modelformatter, nodeformatter
+from mmodel.metadata import nodeformatter
 import re
-from dataclasses import dataclass
-import networkx as nx
 
 default_graph_settings = {
     "graph_attr": {
@@ -32,7 +30,7 @@ class Visualizer:
         self,
         format_node,
         format_edge,
-        graph_settings=default_graph_settings,
+        graph_settings={**default_graph_settings},
     ):
         self.graph_settings = graph_settings
         self.format_node = staticmethod(format_node)

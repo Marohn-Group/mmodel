@@ -1,7 +1,5 @@
 from mmodel.visualizer import format_label, plain_visualizer, visualizer
 import networkx as nx
-from textwrap import dedent
-import pytest
 
 
 def test_escape_label():

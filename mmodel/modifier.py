@@ -42,11 +42,10 @@ def zip_loop_inputs(parameters: list):
     """
 
     def zip_loop(func):
-        sig = signature(func)
 
         @wraps(func)
         def loop_wrapped(**kwargs):
-            # arguments = sig.bind(*args, **kwargs).arguments
+
             loop_values = [kwargs.pop(param) for param in parameters]
 
             result = []

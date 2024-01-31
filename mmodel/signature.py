@@ -35,7 +35,6 @@ def modify_signature(func, inputs):
     """
 
     sig = signature(func)
-    parameters = dict(sig.parameters)
 
     # check if input parameters are less than the parameters required
     # excludes parameters with defaults
