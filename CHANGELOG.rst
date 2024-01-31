@@ -7,7 +7,7 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
-[Unreleased]
+[0.7.0]
 ------------
 
 Major changes to internal APIs. Only Python >= 3.10 are supported.
