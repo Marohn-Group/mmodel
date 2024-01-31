@@ -2,7 +2,7 @@ mmodel
 ======
 
 |GitHub version| |PyPI version shields.io| |PyPI pyversions| |Unittests|
-|Docs|
+|DOI|
 
 *mmodel* is a lightweight and modular model-building framework
 for small-scale and nonlinear models. The package aims to solve
@@ -195,6 +195,28 @@ To create the documentation, run under the "/docs" directory::
 
     make html
 
+Citing *mmdoel*
+^^^^^^^^^^^^^^^^^^
+The work was `published <https://pubs.aip.org/aip/jcp/article/159/4/
+044801/2904249/mmodel-A-workflow-framework-to-accelerate-the>`_ in the Journal 
+of Chemical Physics. 
+
+BibTex::
+
+    @article{Sun2023jul,
+      title = {mmodel: A Workflow Framework to Accelerate the Development of Experimental Simulations},
+      author = {Sun, Peter and Marohn, John A.},
+      year = {2023},
+      month = {Jul},
+      journal = {The Journal of Chemical Physics},
+      volume = {159},
+      number = {4},
+      pages = {044801},
+      doi = {10.1063/5.0155617},
+      url = {https://pubs.aip.org/jcp/article/159/4/044801/2904249/mmodel-A-workflow-framework-to-accelerate-the}
+    }
+
+
 .. |GitHub version| image:: https://badge.fury.io/gh/peterhs73%2FMModel.svg
    :target: https://github.com/Marohn-Group/mmodel
 
@@ -208,3 +230,6 @@ To create the documentation, run under the "/docs" directory::
 
 .. |Docs| image:: https://img.shields.io/badge/Documentation--brightgreen.svg
     :target: https://github.com/Marohn-Group/mmodel-docs/
+
+.. |DOI| image:: https://img.shields.io/badge/DOI-10.1063/5.0155617-blue.svg
+    :target: https://doi.org/10.1063/5.0155617
