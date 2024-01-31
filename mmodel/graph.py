@@ -152,7 +152,7 @@ class Graph(nx.DiGraph):
     def deepcopy(self):
         """Deepcopy graph.
 
-        The ``graph.copy`` method is a shallow copy. Deepcopy creates a copy for 
+        The ``graph.copy`` method is a shallow copy. Deepcopy creates a copy for
         the attributes dictionary.
         `graph.copy<https://networkx.org/documentation/stable/reference/classes
         /generated/networkx.Graph.copy.html>_`
