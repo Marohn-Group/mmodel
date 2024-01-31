@@ -17,15 +17,15 @@ Changed
 ^^^^^^^
 
 - Reduce the amount of signature binding behavior to reduce node overhead.
-    - The internal variable flow is keyword only.
-    - The external execution of the Model and Node class instances
+    - The internal function calls are keyword only.
+    - The ``Model`` and ``Node`` class instance calls
       can be positional or keyword arguments with proper binding and error
       messages.
 - Change Python requirement to 3.10.
 - Change ``ModelGraph`` to ``Graph``.
-- Graph node definition uses mmodel.Node object.
 - Change ``draw`` module to ``visualizer`` module.
-- Change plotting diagram method to ``visualize`` and use "outfile" to export.
+- - Change node definition to ``Node`` object.
+- Change the plotting diagram method to ``visualize`` and use "outfile" to export.
 - Custom metadata and plotting are through ``MetadataFormatter``
   and ``Visualizer`` class objects.
 - Node function parameters are positional or keyword arguments
@@ -34,7 +34,7 @@ Changed
 - Change Model "description" attribute to "doc".
 - ``Node.edit``, ``Graph.edit_node``, ``Model.edit``, and ``Model.edit_node``
   methods to modify and generate new nodes, graphs, and model objects.
-- Handler additional arguments are supplied as a dictionary using
+- Handler's additional arguments are supplied as a dictionary using
   "handler_kwargs" parameter when instantiating ``Model`` object.
 - ``loop_modifier`` adds "_loop" to the function signature parameter.
 - Improved node exception messages.
