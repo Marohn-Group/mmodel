@@ -1,13 +1,13 @@
-Building a model
-================
+Create a model
+======================
 
-The model is built based on the graph and the desired handler. A mmodel
+The model is built based on the graph and the desired handler. A *mmodel*
 handler is an execution method that handles the node execution order and 
 intermediate value flow. The resulting instance is a callable that behaves
 like a function. The resulting model copies and freezes the graph, making
-it immutable. The handler class is passed to the "handler" argument and
-any additional arguments to handler can be passed as keyword arguments to the
-Model class.
+it immutable. A handler class is passed to the ``handler`` argument, and
+any additional arguments of the handler can be passed as a dictionary to
+the ``handler_kwargs`` argument.
 
 .. code-block:: python
 
@@ -19,7 +19,7 @@ Model class.
 
 .. Note::
 
-    The graph cannot have isolated nodes or cycles.
+    The graph cannot have cycles.
 
 The model determines the parameter for the model instance.
 
@@ -31,4 +31,4 @@ output intermediate variables, use "returns" to define additional
 output for the model. All other handler parameters can be directly passed
 as keyword arguments.
 
-For all available handlers, see :doc:`handler reference </ref_handler>`. 
+See :doc:`handler reference </ref_handler>` for all available handlers. 

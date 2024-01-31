@@ -7,6 +7,54 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
+[Unreleased]
+------------
+
+Major changes to internal APIs. Only Python >= 3.10 are supported.
+The signature binding behavior is rewritten to reduce node overhead.
+
+Changed
+^^^^^^^
+
+- Reduce the amount of signature binding behavior to reduce node overhead.
+    - The internal function calls are keyword only.
+    - The ``Model`` and ``Node`` class instance calls
+      can be positional or keyword arguments with proper binding and error
+      messages.
+- Change Python requirement to 3.10.
+- Change ``ModelGraph`` to ``Graph``.
+- Change ``draw`` module to ``visualizer`` module.
+- - Change node definition to ``Node`` object.
+- Change the plotting diagram method to ``visualize`` and use "outfile" to export.
+- Custom metadata and plotting are through ``MetadataFormatter``
+  and ``Visualizer`` class objects.
+- Node function parameters are positional or keyword arguments
+  instead of keyword only.
+- Default values can only be applied to Model class objects.
+- Change Model "description" attribute to "doc".
+- ``Node.edit``, ``Graph.edit_node``, ``Model.edit``, and ``Model.edit_node``
+  methods to modify and generate new nodes, graphs, and model objects.
+- Handler's additional arguments are supplied as a dictionary using
+  "handler_kwargs" parameter when instantiating ``Model`` object.
+- ``loop_modifier`` adds "_loop" to the function signature parameter.
+- Improved node exception messages.
+- Change the edge attribute from "var" to "output".
+- Change attribute undefined message.
+
+Removed
+^^^^^^^
+
+- Remove ``shorcut`` module.
+
+Added
+^^^^^
+
+- Add ``node`` module for node definition.
+- Add ``signature`` module for function signature operations.
+- Add "inputs" length checking during node definition.
+- Add ``order`` attribute to the ``Model`` class to show the node execution order.
+
+
 [0.6.2] - 2023-06-23
 --------------------
 

@@ -4,7 +4,7 @@ Handler
 Handler executing in topological order
 ---------------------------------------
 
-Currently all handler executes in topological order. The handler provides
+Currently, all handlers execute in topological order. The handler provides
 detailed message when exceptions occur during individual node execution.
 
 .. autosummary::
@@ -40,7 +40,7 @@ unique for each instance run.
 
 .. note::
 
-    For values that are object type and cannot be stored as H5 database, the string
+    For values that are object type and cannot be stored as an H5 database, the string
     of the object is stored as an attribute.
 
 :mod:`handler` module

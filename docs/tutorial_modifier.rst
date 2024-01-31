@@ -1,15 +1,14 @@
-Modifying model and node
-=========================
+Modify nodes and models
+=====================================
 
-Modifiers are used to modify callables. They can be python closures (wrappers)
-or decorators. They are used during the definition of the
-node object or the model. A modifier is provided should only take the function
-as the argument. If the decorator has additional parameters, the parameters should
-be applied first. For example to add a loop modifier to the node 'add':
+Traditionally, to modify a component of a pre-defined model, one has to rewrite the
+code. The approach is error-prone and not scalable. *mmodel* uses DAG to create
+modular models that allow easy modification of nodes and models post-definition using modifiers. A modifier is a decorator that can modify the function of a node or the model itself.  For example, to add a loop modifier to the node "add":
 
 .. code-block:: python
 
-    G = ModelGraph()
+    from mmodel import Graph, Node
+    G = Graph()
 
 
     def add(a, b):
@@ -26,35 +25,24 @@ be applied first. For example to add a loop modifier to the node 'add':
 
     G.add_edge("add", "squared")
     # set object without modifiers
-    G.set_node_object("squared", squared, "d")
+    G.set_node_object(Node("squared", squared, "d"))
 
     # set object with modifier
-    G.set_node_object("add", add, "c", modifiers=[loop_input(parameter='b')])
+    G.set_node_object(Node("add", add, "c", modifiers=[loop_input(parameter='b')]))
 
     # post modification
     # a new copy of the graph is created
-    from mmodel import modify_node
 
-    H = modify_node(G, "add", modifiers=[loop_input('b')])
+    H = G.edit_node("add", modifiers=[loop_input('b')])
 
-Similarly, use "modifiers" argument to define model modifiers.
+Similarly, use the ``modifiers`` argument to define model modifiers.
 
-
-Modifier using decorators
--------------------------
-
-If the decorator has additional parameters, the parameters should be applied first.
-For example:
-
-.. code-block:: python
-
-    ... modifiers=[loop_input(parameter='b'), ...]
-    
 
 Modifier chaining
 ------------------
 
-Because the modifiers are decorators, they can be chained. The modifiers are
-applied from in the list order.
+Because the modifiers are decorators, they can be chained. The modifiers in the
+list are applied in the order of the ``modifiers`` argument.
 
-For all available modifiers, see :doc:`modifier reference </ref_modifier>`.
+See :doc:`modifier API </api_modifier>` for modifier API,
+and `modifier reference </ref_modifier>` for all available modifiers.

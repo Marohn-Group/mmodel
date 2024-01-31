@@ -1,10 +1,10 @@
 from tests.conftest import graph_equal
-from mmodel import ModelGraph
+from mmodel import Graph
+from mmodel.utility import modelgraph_signature
+from mmodel.node import Node
 import pytest
-from functools import wraps
 from inspect import signature
 from textwrap import dedent
-import inspect
 
 
 class TestAddEdge:
@@ -12,7 +12,7 @@ class TestAddEdge:
 
     @pytest.fixture
     def base_G(self):
-        """Base ModelGraph with pre-defined nodes."""
+        """Base Graph with pre-defined nodes."""
 
         def func_a(m, n):
             return m + n
@@ -23,10 +23,14 @@ class TestAddEdge:
         def func_c(o, s):
             return o + s
 
-        G = ModelGraph()
-        G.add_node("func_a", func=func_a, output="o", sig=signature(func_a))
-        G.add_node("func_b", func=func_b, output="q", sig=signature(func_b))
-        G.add_node("func_c", func=func_c, output="t", sig=signature(func_c))
+        a_node = Node("func_a", func_a, output="o")
+        b_node = Node("func_b", func_b, output="q")
+        c_node = Node("func_c", func_c, output="t")
+
+        G = Graph()
+        G.add_node("func_a", node_object=a_node, output="o", signature=a_node.signature)
+        G.add_node("func_b", node_object=b_node, output="q", signature=b_node.signature)
+        G.add_node("func_c", node_object=c_node, output="t", signature=c_node.signature)
 
         return G
 
@@ -35,15 +39,15 @@ class TestAddEdge:
 
         base_G.add_edge("func_a", "func_b")
 
-        assert base_G.edges["func_a", "func_b"]["var"] == "o"
+        assert base_G.edges["func_a", "func_b"]["output"] == "o"
 
     def test_add_edges_from(self, base_G):
         """Test add_edges_from updates the graph and edge variable."""
 
         base_G.add_edges_from([["func_a", "func_b"], ["func_a", "func_c"]])
 
-        assert base_G.edges["func_a", "func_b"]["var"] == "o"
-        assert base_G.edges["func_a", "func_c"]["var"] == "o"
+        assert base_G.edges["func_a", "func_b"]["output"] == "o"
+        assert base_G.edges["func_a", "func_c"]["output"] == "o"
 
     def test_update_edge_vals(self, base_G):
         """Test edge updates.
@@ -55,13 +59,13 @@ class TestAddEdge:
         """
 
         base_G.add_edge("func_a", "func_d")
-        assert "var" not in base_G.edges["func_a", "func_d"]
+        assert "output" not in base_G.edges["func_a", "func_d"]
 
         def func_d(t, w):
             return t + w
 
         base_G.add_node("func_d", func=func_d, output="x", sig=signature(func_d))
-        assert "var" not in base_G.edges["func_a", "func_d"]
+        assert "output" not in base_G.edges["func_a", "func_d"]
 
     def test_add_grouped_edge_without_list(self, base_G):
         """Test add_grouped_edge.
@@ -71,7 +75,7 @@ class TestAddEdge:
 
         base_G.add_grouped_edge("func_a", "func_b")
 
-        assert base_G.edges["func_a", "func_b"]["var"] == "o"
+        assert base_G.edges["func_a", "func_b"]["output"] == "o"
 
     def test_add_grouped_edge_with_list(self, base_G):
         """Test add_grouped_edge.
@@ -102,95 +106,41 @@ class TestSetNodeObject:
     """Test set_node_object and set_node_objects_from."""
 
     @pytest.fixture
-    def base_G(self, value_modifier):
-        """Basic ModelGraph with pre-defined edges."""
+    def node(self, value_modifier):
+        """Basic Graph with pre-defined edges."""
 
         def func_a(m, n):
             """Base function."""
             return m + n
 
-        G = ModelGraph()
-        G.add_edge("func_a", "func_b")
-        G.add_edge("func_a", "func_c")
-
-        G.set_node_object(
+        node_a = Node(
             "func_a",
             func_a,
-            "o",
+            output="o",
             inputs=["a", "b"],
             modifiers=[value_modifier(value=1)],
         )
 
+        return node_a
+
+    @pytest.fixture
+    def base_G(self, node):
+        """Basic Graph with pre-defined edges."""
+
+        G = Graph()
+        G.add_edge("func_a", "func_b")
+        G.add_edge("func_a", "func_c")
+
+        G.set_node_object(node)
+
         return G
 
-    def test_set_node_object(self, base_G):
+    def test_set_node_object(self, base_G, node):
         """Test node basic attributes."""
 
-        assert base_G.nodes["func_a"]["_func"].__name__ == "func_a"
+        assert base_G.nodes["func_a"]["node_object"].__dict__ == node.__dict__
         assert base_G.nodes["func_a"]["output"] == "o"
-
-    def test_set_node_object_inputs(self, base_G):
-        """Test node signatures are updated."""
-
-        assert list(base_G.nodes["func_a"]["sig"].parameters.keys()) == ["a", "b"]
-
-    def test_set_node_object_modifiers(self, base_G):
-        """Test node modifiers are applied and in the correct order."""
-
-        assert (
-            base_G.nodes["func_a"]["modifiers"][0].__qualname__
-            == "value_modifier.<locals>.modifier.<locals>.mod"
-        )
-
-    def test_set_node_object_base_func(self, base_G):
-        """Test that the input of base function has updated."""
-
-        assert base_G.nodes["func_a"]["_func"](a=1, b=2) == 3
-
-    def test_set_node_object_modified_func(self, base_G):
-        """Test the final node function has the correct signature and output."""
-
-        assert base_G.nodes["func_a"]["func"](a=1, b=2) == 4
-
-    def test_set_node_object_additional_kwargs(self, base_G):
-        """Test additional kwargs are added to the node.
-
-        The additional kwargs override the node attributes.
-        """
-
-        func = base_G.nodes["func_a"]["func"]
-        base_G.set_node_object(
-            "func_a", func, "o", inputs=["a", "b"], foo="bar", doc="foo"
-        )
-
-        assert base_G.nodes["func_a"]["foo"] == "bar"
-        assert base_G.nodes["func_a"]["doc"] == "foo"
-
-    def test_set_node_object_with_lambda(self, base_G):
-        """Test node object input for lambda function.
-
-        Test the result alongside the base parser test to see if
-        the lambda doc is parsed correctly.
-        """
-
-        base_G.set_node_object("func_a", lambda x: (x[2], {"o": "c"}), "o")
-
-        assert base_G.nodes["func_a"]["doc"] == 'Lambda expression: (x[2], {"o": "c"}).'
-
-    def test_set_node_object_with_no_input(self, base_G):
-        """Test node object input for function with no input.
-
-        Test the result alongside the base parser test to see if
-        the lambda doc is parsed correctly.
-        """
-
-        def func_a():
-            """Return 1."""
-            return 1
-
-        base_G.set_node_object("func_a", func_a, "o")
-
-        assert base_G.signature == inspect.Signature()
+        assert base_G.nodes["func_a"]["signature"] == node.signature
 
     def test_set_node_objects_from(self, base_G):
         """Test set_node_objects_from method.
@@ -205,42 +155,36 @@ class TestSetNodeObject:
             return o + s
 
         base_G.set_node_objects_from(
-            [("func_b", func_b, ["q"]), ("func_c", func_c, ["t"])]
+            [Node("func_b", func_b, output=["q"]), Node("func_c", func_c, output=["t"])]
         )
 
-        assert base_G.edges["func_a", "func_b"] == {"var": "o"}
-        assert base_G.edges["func_a", "func_c"] == {"var": "o"}
+        assert base_G.edges["func_a", "func_b"] == {"output": "o"}
+        assert base_G.edges["func_a", "func_c"] == {"output": "o"}
+
+    def test_node_metadata(self, mmodel_G):
+        """Test node metadata.
+
+        The doc parsing is also tested in metadata and node modules.
+        """
+
+        node = mmodel_G.nodes["add"]["node_object"]
+        assert node.doc == "Add a constant to the value a."
+
+        node = mmodel_G.nodes["log"]["node_object"]
+        assert node.doc == "Logarithm operation."
+
+        node = mmodel_G.nodes["power"]["node_object"]
+        assert node.doc == "Return x**y (x to the power of y)."
+
+        node = mmodel_G.nodes["subtract"]["node_object"]
+        assert node.doc == "Same as a - b."
 
 
-class TestModelGrapahFunc:
-    """Test node object input for builtin func and ufunc."""
-
-    @pytest.fixture
-    def base_G(self):
-        """Basic ModelGraph with pre-defined edges."""
-
-        import numpy as np
-        import math
-
-        G = ModelGraph()
-        G.add_edge("func_a", "func_b")
-
-        G.set_node_object("func_a", np.add, "x", inputs=["a", "b"])
-        G.set_node_object("func_b", math.ceil, "p", inputs=["x"])
-
-        return G
-
-    def test_signature(self, base_G):
-        """Test signature of the graph nodes."""
-        assert list(base_G.nodes["func_a"]["sig"].parameters.keys()) == ["a", "b"]
-        assert list(base_G.nodes["func_b"]["sig"].parameters.keys()) == ["x"]
-
-
-class TestModelGraphBasics:
+class TestGraphBasics:
     """Test the basic string and repr of the graph and nodes."""
 
     def test_networkx_equality(self, mmodel_G, standard_G):
-        """Test if ModelGraph instance matches ``networkx.DiGraph``."""
+        """Test if Graph instance matches ``networkx.DiGraph``."""
 
         assert graph_equal(mmodel_G, standard_G)
 
@@ -252,9 +196,34 @@ class TestModelGraphBasics:
     def test_graph_str(self, mmodel_G):
         """Test graph representation."""
 
-        assert str(mmodel_G) == "ModelGraph named 'test_graph' with 5 nodes and 5 edges"
+        assert str(mmodel_G) == "Graph named 'test_graph' with 5 nodes and 5 edges"
 
-    def test_node_metadata(self, mmodel_G):
+    def test_visualize(self, mmodel_G):
+        """Test the visualize method of Graph instance.
+
+        The draw methods are tested in the visualizer module.
+        Here we make sure the label is correct.
+        """
+
+        dot_graph = mmodel_G.visualize()
+        label = """label="Graph named \'test_graph\' with 5 nodes and 5 edges"""
+        assert label in dot_graph.source
+
+    def test_visualize_export(self, mmodel_G, tmp_path):
+        """Test the visualize method that exports to files.
+
+        Check the graph description in the file content.
+        """
+
+        filename = tmp_path / "test_draw.dot"
+        mmodel_G.visualize(outfile=filename)
+
+        label = """label="Graph named \'test_graph\' with 5 nodes and 5 edges"""
+
+        with open(filename, "r") as f:
+            assert label in f.read()
+
+    def test_str_representation(self, mmodel_G):
         """Test if view node outputs node information correctly."""
 
         node_s = """\
@@ -262,86 +231,18 @@ class TestModelGraphBasics:
 
         logarithm(c, b)
         return: m
-        functype: callable
+        functype: function
 
         Logarithm operation."""
 
-        assert mmodel_G.node_metadata("log") == dedent(node_s)
-
-    def test_node_metadata_with_modifiers(self, mmodel_G, value_modifier):
-        """Test if view node outputs node information correctly."""
-
-        def func(a, b):
-            return a + b
-
-        mmodel_G.add_node("test_node")
-        mmodel_G.set_node_object(
-            "test_node",
-            func,
-            "c",
-            [],
-            [value_modifier(value=1), value_modifier(value=2)],
-        )
-
-        node_s = """\
-        test_node
-
-        func(a, b)
-        return: c
-        functype: callable
-        modifiers:
-          - modifier(value=1)
-          - modifier(value=2)"""
-
-        assert mmodel_G.node_metadata("test_node") == dedent(node_s)
-
-    def test_node_metadata_with_no_returns(self):
-        """If the node doesn't have returns, metadata should output None."""
-
-        G = ModelGraph()
-        G.add_node("Test")
-        G.set_node_object("Test", lambda x: None)
-
-        node_s = """\
-        Test
-
-        <lambda>(x)
-        return: None
-        functype: lambda"""
-
-        assert G.node_metadata("Test") == dedent(node_s)
-
-    def test_draw(self, mmodel_G):
-        """Test the draw method of ModelGraph instance.
-
-        The draw methods are tested in test_draw.py module. Here we make sure
-        the label is correct.
-        """
-
-        dot_graph = mmodel_G.draw()
-        label = """label="ModelGraph named \'test_graph\' with 5 nodes and 5 edges"""
-        assert label in dot_graph.source
-
-    def test_draw_export(self, mmodel_G, tmp_path):
-        """Test the draw method that exports to files.
-
-        Check the graph description is in the file content.
-        """
-
-        filename = tmp_path / "test_draw.dot"
-        mmodel_G.draw(export=filename)
-
-        label = """label="ModelGraph named \'test_graph\' with 5 nodes and 5 edges"""
-
-        with open(filename, "r") as f:
-            assert label in f.read()
+        assert str(mmodel_G.nodes["log"]["node_object"]) == dedent(node_s)
 
 
 class TestNetworkXGraphOperation:
     """Test the copy, deepcopy, chain, subgraph, subgraph copy based on networkx."""
 
     def test_copy(self, mmodel_G):
-        """Test if copy works with ModelGraph."""
+        """Test if copy works with Graph."""
 
         assert graph_equal(mmodel_G.copy(), mmodel_G)
         assert mmodel_G.copy().graph is not mmodel_G.graph
@@ -355,6 +256,8 @@ class TestNetworkXGraphOperation:
         assert graph_equal(G_deepcopy, mmodel_G)
         # see test_copy that the two dictionaries are the same
         assert G_deepcopy.graph is not mmodel_G.graph
+        # object being deepcopied
+        assert G_deepcopy.nodes != mmodel_G.nodes
 
     def test_graph_chain(self, mmodel_G):
         """Test Chain graph."""
@@ -371,7 +274,7 @@ class TestNetworkXGraphOperation:
         """Test subgraph.
 
         The networkx graph creates the subgraph as a view of the original graph.
-        The ModelGraph subgraph is a copy of the original graph.
+        The Graph subgraph is a copy of the original graph.
         The copied graph no longer has the _graph attribute.
         """
         G = mmodel_G
@@ -386,7 +289,7 @@ class TestNetworkXGraphOperation:
 
         # partial subgraph
         H = G.subgraph(["subtract", "multiply"])
-        assert H.adj == {"subtract": {"multiply": {"var": "e"}}, "multiply": {}}
+        assert H.adj == {"subtract": {"multiply": {"output": "e"}}, "multiply": {}}
 
         # empty subgraph
         H = G.subgraph([])
@@ -405,7 +308,7 @@ class TestNetworkXGraphOperation:
 
         H = mmodel_G.subgraph(["subtract", "multiply"]).deepcopy()
 
-        assert H.adj == {"subtract": {"multiply": {"var": "e"}}, "multiply": {}}
+        assert H.adj == {"subtract": {"multiply": {"output": "e"}}, "multiply": {}}
 
         # check the graph attribute is no longer the same dictionary`
         assert H.graph is not mmodel_G.graph
@@ -414,7 +317,7 @@ class TestNetworkXGraphOperation:
         assert mmodel_G.name != "subgraph_test"
 
 
-class TestMModelGraphOperation:
+class TestMGraphOperation:
     """Test graph operation defined specific to mmodel."""
 
     def test_subgraph_by_outputs(self, mmodel_G):
@@ -444,7 +347,7 @@ class TestMModelGraphOperation:
         assert graph_equal(subgraph, mmodel_G)
 
     def test_replace_subgraph(self, mmodel_G, value_modifier):
-        """Test the replace_subgraph method replaces the graph properly inplace or copy.
+        """Test the replace_subgraph method replace the graph.
 
         See utils.replace_subgraph for more tests.
         """
@@ -454,66 +357,72 @@ class TestMModelGraphOperation:
         def func(a, b, c, d):
             return a + b + c + d
 
-        graph = mmodel_G.replace_subgraph(
-            subgraph, "test", func, "z", ["c", "e", "x", "y"], [value_modifier(value=1)]
+        node_object = Node(
+            "test",
+            func,
+            output="z",
+            inputs=["c", "e", "x", "y"],
+            modifiers=[value_modifier(value=1)],
         )
+        graph = mmodel_G.replace_subgraph(subgraph, node_object)
 
         # a copy is created
         assert graph != mmodel_G
         assert "test" in graph
 
         node_dict = graph.nodes["test"]
-        sig = node_dict.pop("sig")
-        assert list(sig.parameters) == ["c", "e", "x", "y"]
-
-        modifiers = node_dict.pop("modifiers")
-        assert (
-            modifiers[0].__qualname__ == "value_modifier.<locals>.modifier.<locals>.mod"
-        )
+        assert list(node_dict["signature"].parameters) == ["c", "e", "x", "y"]
         assert node_dict["output"] == "z"
 
-        base_func = node_dict["_func"]
-        mod_func = node_dict["func"]
-
-        assert base_func(c=1, e=2, x=3, y=4) == 10  # add all values together
-        assert mod_func(c=1, e=2, x=3, y=4) == 11
-        # assert graph.nodes["test"] == {"_func": func, "output": "z"}
-
+        assert node_dict["node_object"] == node_object
         # Test the edge attributes
-        assert graph.edges["add", "test"]["var"] == "c"
-        assert graph.edges["subtract", "test"]["var"] == "e"
+        assert graph.edges["add", "test"]["output"] == "c"
+        assert graph.edges["subtract", "test"]["output"] == "e"
 
-    def test_modify_node(self, mmodel_G, value_modifier):
-        """Test modify_node method.
+    def test_get_node(self, mmodel_G):
+        """Test get_node method."""
 
-        See utils.modify_node for more tests.
-        """
+        node = mmodel_G.get_node("add")
+        assert node == mmodel_G.nodes["add"]
 
-        mod_G = mmodel_G.modify_node("subtract", modifiers=[value_modifier(value=1)])
+    def test_get_node_obj(self, mmodel_G):
+        """Test get_node_object method."""
 
+        node_object = mmodel_G.get_node_object("add")
+        assert node_object == mmodel_G.nodes["add"]["node_object"]
+
+    def test_edit_node(self, mmodel_G, value_modifier):
+        """Test edit_node method."""
+
+        old_obj = mmodel_G.nodes["subtract"]["node_object"]
+
+        G = mmodel_G.edit_node("subtract", modifiers=[value_modifier(value=2)])
+        new_obj = G.nodes["subtract"]["node_object"]
         # add one to the final value
-        assert mod_G.nodes["subtract"]["func"](1, 2) == 0
+        assert new_obj(1, 2) == 1
+        assert new_obj != old_obj
 
+    def test_edit_node_new_signature(self, mmodel_G, value_modifier):
+        """Test edit_node method."""
 
-class TestGraphProperty:
-    """Test graph property."""
+        old_obj = mmodel_G.nodes["add"]["node_object"]
 
-    def test_graph_signature(self, mmodel_G, mmodel_signature):
-        """Test graph signature.
+        def add(first, second):
+            return first + second
 
-        Test that the property updates when the graph updates.
-        """
-        assert mmodel_G.signature == mmodel_signature
-
-        mmodel_G.remove_node("log")
-        assert list(mmodel_G.signature.parameters) == ["a", "d", "f"]
-
-    def test_graph_returns(self, mmodel_G):
-        """Test graph returns.
-
-        Test that the property updates when the graph updates.
-        """
-        assert mmodel_G.returns == ["k", "m"]
-
-        mmodel_G.remove_node("log")
-        assert mmodel_G.returns == ["k"]
+        # need to change inputs as well
+        G = mmodel_G.edit_node(
+            "add", func=add, modifiers=[value_modifier(value=2)], inputs=None
+        )
+        new_obj = G.nodes["add"]["node_object"]
+        # add one to the final value
+        assert list(new_obj.signature.parameters.keys()) == ["first", "second"]
+        assert list(modelgraph_signature(G).parameters.keys()) == [
+            "b",
+            "d",
+            "f",
+            "first",
+            "second",
+        ]
+        assert new_obj(first=1, second=2) == 5
+        assert new_obj != old_obj

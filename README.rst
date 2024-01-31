@@ -1,17 +1,17 @@
-MModel
+mmodel
 ======
 
 |GitHub version| |PyPI version shields.io| |PyPI pyversions| |Unittests|
 |Docs|
 
-MModel is a lightweight and modular model-building framework
+*mmodel* is a lightweight and modular model-building framework
 for small-scale and nonlinear models. The package aims to solve
 scientific program prototyping and distribution difficulties, making
 it easier to create modular, fast, and user-friendly packages.
 
-For using mmodel in a complex scientific workflow, please refer to
+For using *mmodel* in a complex scientific workflow, please refer to
 the `mrfmsim <https://marohn-group.github.io/mrfmsim-docs/overview.html>`__
-on how mmodel improves the development of magnetic resonance force
+on how *mmodel* improves the development of magnetic resonance force
 microscopy (MRFM) experiments.
 
 Quickstart
@@ -30,12 +30,12 @@ To create a nonlinear model that has the result of
 
         return sum_xy * log_xy + 6
 
-The graph is defined using grouped edges (the ``networkx`` syntax of edge
+The graph is defined using grouped edges (the *NetworkX* syntax of edge
 the definition also works.)
 
 .. code-block:: python
 
-    from mmodel import ModelGraph, Model, MemHandler
+    from mmodel import Graph, Model, Node, MemHandler
     # create graph edges
     grouped_edges = [
         ("add", ["log", "function node"]),
@@ -50,12 +50,12 @@ and modifiers.
 
     # define note objects
     node_objects = [
-        ("add", np.add, "sum_xy", ["x", "y"]),
-        ("log", math.log, "log_xy", ["sum_xy", "log_base"]),
-        ("function node", func, "result"),
+        Node("add", np.add, ["x", "y"], "sum_xy"),
+        Node("log", math.log,  ["sum_xy", "log_base"], "log_xy"),
+        Node("function node", func, output="result"),
     ]
 
-    G = ModelGraph(name="example_graph")
+    G = Graph(name="example_graph")
     G.add_grouped_edges_from(grouped_edges)
     G.set_node_objects_from(node_objects)
 
@@ -65,16 +65,16 @@ of the model are determined based on the node information.
 
 .. code-block:: python
 
-    example_model = Model("example_model", G, handler=MemHandler, description="Test model.")
+    example_model = Model("example_model", G, handler=MemHandler, doc="Test model.")
 
-The model behaves like a Python function, with additional metadata. The graph can
-be plotted using the ``draw`` method.
+The model behaves like a Python function with additional metadata. The graph can
+be plotted using the ``visualize`` method.
 
 .. code-block:: python
 
     >>> print(example_model)
     example_model(log_base, x, y)
-    returns: z
+    returns: result
     graph: example_graph
     handler: MemHandler
 
@@ -83,7 +83,7 @@ be plotted using the ``draw`` method.
     >>> example_model(2, 5, 3) # (5 + 3)log(5 + 3, 2) + 6
     30.0
 
-    >>> example_model.draw()
+    >>> example_model.visualize()
 
 The resulting graph contains the model metadata and detailed node information.
 
@@ -95,8 +95,8 @@ The resulting graph contains the model metadata and detailed node information.
 ..   :width: 300
 ..   :alt: example model graph
 
-One key feature of ``mmodel`` that differs from other workflow is modifiers, 
-which modify callables post definition. Modifiers work on both the node level
+One key feature of ``mmodel`` that differs from other workflows is modifiers, 
+which modify callables post-definition. Modifiers work on both the node level
 and model level.
 
 Example: Use ``loop_input`` modifier on the graph to loop the nodes that require the
@@ -104,7 +104,7 @@ Example: Use ``loop_input`` modifier on the graph to loop the nodes that require
 
 .. code-block:: python 
 
-    from mmodel import loop_input
+    from mmodel.modifier import loop_input
 
     H = G.subgraph(inputs=["log_base"])
     H.name = "example_subgraph"
@@ -112,10 +112,7 @@ Example: Use ``loop_input`` modifier on the graph to loop the nodes that require
 
     looped_G = G.replace_subgraph(
         H,
-        "loop_node",
-        loop_node,
-        output="looped_z",
-        modifiers=[loop_input("log_base")],
+        Node("loop_node", loop_node, output="looped_z", modifiers=[loop_input("log_base")]),
     )
     looped_G.name = "looped_graph"
 
@@ -130,28 +127,30 @@ We can inspect the loop node as well as the new model.
     looped_model(log_base, x, y)
     returns: looped_z
     graph: looped_graph
-    handler: MemHandler()
+    handler: MemHandler
     
-    >>> print(looped_model.node_metadata("loop_node"))
+    >>> print(looped_model.get_node_object("loop_node"))
     submodel(log_base, sum_xy)
     return: looped_z
-    functype: mmodel.Model
+    functype: <class 'mmodel.model.Model'>
     modifiers:
-      - loop_input('log_base')
+    - loop_input('log_base')
 
     >>> looped_model([2, 4], 5, 3) # (5 + 3)log(5 + 3, 2) + 6
     [30.0, 18.0]
 
 
-Use the ``draw`` method to draw the graph. There are three styles
-"plain", "short", and "verbose", which differ by the level of detail of the
-node information. A graph output is displayed in Jupyter Notebook
-or can be saved using the export option.
+Use the ``visualize`` method to draw the graph. For a graph, a simple diagram
+with only node names shown, and for a model, the diagram shows detailed
+node and model information. Customized plotting objects can be created
+using the Visualizer class.
+
 
 .. code-block:: python
 
-    G.draw(style="short")
-    example_model.draw(style="plain", export="example.pdf") # default to draw_graph
+    G.visualize()
+    # draw the graph and output to a pdf file
+    example_model.visualize(outfile="example.pdf")
 
 Installation
 ------------
@@ -161,8 +160,14 @@ Graphviz installation
 
 To view the graph, Graphviz needs to be installed:
 `Graphviz Installation <https://graphviz.org/download/>`_
-For windows installation, please choose "add Graphviz to the
+For Windows installation, please choose "add Graphviz to the
 system PATH for all users/current users" during the setup.
+
+For macOS systems, sometimes `brew install` results
+in an unexpected installation path, it is recommended to install
+with conda::
+
+    conda install -c conda-forge pygraphviz
 
 MModel installation
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -175,25 +180,20 @@ Development installation
 ^^^^^^^^^^^^^^^^^^^^^^^^
 MModel uses `poetry <https://python-poetry.org/docs/>`_ as
 the build system. The package works with both pip and poetry
-installation. For macos systems, sometimes `brew install` results
-in unexpected installation path, it is recommended to install
-with conda::
+installation.
 
-    conda install -c conda-forge pygraphviz
-
-To install test and docs, despondencies run::
+To install dependencies for "test" and "docs"::
 
     pip install .[test] .[docs]
 
-To run the tests in different python environments and cases 
-(py38, py39, py310, py311, coverage and docs)::
+To run the tests in different Python environments and cases 
+(py310, py311, coverage and docs)::
 
     tox
 
 To create the documentation, run under the "/docs" directory::
 
     make html
-
 
 .. |GitHub version| image:: https://badge.fury.io/gh/peterhs73%2FMModel.svg
    :target: https://github.com/Marohn-Group/mmodel
