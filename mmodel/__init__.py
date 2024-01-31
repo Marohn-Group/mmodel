@@ -1,4 +1,4 @@
-from mmodel.graph import *
+from mmodel.graph import Graph
 from mmodel.handler import *
-from mmodel.model import *
-from mmodel.node import *
+from mmodel.model import Model
+from mmodel.node import Node
