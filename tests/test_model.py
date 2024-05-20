@@ -284,6 +284,16 @@ class TestModifiedModel:
         assert new_model.returns == ["k", "m"]
         assert new_model(a_loop=[1, 2], d=15, f=1) == [(-36, math.log2(3)), (-44, 2)]
 
+    def test_model_edit_node(self, mod_model_instance):
+        """Test if the edit method resets edge attribute if incorrect."""
+
+        with pytest.raises(
+            Exception,
+            match=r"invalid graph \(test_graph\): attribute 'output' "
+            r"is not defined for edge\(s\) \[\('power', 'multiply'\)\].",
+        ):
+            mod_model_instance.edit_node("power", output="incorrect_output")
+
 
 class TestModelValidation:
     """Test is_graph_valid method of Model."""

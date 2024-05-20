@@ -28,11 +28,16 @@ class Node:
 
         self._base_func = self.convert_func(func, self._inputs)
         # allow overwrite
-        self.node_func = modify_func(self._base_func, self._modifiers)
+        self._node_func = modify_func(self._base_func, self._modifiers)
 
         # kwargs can overwrite values like doc, functype, etc.
         for key, value in kwargs.items():
             setattr(self, key, value)
+
+    @property
+    def node_func(self):
+        """Return node function, the node function cannot be reset."""
+        return self._node_func
 
     @property
     def __signature__(self):
@@ -90,6 +95,9 @@ class Node:
             self, ["inputs", "modifiers"], ["functype", "doc", "node_func"]
         )
 
+        # if the the function is updated, the inputs are reset
+        if "func" in kwargs:
+            kwargs["inputs"] = kwargs.get("inputs", None)
         con_dict.update(kwargs)
 
         return self.__class__(**con_dict)

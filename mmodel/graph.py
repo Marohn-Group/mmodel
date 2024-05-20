@@ -91,6 +91,9 @@ class Graph(nx.DiGraph):
                 v_sig = self.nodes[v]["signature"].parameters
                 if self.nodes[u]["output"] in v_sig:
                     self.edges[u, v]["output"] = self.nodes[u]["output"]
+                elif 'output' in self.edges[u, v]: # reset edge output
+                    del self.edges[u, v]["output"]
+                    
 
     # graph operations
     def subgraph(self, nodes=None, inputs=None, outputs=None):

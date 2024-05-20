@@ -7,6 +7,15 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
+[Unreleased]
+------------
+
+Fixed
+^^^^^^^
+
+- Fixed the bug that the "node_func" attribute can be overwritten during editing.
+- Fixed the bug that the "output" attribute of the edge is not updated during editing.
+
 [0.7.0]
 ------------
 

@@ -426,3 +426,15 @@ class TestMGraphOperation:
         ]
         assert new_obj(first=1, second=2) == 5
         assert new_obj != old_obj
+
+
+    def test_edit_node_reset_output(self, mmodel_G):
+        """Test edit_node that with an incorrect output resets edge attribute."""
+
+        G = mmodel_G.edit_node(
+            "add", output='incorrect'
+        )
+
+        assert "output" not in G.edges["add", "log"]
+        assert "output" not in G.edges["add", "power"]
+        assert "output" not in G.edges["add", "subtract"]
