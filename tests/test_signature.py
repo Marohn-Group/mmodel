@@ -214,7 +214,7 @@ def test_has_signature():
     """Test the has_signature function."""
 
     assert has_signature(tfunc)
-    assert not has_signature(np.add)
+    # assert not has_signature(np.add)  # changed in python 3.11.9
     assert has_signature(np.sum)
     assert has_signature(operator.add)
     assert has_signature(math.sqrt)

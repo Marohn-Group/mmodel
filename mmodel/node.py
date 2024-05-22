@@ -9,6 +9,7 @@ from inspect import signature
 from mmodel.metadata import nodeformatter
 from mmodel.utility import construction_dict, modify_func, parse_functype
 from mmodel.model import Model
+import numpy as np
 
 
 class Node:
@@ -66,7 +67,7 @@ class Node:
         if isinstance(func, Model):
             func = func.model_func
 
-        if not has_signature(func):
+        if not has_signature(func) or isinstance(func, np.ufunc):
             if not inputs:
                 raise Exception(f"'inputs' required for node {repr(self.name)}")
             else:
