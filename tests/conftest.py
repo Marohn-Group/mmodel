@@ -7,7 +7,6 @@ and test functions.
 2. `mmodel_G` - test graph generated using Graph, scope: function
 """
 
-
 import pytest
 from inspect import Signature, Parameter
 import networkx as nx
@@ -35,9 +34,9 @@ def logarithm(c, b):
 
 
 add_node = Node("add", addition, output="c")
-sub_node = Node("subtract", operator.sub, ["c", "d"], "e")
-power_node = Node("power", math.pow, ["c", "f"], "g")
-multi_node = Node("multiply", np.multiply, ["e", "g"], "k")
+sub_node = Node("subtract", operator.sub, ["c", "d"], output="e")
+power_node = Node("power", math.pow, ["c", "f"], output="g")
+multi_node = Node("multiply", np.multiply, ["e", "g"], output="k")
 log_node = Node("log", logarithm, output="m")
 
 

@@ -1,34 +1,35 @@
-from mmodel.signature import (
-    modify_signature,
-    add_signature,
-    convert_signature,
-    has_signature,
-    check_signature,
-)
-from inspect import signature
+from mmodel.signature import convert_func, get_node_signature, get_parameters
 from mmodel.metadata import nodeformatter
 from mmodel.utility import construction_dict, modify_func, parse_functype
-from mmodel.model import Model
-import numpy as np
+from inspect import signature
 
 
 class Node:
     """A node class that formats node function and metadata."""
 
-    def __init__(self, name, func, inputs=None, output=None, modifiers=None, **kwargs):
+    def __init__(
+        self,
+        name,
+        func,
+        arglist=None,
+        kwarglist=None,
+        output=None,
+        modifiers=None,
+        **kwargs,
+    ):
         # static
         self.name = self.__name__ = name
         self.output = output
 
-        self._inputs = inputs or []
+        self._arglist = arglist or []
+        self._kwarglist = kwarglist or []
         self._modifiers = modifiers or []
 
         self.func = func
         self.functype = parse_functype(func)
         self.doc = func.__doc__
 
-        self._base_func = self.convert_func(func, self._inputs)
-        # allow overwrite
+        self._base_func = self.convert_func(func, self._arglist, self._kwarglist)
         self._node_func = modify_func(self._base_func, self._modifiers)
 
         # kwargs can overwrite values like doc, functype, etc.
@@ -50,39 +51,34 @@ class Node:
         """Return signature."""
         return self.__signature__
 
-    def convert_func(self, func, inputs):
+    def convert_func(self, func, arglist, kwarglist):
         """Convert function to a node function.
 
-        For ``numpy.ufunc`` and builtin type, the "inputs" argument is required.
+        To replace the positional or positional-or-keyword parameters,
+        the list arglist needs to be defined. The user can select
+        desired keyword-only parameters with kwarglist. To replace the
+        keyword-only parameters, a custom function needs to be defined
+        to replace the function.
 
-        If inputs are provided, the signature is
-        changed based on the inputs and keyword-only.
-        If the "inputs" is None, the signature is changed keyword only,
-        and the default values are removed.
-
-        The keyword-only design reduced binding overhead during the function
-        calls, and allow more consistency between node, modifier, and model.
+        For functions that already fit the criteria and have no argument
+        list, we still wrap the function. The overhead is minimal.
         """
+        param_list = get_parameters(func)
+        node_sig = get_node_signature(param_list, arglist, kwarglist)
+        param_values = node_sig.parameters.values()
+        arg_index = len([param for param in param_values if param.kind < 2])
 
-        if isinstance(func, Model):
-            func = func.model_func
-
-        if not has_signature(func) or isinstance(func, np.ufunc):
-            if not inputs:
-                raise Exception(f"'inputs' required for node {repr(self.name)}")
-            else:
-                func = add_signature(func, inputs)
-        elif inputs:
-            func = modify_signature(func, inputs)
-        elif not check_signature(func):
-            func = convert_signature(func)
-
-        return func
+        return convert_func(func, node_sig, arg_index)
 
     @property
-    def inputs(self):
-        """Return a copy of inputs."""
-        return self._inputs.copy()
+    def arglist(self):
+        """Return a copy of arglist."""
+        return self._arglist.copy()
+
+    @property
+    def kwarglist(self):
+        """Return a copy of kwarglist."""
+        return self._kwarglist.copy()
 
     @property
     def modifiers(self):
@@ -93,12 +89,16 @@ class Node:
         """Edit node. A new node object is created."""
 
         con_dict = construction_dict(
-            self, ["inputs", "modifiers"], ["functype", "doc", "node_func"]
+            self,
+            ["arglist", "kwarglist", "modifiers"],
+            ["functype", "doc", "node_func"],
         )
 
         # if the the function is updated, the inputs are reset
         if "func" in kwargs:
-            kwargs["inputs"] = kwargs.get("inputs", None)
+            kwargs["arglist"] = kwargs.get("arglist", None)
+            kwargs["kwarglist"] = kwargs.get("kwarglist", None)
+
         con_dict.update(kwargs)
 
         return self.__class__(**con_dict)
@@ -111,7 +111,6 @@ class Node:
         """
 
         bound = self.signature.bind(*args, **kwargs)
-        bound.apply_defaults()  # There's no defaults allowed, added regardless
         return self.node_func(**bound.arguments)
 
     def __str__(self):

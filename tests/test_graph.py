@@ -117,7 +117,7 @@ class TestSetNodeObject:
             "func_a",
             func_a,
             output="o",
-            inputs=["a", "b"],
+            arglist=["a", "b"],
             modifiers=[value_modifier(value=1)],
         )
 
@@ -361,7 +361,7 @@ class TestMGraphOperation:
             "test",
             func,
             output="z",
-            inputs=["c", "e", "x", "y"],
+            arglist=["c", "e", "x", "y"],
             modifiers=[value_modifier(value=1)],
         )
         graph = mmodel_G.replace_subgraph(subgraph, node_object)
@@ -412,7 +412,7 @@ class TestMGraphOperation:
 
         # need to change inputs as well
         G = mmodel_G.edit_node(
-            "add", func=add, modifiers=[value_modifier(value=2)], inputs=None
+            "add", func=add, modifiers=[value_modifier(value=2)], arglist=None
         )
         new_obj = G.nodes["add"]["node_object"]
         # add one to the final value

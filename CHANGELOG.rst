@@ -17,6 +17,7 @@ Fixed
 - Fixed the issue that the "output" attribute of the edge is not updated during editing.
 - Fixed the issue of the different behavior of numpy.ufunc signature due to
   ``inspect.signature`` change in the Python version 3.11.9.
+- Rewrite node internal logic for converting function.
 
 [0.7.0]
 ------------
