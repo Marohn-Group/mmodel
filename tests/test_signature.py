@@ -302,32 +302,74 @@ class TestNodeSignature:
 
 
 def test_convert_func():
-    """Test the convert_func function.
-
-    In the function, the sig value does not affect the calculation.
-    Here we give an empty signature, and test different types of inputs
-    as well as different functions.
-    """
+    """Test the convert_func function in and out of order."""
 
     def test_func1(a, /, b, *args, c=2, **kwargs):
         return a + b - c + np.sum(args) + np.prod(list(kwargs.values()))
 
-    sig = Signature()
+    sig = Signature(
+        [
+            Parameter("a", 0),
+            Parameter("b", 1),
+            Parameter("d", 1),
+            Parameter("e", 1),
+            Parameter("f", 3),
+            Parameter("g", 3),
+        ]
+    )
 
     # a, b, d, e are positional-only
     new_func = convert_func(test_func1, sig, 4)
     assert new_func.__signature__ == sig
     assert signature(new_func) == sig
     assert new_func(a=1, b=2, d=4, e=5, f=6, g=7) == 52
+    assert new_func(b=2, d=4, e=5, a=1, f=6, g=7) == 52
+
+    sig = Signature(
+        [
+            Parameter("a", 0),
+            Parameter("b", 1),
+            Parameter("d", 3),
+            Parameter("e", 3),
+            Parameter("f", 3),
+            Parameter("g", 3),
+        ]
+    )
 
     # a, b are positional-only
     new_func = convert_func(test_func1, sig, 2)
     assert new_func(a=1, b=2, d=4, e=5, f=6, g=7) == 841
+    assert new_func(f=6, g=7, a=1, b=2, d=4, e=5) == 841
+
+    sig = Signature(
+        [
+            Parameter("a", 0),
+            Parameter("b", 1),
+            Parameter("d", 1),
+            Parameter("c", 3),
+            Parameter("e", 3),
+            Parameter("g", 3),
+        ]
+    )
 
     # a, b, d are positional
     # c is keyword-only
     new_func = convert_func(test_func1, sig, 2)
     assert new_func(a=1, b=2, d=4, c=5, e=6, g=7) == 166
+    assert new_func(a=1, c=5, e=6, b=2, d=4, g=7) == 166
+
+
+def test_convert_func_exception():
+    """Test when the converted function shows the correct exception."""
+
+    def test_func1(a, b, c):
+        return a + b - c
+
+    sig = Signature([Parameter("a", 0), Parameter("b", 1), Parameter("c", 1)])
+
+    new_func = convert_func(test_func1, sig, 3)
+    with pytest.raises(TypeError, match="missing a required argument: 'c'"):
+        new_func(a=1, b=2)
 
 
 def test_restructure_signature():

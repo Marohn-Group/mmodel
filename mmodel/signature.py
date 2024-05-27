@@ -88,7 +88,14 @@ def convert_func(func, sig, arg_index):
     @wraps(func)
     def wrapper(**kwargs):
 
-        arg_dict, kwarg_dict = bind_arguments(kwargs, arg_index)
+        # order the dictionary first
+        try:
+            input_dict = {k: kwargs[k] for k in sig.parameters}
+        except KeyError as e:
+            # have the same behavior as a regular function
+            raise TypeError(f"missing a required argument: {e}")
+
+        arg_dict, kwarg_dict = bind_arguments(input_dict, arg_index)
         return func(*arg_dict.values(), **kwarg_dict)
 
     wrapper.__signature__ = sig
