@@ -1,7 +1,6 @@
 from inspect import signature, Parameter, Signature
 from functools import wraps
 from mmodel.utility import param_sorter
-from itertools import islice
 
 
 def restructure_signature(signature, default_dict):
@@ -73,30 +72,30 @@ def get_node_signature(param_list, arglist, kwarglist):
     return node_sig
 
 
-def bind_arguments(input_dict, arg_index):
-    """Split input_dict into args and kwargs based on arg_index."""
+def convert_func(func, sig):
+    """Wrap the input node function and redirect the input parameters.
 
-    i = iter(input_dict.items())
-    args = dict(islice(i, arg_index))
-    kwargs = dict(i)
-    return args, kwargs
+    The signature is constructed in the node definition that defines
+    the new signature following the old signature.
+    The wrapper split the into the positional and keyword arguments,
+    and apply them to the function.
+    """
 
-
-def convert_func(func, sig, arg_index):
-    """Modify function based on the index of the arguments."""
+    params = sig.parameters.values()
+    arg_keys = [p.name for p in params if p.kind < 2]
+    kwarg_keys = [p.name for p in params if p.kind > 2]
 
     @wraps(func)
     def wrapper(**kwargs):
-
         # order the dictionary first
         try:
-            input_dict = {k: kwargs[k] for k in sig.parameters}
+            arg_list = [kwargs[k] for k in arg_keys]
+            kwarg_dict = {k: kwargs[k] for k in kwarg_keys}
         except KeyError as e:
             # have the same behavior as a regular function
             raise TypeError(f"missing a required argument: {e}")
 
-        arg_dict, kwarg_dict = bind_arguments(input_dict, arg_index)
-        return func(*arg_dict.values(), **kwarg_dict)
+        return func(*arg_list, **kwarg_dict)
 
     wrapper.__signature__ = sig
 
@@ -125,12 +124,12 @@ def check_kwargs(param_list, kwarglist):
         # check if the name match
         diff = set(kwarglist) - (set(kwarglist) & set(kwname))
         if diff:
-            raise Exception(f"Invalid keyword argument(s): {', '.join(diff)}")
+            raise Exception(f"invalid keyword argument(s): {', '.join(diff)}")
 
     required_diff = set(required) - set(kwarglist)
     if required_diff:
         raise Exception(
-            f"Missing required keyword argument(s): {', '.join(required_diff)}"
+            f"missing required keyword argument(s): {', '.join(required_diff)}"
         )
 
     return True
@@ -157,13 +156,13 @@ def check_args(param_list, arglist):
     if not var_args:
         if len(arglist) > len(argname):
             raise Exception(
-                f"Too many positional arguments, "
+                f"too many positional arguments, "
                 f"maximum {len(argname)} but got {len(arglist)}"
             )
 
     if len(arglist) < len(required):
         raise Exception(
-            f"Not enough positional arguments, "
+            f"not enough positional arguments, "
             f"minimum {len(required)} but got {len(arglist)}"
         )
 

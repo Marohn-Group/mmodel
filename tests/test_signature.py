@@ -5,7 +5,6 @@ from mmodel.signature import (
     check_kwargs,
     check_args,
     convert_func,
-    bind_arguments,
 )
 from inspect import signature, Parameter, Signature
 import pytest
@@ -38,20 +37,6 @@ def test_get_param_dict_without_sig():
 
     params = get_parameters(zip)
     assert params == [Parameter("args", 2), Parameter("kwargs", 4)]
-
-
-def test_bind_arguments():
-    """Test the bind_arguments function."""
-
-    args, kwargs = bind_arguments({"a": 1, "b": 2, "c": 3, "d": 4}, 2)
-
-    assert args == {"a": 1, "b": 2}
-    assert kwargs == {"c": 3, "d": 4}
-
-    args, kwargs = bind_arguments({"a": 1, "b": 2, "c": 3, "d": 4}, 4)
-
-    assert args == {"a": 1, "b": 2, "c": 3, "d": 4}
-    assert kwargs == {}
 
 
 class TestNodeSignature:
@@ -109,7 +94,7 @@ class TestNodeSignature:
         assert check_args(param_set1, ["a", "b", "c"])
 
         # check minimum length
-        with pytest.raises(Exception, match="Not enough positional arguments"):
+        with pytest.raises(Exception, match="not enough positional arguments"):
             check_args(param_set1, ["pos_only"])
 
     def test_check_args_without_var_pos(self, param_set2):
@@ -118,11 +103,11 @@ class TestNodeSignature:
         # regular replacement
         assert check_args(param_set2, ["a", "b"])
         # not allow more than 2 parameters
-        with pytest.raises(Exception, match="Too many positional arguments"):
+        with pytest.raises(Exception, match="too many positional arguments"):
             assert check_args(param_set2, ["a", "b", "c"])
 
         # check minimum length
-        with pytest.raises(Exception, match="Not enough positional arguments"):
+        with pytest.raises(Exception, match="not enough positional arguments"):
             check_args(param_set2, ["pos_only"])
 
     def test_check_args_with_defaults(self, param_set3):
@@ -134,7 +119,7 @@ class TestNodeSignature:
         assert check_args(param_set3, ["a", "b"])
 
         # check minimum length
-        with pytest.raises(Exception, match="Not enough positional arguments"):
+        with pytest.raises(Exception, match="not enough positional arguments"):
             check_args(param_set3, ["a"])
 
     def test_check_args_with_var_pos_only(self, param_set4):
@@ -155,13 +140,13 @@ class TestNodeSignature:
 
         # incorrect keyword argument key match
         with pytest.raises(
-            Exception, match=r"Missing required keyword argument\(s\): kw_only"
+            Exception, match=r"missing required keyword argument\(s\): kw_only"
         ):
             check_kwargs(param_set1, ["a"])
 
         # check the minimum length
         with pytest.raises(
-            Exception, match=r"Missing required keyword argument\(s\): kw_only"
+            Exception, match=r"missing required keyword argument\(s\): kw_only"
         ):
             check_kwargs(param_set1, [])
 
@@ -171,13 +156,13 @@ class TestNodeSignature:
         assert check_kwargs(param_set2, ["kw_only"])
         # not allow more than 2 parameters
         with pytest.raises(
-            Exception, match=r"Invalid keyword argument\(s\): (a|b), (b|a)"
+            Exception, match=r"invalid keyword argument\(s\): (a|b), (b|a)"
         ):
             assert check_kwargs(param_set2, ["kw_only", "a", "b"])
 
         # check the minimum length
         with pytest.raises(
-            Exception, match=r"Missing required keyword argument\(s\): kw_only"
+            Exception, match=r"missing required keyword argument\(s\): kw_only"
         ):
             check_kwargs(param_set2, [])
 
@@ -190,14 +175,14 @@ class TestNodeSignature:
 
         # keyword argument key match
         with pytest.raises(
-            Exception, match=r"Invalid keyword argument\(s\): (a|b), (b|a)"
+            Exception, match=r"invalid keyword argument\(s\): (a|b), (b|a)"
         ):
             check_kwargs(param_set3, ["a", "b"])
 
         # check the minimum length
         with pytest.raises(
             Exception,
-            match=r"Missing required keyword argument\(s\): "
+            match=r"missing required keyword argument\(s\): "
             r"(kw_only1, kw_only2|kw_only2, kw_only1)",
         ):
             check_kwargs(param_set3, [])
@@ -319,7 +304,7 @@ def test_convert_func():
     )
 
     # a, b, d, e are positional-only
-    new_func = convert_func(test_func1, sig, 4)
+    new_func = convert_func(test_func1, sig)
     assert new_func.__signature__ == sig
     assert signature(new_func) == sig
     assert new_func(a=1, b=2, d=4, e=5, f=6, g=7) == 52
@@ -337,7 +322,7 @@ def test_convert_func():
     )
 
     # a, b are positional-only
-    new_func = convert_func(test_func1, sig, 2)
+    new_func = convert_func(test_func1, sig)
     assert new_func(a=1, b=2, d=4, e=5, f=6, g=7) == 841
     assert new_func(f=6, g=7, a=1, b=2, d=4, e=5) == 841
 
@@ -354,9 +339,9 @@ def test_convert_func():
 
     # a, b, d are positional
     # c is keyword-only
-    new_func = convert_func(test_func1, sig, 2)
-    assert new_func(a=1, b=2, d=4, c=5, e=6, g=7) == 166
-    assert new_func(a=1, c=5, e=6, b=2, d=4, g=7) == 166
+    new_func = convert_func(test_func1, sig)
+    assert new_func(a=1, b=2, d=4, c=5, e=6, g=7) == 44
+    assert new_func(a=1, c=5, e=6, b=2, d=4, g=7) == 44
 
 
 def test_convert_func_exception():
@@ -367,7 +352,7 @@ def test_convert_func_exception():
 
     sig = Signature([Parameter("a", 0), Parameter("b", 1), Parameter("c", 1)])
 
-    new_func = convert_func(test_func1, sig, 3)
+    new_func = convert_func(test_func1, sig)
     with pytest.raises(TypeError, match="missing a required argument: 'c'"):
         new_func(a=1, b=2)
 
@@ -375,10 +360,10 @@ def test_convert_func_exception():
 def test_restructure_signature():
     """Test the restructure_signature function."""
 
-    def testfunc(a, b, c, e):
+    def test_func(a, b, c, e):
         return a + b + c + e
 
-    sig = signature(testfunc)
+    sig = signature(test_func)
     default_dict = {"c": 3}
 
     new_sig = restructure_signature(sig, default_dict)
