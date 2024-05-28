@@ -8,8 +8,7 @@ from mmodel.utility import replace_subgraph
 class Graph(nx.DiGraph):
     """Create model graphs.
 
-    mmodel.Graph inherits from `networkx.DiGraph()`, which has all `DiGraph`
-    methods.
+    mmodel.Graph inherits from `networkx.DiGraph()`.
 
     The class adds the "type" attribute to the graph attribute. The factory method
     returns a copy of the dictionary. It is equivalent to
@@ -19,7 +18,7 @@ class Graph(nx.DiGraph):
     - add_grouped_edges and set_node_objects.
     - Method ``add_grouped_edges``, cannot have both edges list.
     - Method ``set_node_object`` updates nodes with the node callable "func" and output.
-    - The method adds callable signature 'sig' to the node attribute.
+    - The method adds 'signature' to the node attribute.
     """
 
     graph_attr_dict_factory = {"type": "mmodel_graph"}.copy
@@ -62,7 +61,7 @@ class Graph(nx.DiGraph):
         """
 
         if isinstance(u, list) and isinstance(v, list):
-            raise Exception("only one edge node can be a list")
+            raise Exception("grouped edge inputs cannot both be lists")
 
         # use add edges from to run less update graph
         # currently a compromise
@@ -91,9 +90,8 @@ class Graph(nx.DiGraph):
                 v_sig = self.nodes[v]["signature"].parameters
                 if self.nodes[u]["output"] in v_sig:
                     self.edges[u, v]["output"] = self.nodes[u]["output"]
-                elif 'output' in self.edges[u, v]: # reset edge output
+                elif "output" in self.edges[u, v]:  # reset edge output
                     del self.edges[u, v]["output"]
-                    
 
     # graph operations
     def subgraph(self, nodes=None, inputs=None, outputs=None):

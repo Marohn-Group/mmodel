@@ -27,8 +27,6 @@ class TopologicalHandler:
     DataClass: type = callable
 
     def __init__(self, graph, returns: list, **datacls_kwargs):
-        # self.__name__ = name
-        # __signature__ allows the inspect module to properly generate the signature
         self.__signature__ = modelgraph_signature(graph)
         self.returns = returns
         self.order = graph_topological_sort(graph)

@@ -2,7 +2,6 @@ from inspect import Signature, Parameter
 import networkx as nx
 
 
-# graph properties
 def modelgraph_signature(graph):
     """Obtain the signature from the model graph.
 

@@ -65,10 +65,8 @@ class Node:
         """
         param_list = get_parameters(func)
         node_sig = get_node_signature(param_list, arglist, kwarglist)
-        param_values = node_sig.parameters.values()
-        arg_index = len([param for param in param_values if param.kind < 2])
 
-        return convert_func(func, node_sig, arg_index)
+        return convert_func(func, node_sig)
 
     @property
     def arglist(self):

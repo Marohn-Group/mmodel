@@ -8,7 +8,6 @@ The test strategy works as the following:
 - Test the Handler as a whole.
 """
 
-
 from mmodel.handler import MemData, H5Data, MemHandler, BasicHandler, H5Handler
 import pytest
 import math
@@ -59,9 +58,6 @@ class TestMemData:
 
         data = MemData({"a": "hello", "b": "world"}, counter=counter)
         assert data.counter is not counter  # not the same object
-
-        # data.counter['a'] = 2
-        # assert counter['a'] == 1
 
 
 class Test_H5Data:

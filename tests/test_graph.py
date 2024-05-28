@@ -98,7 +98,7 @@ class TestAddEdge:
         The method raises an exception when u and v are both lists.
         """
 
-        with pytest.raises(Exception, match="only one edge node can be a list"):
+        with pytest.raises(Exception, match="grouped edge inputs cannot both be lists"):
             base_G.add_grouped_edge(["func_a", "func_b"], ["func_c", "func_d"])
 
 
@@ -427,13 +427,10 @@ class TestMGraphOperation:
         assert new_obj(first=1, second=2) == 5
         assert new_obj != old_obj
 
-
     def test_edit_node_reset_output(self, mmodel_G):
         """Test edit_node that with an incorrect output resets edge attribute."""
 
-        G = mmodel_G.edit_node(
-            "add", output='incorrect'
-        )
+        G = mmodel_G.edit_node("add", output="incorrect")
 
         assert "output" not in G.edges["add", "log"]
         assert "output" not in G.edges["add", "power"]

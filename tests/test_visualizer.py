@@ -61,8 +61,6 @@ def test_draw_partial_graph():
     G.add_edge("a", "b")
 
     dot_graph_plain = plain_visualizer(G, label="test label")
-
-    # assert dot_graph_short.source.replace("\t", "") == dedent(dot_source)
     assert dot_graph_plain.source.replace("\t", "") == DOT_PARTIAL
 
 

@@ -11,7 +11,7 @@ from mmodel.node import Node
 @pytest.fixture
 def func():
     def example_func(a, c, b=2, *args, d, e=10, **kwargs):
-        return
+        return a + b + c + d + e + sum(args) + sum(kwargs.values())
 
     return example_func
 

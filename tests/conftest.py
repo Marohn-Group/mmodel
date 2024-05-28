@@ -1,12 +1,3 @@
-"""Configuration for testing,
-
-The configuration file provides several default graph fixtures
-and test functions.
-
-1. `standard_G` - test graph generated using DiGraph, scope: function
-2. `mmodel_G` - test graph generated using Graph, scope: function
-"""
-
 import pytest
 from inspect import Signature, Parameter
 import networkx as nx

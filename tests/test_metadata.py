@@ -102,9 +102,7 @@ class TestMetaDataFormatter:
         - a short string
         - Again a very [...]"""
 
-        formatter = meta.MetaDataFormatter(
-            {"a": meta.format_list}, ["a"], wrap, ["a"]
-        )
+        formatter = meta.MetaDataFormatter({"a": meta.format_list}, ["a"], wrap, ["a"])
         assert formatter(
             SNs(
                 a=[
@@ -178,7 +176,6 @@ class TestFormatFunction:
         # lambda
         assert meta.format_shortdocstring("test", (lambda x: x).__doc__) == []
 
-
     def test_foramt_returns(self):
         """Test format_returns function."""
 
@@ -197,7 +194,7 @@ class TestFormatFunction:
 
         obj = SNs(name="object")
         assert meta.format_obj_name("a", obj) == ["a: object"]
-        assert meta.format_obj_name('a', None) == []
+        assert meta.format_obj_name("a", None) == []
 
     def test_format_obj_name_func(self):
         """Test format_obj_name on function."""
@@ -305,7 +302,7 @@ class TestFormatedString:
                 "k": meta.format_value,
                 "m": meta.format_value,
                 "o": lambda key, value: [f"p: {repr(value)}"],
-                "empty": lambda k, v: [f'{k}: {v}'],
+                "empty": lambda k, v: [f"{k}: {v}"],
                 "last": meta.format_shortdocstring,  # empty string
             },
             [
