@@ -7,7 +7,7 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
-[Unreleased]
+[0.8.0]
 ------------
 
 Fixed
@@ -18,6 +18,15 @@ Fixed
 - Fixed the issue of the different behavior of numpy.ufunc signature due to
   ``inspect.signature`` change in the Python version 3.11.9.
 - Rewrite node internal logic for converting function.
+
+Changed
+^^^^^^^
+
+- Change the Node class "inputs" to "arglist" and "kwarglist".
+  - "arglist" can replace all positional-only, positional-or-keyword, and
+    var-positional parameters.
+  - "kwarglist" can selectively choose keyword-only arguments, and add
+    additional keyword arguments to replace var-keyword parameters.
 
 [0.7.0]
 ------------
