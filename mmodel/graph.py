@@ -3,6 +3,7 @@ from mmodel.visualizer import plain_visualizer
 from copy import deepcopy
 from mmodel.filter import subnodes_by_inputs, subnodes_by_outputs
 from mmodel.utility import replace_subgraph
+from itertools import product
 
 
 class Graph(nx.DiGraph):
@@ -60,17 +61,10 @@ class Graph(nx.DiGraph):
         nodes flowing into one node.
         """
 
-        if isinstance(u, list) and isinstance(v, list):
-            raise Exception("grouped edge inputs cannot both be lists")
-
-        # use add edges from to run less update graph
-        # currently a compromise
-        if isinstance(u, list):
-            self.add_edges_from([(_u, v) for _u in u])
-        elif isinstance(v, list):
-            self.add_edges_from([(u, _v) for _v in v])
-        else:  # neither is a list
-            self.add_edge(u, v)
+        u = [u] if isinstance(u, str) else u
+        v = [v] if isinstance(v, str) else v
+        edge_list = list(product(u, v))
+        self.add_edges_from(edge_list)
 
     def add_grouped_edges_from(self, group_edges: list):
         """Add edges from grouped values."""
@@ -79,14 +73,14 @@ class Graph(nx.DiGraph):
             self.add_grouped_edge(u, v)
 
     def update_graph(self):
-        """Update edge attributes based on node objects and edges."""
+        """Update edge attributes based on node objects and edges.
+
+        The edge "output" is not defined if the parent node does not have
+        the "output" attribute or the child node does not have the parameter.
+        """
 
         for u, v in self.edges:
             if self.nodes[u] and self.nodes[v]:
-                # the edge "output" is not defined if the parent node does not
-                # have "output" attribute or the child node does not have
-                # the parameter
-                # extract the parameter dictionary
                 v_sig = self.nodes[v]["signature"].parameters
                 if self.nodes[u]["output"] in v_sig:
                     self.edges[u, v]["output"] = self.nodes[u]["output"]

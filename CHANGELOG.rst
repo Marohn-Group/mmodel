@@ -27,6 +27,9 @@ Changed
     var-positional parameters.
   - "kwarglist" can selectively choose keyword-only arguments, and add
     additional keyword arguments to replace var-keyword parameters.
+- Allow adding grouped edges with two lists. The resulting edges are the
+  product of two edges. For example, a grouped edge [[a, b], [c, d]] produces
+  four edges (a, c), (a, d), (b, c), and (b, d).
 
 [0.7.0]
 ------------

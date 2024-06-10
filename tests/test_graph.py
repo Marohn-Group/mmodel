@@ -92,14 +92,16 @@ class TestAddEdge:
             ("func_c", "func_d"),
         ] == list(base_G.edges)
 
-    def test_add_grouped_edge_fails(self, base_G):
-        """Test add_grouped_edge.
+    def test_add_grouped_edges_with_two_lists(self, base_G):
+        """Test add_grouped_edge if both are lists."""
 
-        The method raises an exception when u and v are both lists.
-        """
-
-        with pytest.raises(Exception, match="grouped edge inputs cannot both be lists"):
-            base_G.add_grouped_edge(["func_a", "func_b"], ["func_c", "func_d"])
+        base_G.add_grouped_edge(["func_a", "func_b"], ["func_c", "func_d"])
+        assert [
+            ("func_a", "func_c"),
+            ("func_a", "func_d"),
+            ("func_b", "func_c"),
+            ("func_b", "func_d"),
+        ] == list(base_G.edges)
 
 
 class TestSetNodeObject:
