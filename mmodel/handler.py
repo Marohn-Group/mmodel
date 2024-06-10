@@ -1,7 +1,6 @@
 from collections import UserDict
 from mmodel.utility import graph_topological_sort, param_counter, modelgraph_signature
 from datetime import datetime
-import h5py
 import string
 import random
 from textwrap import dedent
@@ -149,6 +148,8 @@ class H5Data:
     """
 
     def __init__(self, data, fname, gname):
+        import h5py  # lazy import
+
         self.fname = fname
 
         self.f = h5py.File(self.fname, "a")
