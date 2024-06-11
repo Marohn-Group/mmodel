@@ -4,6 +4,7 @@ from copy import deepcopy
 from mmodel.filter import subnodes_by_inputs, subnodes_by_outputs
 from mmodel.utility import replace_subgraph
 from itertools import product
+from collections import defaultdict
 
 
 class Graph(nx.DiGraph):
@@ -71,6 +72,27 @@ class Graph(nx.DiGraph):
 
         for u, v in group_edges:
             self.add_grouped_edge(u, v)
+
+    @property
+    def grouped_edges(self):
+        """Return grouped edges based on the graph."""
+        g_edges_reversed = defaultdict(list)
+
+        for u, v in self.edges:
+            g_edges_reversed[v].append(u)
+
+        g_edges = defaultdict(list)
+
+        for u, v in g_edges_reversed.items():
+            g_edges[tuple(v)].append(u)
+
+        grouped_edges = []
+        for k, v in g_edges.items():
+            k = k[0] if len(k) == 1 else list(k)
+            v = v[0] if len(v) == 1 else v
+            grouped_edges.append([k, v])
+
+        return grouped_edges
 
     def update_graph(self):
         """Update edge attributes based on node objects and edges.

@@ -103,6 +103,43 @@ class TestAddEdge:
             ("func_b", "func_d"),
         ] == list(base_G.edges)
 
+    def test_grouped_edges_output_mixed(self):
+        """Test group_edges method."""
+
+        G = Graph()
+        G.add_edge("a", "b")
+        G.add_edge("a", "c")
+        G.add_edge("b", "d")
+        G.add_edge("c", "d")
+        G.add_edge("c", "f")
+        G.add_edge("d", "f")
+
+        grouped_edges = G.grouped_edges
+        assert grouped_edges == [
+            ["a", ["b", "c"]],
+            [["b", "c"], "d"],
+            [["c", "d"], "f"],
+        ]
+
+    def test_grouped_edges_output_string(self):
+        """Test group_edges method."""
+
+        G = Graph()
+        G.add_edge("a", "b")
+        G.add_edge("c", "d")
+
+        grouped_edges = G.grouped_edges
+        assert grouped_edges == [["a", "b"], ["c", "d"]]
+
+    def test_grouped_edges_output_two_lists(self):
+        """Test group_edges method."""
+
+        G = Graph()
+        G.add_edge("a", "b")
+
+        grouped_edges = G.grouped_edges
+        assert grouped_edges == [["a", "b"]]
+
 
 class TestSetNodeObject:
     """Test set_node_object and set_node_objects_from."""

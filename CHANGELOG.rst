@@ -23,13 +23,18 @@ Changed
 ^^^^^^^
 
 - Change the Node class "inputs" to "arglist" and "kwarglist".
-  - "arglist" can replace all positional-only, positional-or-keyword, and
-    var-positional parameters.
-  - "kwarglist" can selectively choose keyword-only arguments, and add
-    additional keyword arguments to replace var-keyword parameters.
+    - "arglist" can replace all positional-only, positional-or-keyword, and
+      var-positional parameters.
+    - "kwarglist" can selectively choose keyword-only arguments, and add
+      additional keyword arguments to replace var-keyword parameters.
 - Allow adding grouped edges with two lists. The resulting edges are the
   product of two edges. For example, a grouped edge [[a, b], [c, d]] produces
   four edges (a, c), (a, d), (b, c), and (b, d).
+
+Added
+^^^^^
+
+- Add property "grouped_edges" to the Graph class that returns a list of grouped edges.
 
 [0.7.0]
 ------------
