@@ -137,6 +137,7 @@ def value_modifier():
 
             return wrapped
 
+        mod.metadata = f"add_value(value={value})"
         return mod
 
     return add_value

@@ -1,5 +1,32 @@
 from functools import wraps
 from inspect import signature, Parameter, Signature
+from types import MappingProxyType
+
+
+def format_parameters(*args, **kwargs) -> list:
+    """Format the parameters for stdout."""
+    param_str = []
+    for param in args:
+        param_str.append(repr(param))
+    for key, value in kwargs.items():
+        param_str.append(f"{key}={repr(value)}")
+
+    return param_str
+
+
+def modifier(name, *args, **kwargs):
+    """Decorator to add metadata to a function."""
+
+    def decorator(func):
+        param_str = format_parameters(*args, **kwargs)
+        func.metadata = f"{name}({', '.join(param_str)})"
+        func.args = tuple(args)
+        func.kwargs = MappingProxyType(kwargs)
+        func.ismodifier = True
+
+        return func
+
+    return decorator
 
 
 def loop_input(parameter: str):
@@ -9,6 +36,7 @@ def loop_input(parameter: str):
         The target parameter name is changed to f"{param}_loop"
     """
 
+    @modifier("loop_input", parameter=parameter)
     def loop(func):
         param_list = []
         for param in signature(func).parameters.values():
@@ -29,7 +57,6 @@ def loop_input(parameter: str):
         loop_wrapped.__signature__ = new_sig
         return loop_wrapped
 
-    loop.metadata = f"loop_input({repr(parameter)})"
     return loop
 
 
@@ -41,6 +68,7 @@ def zip_loop_inputs(parameters: list):
         provided, the parameters should be delimited by ", ".
     """
 
+    @modifier("zip_loop_inputs", parameters=parameters)
     def zip_loop(func):
         @wraps(func)
         def loop_wrapped(**kwargs):
@@ -56,7 +84,6 @@ def zip_loop_inputs(parameters: list):
 
         return loop_wrapped
 
-    zip_loop.metadata = f"zip_loop({repr(parameters)})"
     return zip_loop
 
 
@@ -80,6 +107,13 @@ def profile_time(number=1, repeat=1, verbose=False, precision=2):
 
     timer = timeit.default_timer
 
+    @modifier(
+        "zip_loop_inputs",
+        number=number,
+        repeat=repeat,
+        verbose=verbose,
+        precision=precision,
+    )
     def timeit_modifier(func):
         @wraps(func)
         def wrapped(**kwargs):
@@ -105,7 +139,4 @@ def profile_time(number=1, repeat=1, verbose=False, precision=2):
 
         return wrapped
 
-    timeit_modifier.metadata = (
-        f"profile_time(number={number}, repeat={repeat}, verbose={verbose})"
-    )
     return timeit_modifier

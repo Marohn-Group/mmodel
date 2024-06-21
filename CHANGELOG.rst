@@ -35,6 +35,7 @@ Added
 ^^^^^
 
 - Add property "grouped_edges" to the Graph class that returns a list of grouped edges.
+- Add "modifier" decorator for wrapped modifier functions to provide additional information and metadata.
 
 [0.7.0]
 ------------

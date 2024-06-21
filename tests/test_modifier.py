@@ -1,4 +1,11 @@
-from mmodel.modifier import loop_input, zip_loop_inputs, profile_time, format_time
+from mmodel.modifier import (
+    loop_input,
+    zip_loop_inputs,
+    profile_time,
+    format_time,
+    modifier,
+    format_parameters,
+)
 import pytest
 import re
 from inspect import signature
@@ -11,6 +18,39 @@ def example_func():
         return a + b + c
 
     return func
+
+
+def test_parameter_stdout():
+    """Test parameter_stdout modifier."""
+
+    str_list = format_parameters(0, a="ab", b=2, c=3)
+    assert str_list == ["0", "a='ab'", "b=2", "c=3"]
+
+
+def test_modifier_decorator():
+    """Test the modifier decorator."""
+
+    @modifier("test_modifier", 1, 2, a="ab", b=2)
+    def test_func(a, b):
+        return a + b
+
+    assert test_func(1, 2) == 3
+    assert test_func.metadata == "test_modifier(1, 2, a='ab', b=2)"
+    assert test_func.args == (1, 2)
+    assert test_func.kwargs == {"a": "ab", "b": 2}
+
+
+def test_modifier_metadata_immutable():
+    """Test modifier metadata is immutable."""
+
+    @modifier("test_modifier", 1, 2, a="ab", b=2)
+    def test_func(a, b):
+        return a + b
+
+    with pytest.raises(
+        TypeError, match="'mappingproxy' object does not support item assignment"
+    ):
+        test_func.kwargs["c"] = 3
 
 
 def test_loop_input(example_func):
@@ -28,7 +68,7 @@ def test_loop_metadata():
 
     loop_mod = loop_input("b")
 
-    assert loop_mod.metadata == "loop_input('b')"
+    assert loop_mod.metadata == "loop_input(parameter='b')"
 
 
 def test_zip_loop_list(example_func):
@@ -37,8 +77,6 @@ def test_zip_loop_list(example_func):
     loop_mod = zip_loop_inputs(["a", "b"])(example_func)
 
     assert loop_mod(a=[0.1, 0.2, 0.3], b=[1, 2, 3], c=10) == [11.1, 12.2, 13.3]
-    # make sure the positional arguments also work
-    # assert loop_mod([0.1, 0.2, 0.3], [1, 2, 3], 10) == [11.1, 12.2, 13.3]
 
 
 def test_zip_loop_metadata(example_func):
@@ -46,7 +84,7 @@ def test_zip_loop_metadata(example_func):
 
     loop_mod = zip_loop_inputs(["a", "b"])
 
-    assert loop_mod.metadata == "zip_loop(['a', 'b'])"
+    assert loop_mod.metadata == "zip_loop_inputs(parameters=['a', 'b'])"
 
 
 def test_format_time():

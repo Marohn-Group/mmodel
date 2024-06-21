@@ -215,20 +215,20 @@ class TestModifierMetadata:
 
     @pytest.fixture
     def modifier_with_meta(self):
-        """Closure with arguments and "meta" attribute."""
+        """Closure with arguments and "metadata" attribute."""
 
-        def modifier(value):
-            def mod(func):
+        def mod(value):
+            def wrapper(func):
                 @functools.wraps(func)
                 def wrapped(*args, **kwargs):
                     return func(*args, **kwargs) + value
 
                 return wrapped
 
-            mod.metadata = f"modifier({value})"
-            return mod
+            wrapper.metadata = f"modifier({value})"
+            return wrapper
 
-        return modifier
+        return mod
 
     @pytest.fixture
     def modifier(self):

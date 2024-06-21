@@ -267,7 +267,7 @@ class TestModifiedModel:
         graph: test_graph
         handler: BasicHandler
         modifiers:
-        - loop_input('a')
+        - loop_input(parameter='a')
         
         Modified model."""
         assert str(mod_model_instance) == dedent(mod_model_s)

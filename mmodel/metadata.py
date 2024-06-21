@@ -92,35 +92,18 @@ def format_dictargs(key, value):
     return [f"{key}:"] + elements
 
 
-def modifier_metadata(closure):
+def modifier_metadata(func):
     """Extract metadata from closure, including the name and the arguments.
 
     The order of extraction:
     1. If the object has the "metadata" attribute defined.
-    2. If the closure takes no arguments, the name is the function name.
-    3. If the closure takes arguments, the "metadata" attribute is not defined.
-
-    Note::
-
-        inspect.getclosurevars(closure).nonlocals can only parse values
-        if the value is used in the closure.
+    2. If not, the metadata returns the function name itself.
     """
 
-    if hasattr(closure, "metadata"):
-        return closure.metadata
-    elif not inspect.getclosurevars(closure).nonlocals:
-        return closure.__name__
-
-    else:  # closure takes arguments
-        # In some rare cases, the closure is a nested function.
-        # For example, in the tests, the nested closure reflects the
-        # path of the parent function. Here we remove the nested
-        # parent function name.
-
-        name = closure.__qualname__.rsplit(".<locals>.")[-2]
-        kwargs = inspect.getclosurevars(closure).nonlocals
-        kwargs_str = ", ".join(f"{k}={repr(v)}" for k, v in kwargs.items())
-        return f"{name}({kwargs_str})"
+    if hasattr(func, "metadata"):
+        return func.metadata
+    else:
+        return func.__name__
 
 
 def format_modifierlist(key, value):
