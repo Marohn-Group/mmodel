@@ -30,6 +30,7 @@ Changed
 - Allow adding grouped edges with two lists. The resulting edges are the
   product of two edges. For example, a grouped edge [[a, b], [c, d]] produces
   four edges (a, c), (a, d), (b, c), and (b, d).
+- Change default graph attribute to {graph_type: mmodel}. 
 
 Added
 ^^^^^

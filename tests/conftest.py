@@ -81,7 +81,7 @@ def standard_G():
     ]
 
     G = nx.DiGraph(name="test_graph")
-    G.graph["type"] = "mmodel_graph"  # for comparison
+    G.graph["graph_type"] = "mmodel"  # for comparison
 
     G.add_nodes_from(node_list)
     G.add_edges_from(edge_list)

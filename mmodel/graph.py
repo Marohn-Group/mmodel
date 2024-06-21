@@ -23,7 +23,7 @@ class Graph(nx.DiGraph):
     - The method adds 'signature' to the node attribute.
     """
 
-    graph_attr_dict_factory = {"type": "mmodel_graph"}.copy
+    graph_attr_dict_factory = {"graph_type": "mmodel"}.copy
 
     def set_node_object(self, node_object):
         """Add or update the functions of an existing node."""
