@@ -163,7 +163,7 @@ class HandlerTester:
     def test_node_exception(self, handler_instance):
         """Test when node exception a custom exception is outputted."""
 
-        exception_pattern = """\
+        exception_pattern = r"""\
         An exception occurred when executing node 'log':
         --- exception info ---
         ValueError: math domain error
@@ -176,8 +176,10 @@ class HandlerTester:
 
         Logarithm operation.
         --- input info ---
-        c = 0
-        b = 2"""
+        c = np.int64\(0\)|0
+        b = np.int64\(2\)|2"""
+
+        # for new h5py version, the data type is printed out
 
         with pytest.raises(Exception, match=dedent(exception_pattern)):
             handler_instance(a=-2, d=15, f=1, b=2)
