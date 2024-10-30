@@ -126,7 +126,8 @@ def format_shortdocstring(key, value):
     some module/function has the repr at the first line,
     and some don't.
     Here we try to grab the first line that starts with
-    an upper case and ends with a period.
+    an upper case and ends with a period. If the docstring
+    is improperly formatted, the first line is used.
     """
     if not value:
         return []
@@ -135,9 +136,10 @@ def format_shortdocstring(key, value):
         line = line.strip()
         if line and line[0].isupper() and line.endswith("."):
             doc = line
-            break
+            return [f"{doc}"]
 
-    return [f"{doc}"]
+    return value.splitlines()[:1]
+    
 
 
 def format_returns(key, value):

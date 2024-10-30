@@ -156,9 +156,20 @@ class TestFormatFunction:
             This is the extended part of docstring."""
             return
 
+        def test_incorrect_docstring():
+            """this is a short docstring without a period
+            this is a short docstring without capital letter."""
+            return
+
         assert meta.format_shortdocstring("test", test_func.__doc__) == [
             "This is a short docstring."
         ]
+
+        # incorrect docstring
+        assert meta.format_shortdocstring("test", test_incorrect_docstring.__doc__) == [
+            "this is a short docstring without a period"
+        ]
+
         # built-in
         assert meta.format_shortdocstring("test", operator.add.__doc__) == [
             "Same as a + b."
