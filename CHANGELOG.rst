@@ -22,11 +22,9 @@ Fixed
 Changed
 ^^^^^^^
 
-- Change the Node class "inputs" to "arglist" and "kwarglist".
-    - "arglist" can replace all positional-only, positional-or-keyword, and
-      var-positional parameters.
-    - "kwarglist" can selectively choose keyword-only arguments, and add
-      additional keyword arguments to replace var-keyword parameters.
+- Change the Node class "inputs" bahaviors.
+    - "inputs" can be used to explicitly define *arg, and **kwargs by adding "*" as
+      a separator.
 - Allow adding grouped edges with two lists. The resulting edges are the
   product of two edges. For example, a grouped edge [[a, b], [c, d]] produces
   four edges (a, c), (a, d), (b, c), and (b, d).

@@ -26,8 +26,7 @@ class TestSetNodeObject:
             "func_a",
             func,
             output="o",
-            arglist=["a", "b"],
-            kwarglist=["c"],
+            inputs=["a", "b", "*", "c"],
             modifiers=[value_modifier(value=1)],
             add_attr="additional attribute",
         )
@@ -46,8 +45,7 @@ class TestSetNodeObject:
         assert node.node_func(a=1, b=2, c=3) == 1  # kw only
         assert node(1, 2, c=3) == 1
         assert node.output == "o"
-        assert node.arglist == ["a", "b"]
-        assert node.kwarglist == ["c"]
+        assert node.inputs == ["a", "b", "*", "c"]
         assert (
             node.modifiers[0].__qualname__
             == "value_modifier.<locals>.add_value.<locals>.mod"
@@ -78,19 +76,18 @@ class TestSetNodeObject:
         """Test edit node."""
 
         new_node = node.edit(
-            func=np.min, output="new_o", arglist=["array"], doc="new doc"
+            func=np.min, output="new_o", inputs=["array"], doc="new doc"
         )
 
         assert new_node.output == "new_o"
-        assert new_node.arglist == ["array"]
-        assert new_node.kwarglist == []
+        assert new_node.inputs == ["array"]
         assert new_node([5, 20]) == 6  # the modifier is the same
         assert new_node.add_attr == "additional attribute"
         assert new_node.doc == "new doc"
         assert new_node.functype == "numpy._ArrayFunctionDispatcher"
 
     def test_node_property(self, node):
-        """Test if node modifiers and arglist are copies.
+        """Test if node modifiers and inputs are copies.
 
         Modification to these attributes should not affect the original node.
         """
@@ -99,13 +96,9 @@ class TestSetNodeObject:
         node.modifiers.append(1)
         assert len(node.modifiers) == 1
 
-        assert node.arglist is not node.arglist
-        node.arglist.append("f")
-        assert node.arglist == ["a", "b"]
-
-        assert node.kwarglist is not node.kwarglist
-        node.kwarglist.append("f")
-        assert node.kwarglist == ["c"]
+        assert node.inputs is not node.inputs
+        node.inputs.append("f")
+        assert node.inputs == ["a", "b", "*", "c"]
 
 
 class TestNodeConstruction:
@@ -118,7 +111,7 @@ class TestNodeConstruction:
         """
 
         new_node_obj = Node(
-            "func_a", func, output="o", arglist=["a", "b"], foo="bar", doc="foo"
+            "func_a", func, output="o", inputs=["a", "b"], foo="bar", doc="foo"
         )
 
         assert new_node_obj.foo == "bar"
@@ -207,7 +200,7 @@ class TestSignatureModification:
     def test_ufunc_with_keyword(self):
         """Test node object argument_list for builtin func."""
 
-        node = Node("Test", np.sum, arglist=["array"])
+        node = Node("Test", np.sum, inputs=["array"])
 
         assert node.signature == Signature([Parameter("array", 1)])
         assert node([1, 2]) == 3.0

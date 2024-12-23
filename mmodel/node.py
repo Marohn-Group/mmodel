@@ -11,8 +11,7 @@ class Node:
         self,
         name,
         func,
-        arglist=None,
-        kwarglist=None,
+        inputs=None,
         output=None,
         modifiers=None,
         **kwargs,
@@ -21,15 +20,15 @@ class Node:
         self.name = self.__name__ = name
         self.output = output
 
-        self._arglist = arglist or []
-        self._kwarglist = kwarglist or []
+        self._inputs = inputs or []
+        # self._kwarglist = kwarglist or []
         self._modifiers = modifiers or []
 
         self.func = func
         self.functype = parse_functype(func)
         self.doc = func.__doc__
 
-        self._base_func = self.convert_func(func, self._arglist, self._kwarglist)
+        self._base_func = self.convert_func(func, self._inputs)
         self._node_func = modify_func(self._base_func, self._modifiers)
 
         # kwargs can overwrite values like doc, functype, etc.
@@ -51,7 +50,7 @@ class Node:
         """Return signature."""
         return self.__signature__
 
-    def convert_func(self, func, arglist, kwarglist):
+    def convert_func(self, func, inputs_list):
         """Convert function to a node function.
 
         To replace the positional or positional-or-keyword parameters,
@@ -63,20 +62,25 @@ class Node:
         For functions that already fit the criteria and have no argument
         list, we still wrap the function. The overhead is minimal.
         """
-        param_list = get_parameters(func)
-        node_sig = get_node_signature(param_list, arglist, kwarglist)
+        base_params = get_parameters(func)
+        node_sig = get_node_signature(base_params, inputs_list)
 
         return convert_func(func, node_sig)
 
-    @property
-    def arglist(self):
-        """Return a copy of arglist."""
-        return self._arglist.copy()
 
     @property
-    def kwarglist(self):
-        """Return a copy of kwarglist."""
-        return self._kwarglist.copy()
+    def inputs(self):
+        """Return a copy of inputs."""
+        return self._inputs.copy()
+    # @property
+    # def arglist(self):
+    #     """Return a copy of arglist."""
+    #     return self._arglist.copy()
+
+    # @property
+    # def kwarglist(self):
+    #     """Return a copy of kwarglist."""
+    #     return self._kwarglist.copy()
 
     @property
     def modifiers(self):
@@ -88,14 +92,15 @@ class Node:
 
         con_dict = construction_dict(
             self,
-            ["arglist", "kwarglist", "modifiers"],
+            ["inputs", "modifiers"],
             ["functype", "doc", "node_func"],
         )
 
         # if the the function is updated, the inputs are reset
         if "func" in kwargs:
-            kwargs["arglist"] = kwargs.get("arglist", None)
-            kwargs["kwarglist"] = kwargs.get("kwarglist", None)
+            kwargs["inputs"] = kwargs.get("inputs", None)
+            # kwargs["arglist"] = kwargs.get("arglist", None)
+            # kwargs["kwarglist"] = kwargs.get("kwarglist", None)
 
         con_dict.update(kwargs)
 

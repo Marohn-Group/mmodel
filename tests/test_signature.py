@@ -132,21 +132,22 @@ class TestNodeSignature:
 
     def test_check_kwargs_with_var_kw(self, param_set1):
         """Test the check_kwargs function."""
+#               Parameter("pos_only", 0),
+#             Parameter("pos_or_kw", 1),
+#             Parameter("var_pos", 2),
+#             Parameter("kw_only", 3),
+#             Parameter("var_kw", 4),
+
 
         # regular replacement with the same name
         assert check_kwargs(param_set1, ["kw_only"])
         # allow for other keyword arguments with var_kw
         assert check_kwargs(param_set1, ["kw_only", "a", "b"])
 
-        # incorrect keyword argument key match
-        with pytest.raises(
-            Exception, match=r"missing required keyword argument\(s\): kw_only"
-        ):
-            check_kwargs(param_set1, ["a"])
 
         # check the minimum length
         with pytest.raises(
-            Exception, match=r"missing required keyword argument\(s\): kw_only"
+            Exception, match=r"not enough keyword arguments, minimum 1 but got 0"
         ):
             check_kwargs(param_set1, [])
 
@@ -156,13 +157,13 @@ class TestNodeSignature:
         assert check_kwargs(param_set2, ["kw_only"])
         # not allow more than 2 parameters
         with pytest.raises(
-            Exception, match=r"invalid keyword argument\(s\): (a|b), (b|a)"
+            Exception, match=r"too many keyword arguments, maximum 1 but got 3"
         ):
             assert check_kwargs(param_set2, ["kw_only", "a", "b"])
 
         # check the minimum length
         with pytest.raises(
-            Exception, match=r"missing required keyword argument\(s\): kw_only"
+            Exception, match=r"not enough keyword arguments, minimum 1 but got 0"
         ):
             check_kwargs(param_set2, [])
 
@@ -173,19 +174,18 @@ class TestNodeSignature:
         # allow for 1 arguments due to one default value
         assert check_kwargs(param_set3, ["kw_only1", "kw_only2"])
 
-        # keyword argument key match
-        with pytest.raises(
-            Exception, match=r"invalid keyword argument\(s\): (a|b), (b|a)"
-        ):
-            check_kwargs(param_set3, ["a", "b"])
-
         # check the minimum length
         with pytest.raises(
-            Exception,
-            match=r"missing required keyword argument\(s\): "
-            r"(kw_only1, kw_only2|kw_only2, kw_only1)",
+            Exception, match=r"not enough keyword arguments, minimum 2 but got 1"
         ):
-            check_kwargs(param_set3, [])
+            check_kwargs(param_set3, ["a"])
+
+        # check the maximum length
+        with pytest.raises(
+            Exception,
+            match=r"too many keyword arguments, maximum 3 but got 4"
+        ):
+            check_kwargs(param_set3, ["a", "b", "c", "d"])
 
     def test_check_kwargs_with_var_kw_only(self, param_set4):
         """Test the check_kwargs function with only var_kw in signature."""
@@ -200,7 +200,7 @@ class TestNodeSignature:
     ):
         """Test the get_node_signature function."""
 
-        assert get_node_signature(param_set1, [], []) == Signature(
+        assert get_node_signature(param_set1, []) == Signature(
             [
                 Parameter("pos_only", 0),
                 Parameter("pos_or_kw", 1),
@@ -208,7 +208,7 @@ class TestNodeSignature:
             ]
         )
 
-        assert get_node_signature(param_set2, [], []) == Signature(
+        assert get_node_signature(param_set2, []) == Signature(
             [
                 Parameter("pos_only", 0),
                 Parameter("pos_or_kw", 1),
@@ -216,7 +216,7 @@ class TestNodeSignature:
             ]
         )
 
-        assert get_node_signature(param_set3, [], []) == Signature(
+        assert get_node_signature(param_set3, []) == Signature(
             [
                 Parameter("pos_only", 0),
                 Parameter("pos_or_kw1", 1),
@@ -225,7 +225,7 @@ class TestNodeSignature:
             ]
         )
 
-        assert get_node_signature(param_set4, [], []) == Signature()
+        assert get_node_signature(param_set4, []) == Signature()
 
     def test_get_node_signature_with_arugment_lists(
         self, param_set1, param_set2, param_set3, param_set4
@@ -233,7 +233,7 @@ class TestNodeSignature:
         """Test the get_node_signature function with argument lists."""
 
         assert get_node_signature(
-            param_set1, ["a", "b", "c"], ["kw_only", "d"]
+            param_set1, ["a", "b", "c", "*", "kw_only", "d"]
         ) == Signature(
             [
                 Parameter("a", 1),
@@ -244,7 +244,7 @@ class TestNodeSignature:
             ]
         )
 
-        assert get_node_signature(param_set2, ["a", "b"], ["kw_only"]) == Signature(
+        assert get_node_signature(param_set2, ["a", "b", "*", "kw_only"]) == Signature(
             [
                 Parameter("a", 1),
                 Parameter("b", 1),
@@ -253,7 +253,7 @@ class TestNodeSignature:
         )
 
         assert get_node_signature(
-            param_set3, ["a", "b"], ["kw_only1", "kw_only2"]
+            param_set3, ["a", "b", "*", "kw_only1", "kw_only2"]
         ) == Signature(
             [
                 Parameter("a", 1),
@@ -264,7 +264,7 @@ class TestNodeSignature:
         )
 
         assert get_node_signature(
-            param_set3, ["a", "b", "c"], ["kw_only1", "kw_only2", "kw_only3"]
+            param_set3, ["a", "b", "c", "*", "kw_only1", "kw_only2", "kw_only3"]
         ) == Signature(
             [
                 Parameter("a", 1),
@@ -276,7 +276,7 @@ class TestNodeSignature:
             ]
         )
 
-        assert get_node_signature(param_set4, ["a", "b"], ["c", "d"]) == Signature(
+        assert get_node_signature(param_set4, ["a", "b", "*", "c", "d"]) == Signature(
             [
                 Parameter("a", 1),
                 Parameter("b", 1),
