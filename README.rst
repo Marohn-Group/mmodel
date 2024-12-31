@@ -42,16 +42,23 @@ the definition also works.)
         ("log", "function node"),
     ]
 
-The functions are then added to node attributes. The order of definition
-is node_name, node_func, output, input (if different from original function),
-and modifiers.
+To add node objects to each node we can use the ``add_node`` method from
+the *NetworkX* graph class. *mmodel* provides a way to add a node object to
+each node with the ``Node`` class. The class takes the node name, function,
+positional inputs, keyword inputs, output, and modifiers as arguments.
+
+Partically, the positional inputs and keyword inputs are used to replace
+the original function inputs if necessary. The inputs are given as lists.
+
+The node object can be added to the graph using the ``set_node_object``. The
+``set_node_objects_from`` method is used for multiple nodes.
 
 .. code-block:: python
 
     # define note objects
     node_objects = [
-        Node("add", np.add, ["x", "y"], "sum_xy"),
-        Node("log", math.log,  ["sum_xy", "log_base"], "log_xy"),
+        Node("add", np.add, inputs=["x", "y"], output="sum_xy"),
+        Node("log", math.log, inputs=["sum_xy", "log_base"], output="log_xy"),
         Node("function node", func, output="result"),
     ]
 
@@ -61,7 +68,8 @@ and modifiers.
 
 To define the model, the name, graph, and handler need to be specified. Additional
 parameters include modifiers, descriptions, and returns lists. The input parameters
-of the model are determined based on the node information.
+of the model are determined based on the node function parameter signature,
+or custom signature can be provides using the ``inputs`` parameter. 
 
 .. code-block:: python
 
@@ -71,6 +79,9 @@ The model behaves like a Python function with additional metadata. The graph can
 be plotted using the ``visualize`` method.
 
 .. code-block:: python
+
+    >>> example_model
+    <mmodel.model.Model 'example_model'>
 
     >>> print(example_model)
     example_model(log_base, x, y)
@@ -132,9 +143,9 @@ We can inspect the loop node as well as the new model.
     >>> print(looped_model.get_node_object("loop_node"))
     submodel(log_base, sum_xy)
     return: looped_z
-    functype: <class 'mmodel.model.Model'>
+    functype: mmodel.model.Model
     modifiers:
-    - loop_input('log_base')
+    - loop_input(parameter='log_base')
 
     >>> looped_model([2, 4], 5, 3) # (5 + 3)log(5 + 3, 2) + 6
     [30.0, 18.0]
