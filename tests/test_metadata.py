@@ -220,6 +220,11 @@ class TestFormatFunction:
 
         assert meta.format_obj_name("a", SNs(a=1)) == ["a: namespace(a=1)"]
 
+    def test_format_dictkeys(self):
+        """Test format_dictkeys function."""
+
+        assert meta.format_dictkeys("a", {"b": 1, "c": "str"}) == ["a: ['b', 'c']"]
+
 
 class TestModifierMetadata:
     """Test modifier metadata functions."""

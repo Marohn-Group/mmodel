@@ -139,7 +139,6 @@ def format_shortdocstring(key, value):
             return [f"{doc}"]
 
     return value.splitlines()[:1]
-    
 
 
 def format_returns(key, value):
@@ -187,6 +186,18 @@ def format_obj_name(key, value):
     return [f"{key}: {name}"]
 
 
+def format_dictkeys(key, value):
+    """Formating function that only shows dictionary keys.
+
+    If the value dictionary is empty return None.
+    """
+
+    if value:
+        return [f"{key}: {list(value.keys())}"]
+    else:
+        return [f"{key}: None"]
+
+
 # customized textwrapper
 wrapper80 = TextWrapper(
     width=80,
@@ -210,6 +221,7 @@ modelformatter = MetaDataFormatter(
     [
         "self",
         "returns",
+        "group",
         "graph",
         "handler",
         "handler_kwargs",
@@ -231,4 +243,17 @@ nodeformatter = MetaDataFormatter(
     },
     ["name", "_", "node_func", "output", "functype", "modifiers", "_", "doc"],
     wrapper80,
+)
+
+modelgroupformatter = MetaDataFormatter(
+    {
+        "name": format_value,
+        "models": format_dictkeys,
+        "nodes": format_dictkeys,
+        "model_defaults": format_dictargs,
+        "doc": format_value,
+    },
+    ["name", "models", "nodes", "model_defaults", "_", "doc"],
+    wrapper80,
+    ["model_defaults", "nodes"],
 )
