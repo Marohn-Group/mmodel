@@ -28,8 +28,10 @@ Indices and tables
    :caption: Tutorial
    :hidden:
 
+   tutorial_node
    tutorial_graph
    tutorial_model
+   tutorial_group
    tutorial_modifier
    tutorial_subgraph
 
@@ -39,7 +41,6 @@ Indices and tables
    :caption: API Guideline
    :hidden:
 
-   api_signature
    api_handler
    api_modifier
 

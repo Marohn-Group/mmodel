@@ -18,12 +18,12 @@ sys.path.insert(0, os.path.abspath(".."))
 
 # -- Project information -----------------------------------------------------
 
-project = 'MModel'
-copyright = '2022 - 2024, Peter Sun'
+project = 'mmodel'
+copyright = '2022 - 2025, Peter Sun'
 author = 'Peter Sun'
 
 # The full version, including alpha/beta/rc tags
-release = '0.7.0'
+release = '0.8.0'
 
 
 # -- General configuration ---------------------------------------------------

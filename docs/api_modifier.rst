@@ -53,8 +53,8 @@ requires an iterable input. Under the ``loop_wrapped`` function, the loop parame
 isolated, and the function loops over the iterable to create a list result.
 
 Notice that the ``loop_wrapped`` function takes keyword-only arguments. The decision
-is made to reduce the overhead of the function call. All nodes in the Model are supplied
-with keyword-only arguments. See :doc:`signature API </api_signature>` for more information.
+is made to reduce the overhead of the function call. All modifiers should have
+keyword-only arguments.
 
 .. Note::
 
