@@ -28,13 +28,15 @@ Changed
 - Allow adding grouped edges with two lists. The resulting edges are the
   product of two edges. For example, a grouped edge [[a, b], [c, d]] produces
   four edges (a, c), (a, d), (b, c), and (b, d).
-- Change default graph attribute to {graph_type: mmodel}. 
+- Change default graph attribute to {graph_type: mmodel}.
+- Change instance representation to show names of instance in nodes, graphs, models and model groups.
 
 Added
 ^^^^^
 
 - Add property "grouped_edges" to the Graph class that returns a list of grouped edges.
 - Add "modifier" decorator for wrapped modifier functions to provide additional information and metadata.
+- Add ``ModelGroup`` class that can group multiple model defintion together.
 
 [0.7.0]
 ------------
