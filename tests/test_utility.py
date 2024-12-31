@@ -263,3 +263,58 @@ def test_parse_functype(func):
     assert util.parse_functype(operator.add) == "builtin_function_or_method"
     assert util.parse_functype(np.sum) == "numpy._ArrayFunctionDispatcher"
     assert util.parse_functype(np.add) == "numpy.ufunc"
+
+
+def test_EditMixin_init_dict():
+    """Test EditMixin init_keys and init_dict."""
+
+    class ExampleClass(util.EditMixin):
+        def __init__(self, a, b, **kwargs):
+            self.a = a
+            self.b = b
+            self.kwargs = kwargs
+
+    obj = ExampleClass(1, 2)
+    assert obj._init_dict == {"a": 1, "b": 2}
+
+    obj = ExampleClass(1, b=2)
+    assert obj._init_dict == {"a": 1, "b": 2}
+
+    obj = ExampleClass(1, 2, c=4)
+    assert obj._init_dict == {"a": 1, "b": 2, "c": 4}
+
+
+def test_EditMixin_edit_dict():
+    """Test EditMixin init_dict."""
+
+    class ExampleClass(util.EditMixin):
+        def __init__(self, a, b, **kwargs):
+            self.a = a
+            self.b = b
+            self.kwargs = kwargs
+
+    obj = ExampleClass(1, 2, c=4)
+    assert obj.edit_dict == {"a": 1, "b": 2, "c": 4}
+    obj.c = 5
+    assert obj.edit_dict == {"a": 1, "b": 2, "c": 5}
+
+
+def test_ReprMixin():
+    """Test ReprMixin."""
+
+    class ExampleClass(util.ReprMixin):
+        def __init__(self, name):
+            self.name = name
+
+    obj = ExampleClass("test_object")
+    assert repr(obj) == "<tests.test_utility.ExampleClass 'test_object'>"
+
+def test_ReprMixin_without_name():
+    """Test ReprMixin without name attribute."""
+
+    class ExampleClass(util.ReprMixin):
+        def __init__(self):
+            pass
+
+    obj = ExampleClass()
+    assert repr(obj) == "<tests.test_utility.ExampleClass>"

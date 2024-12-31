@@ -276,6 +276,10 @@ class TestGraphBasics:
 
         assert str(mmodel_G.nodes["log"]["node_object"]) == dedent(node_s)
 
+    def test_repr_representation(self, mmodel_G):
+        """Test the repr representation of the graph."""
+
+        assert repr(mmodel_G) == "<mmodel.graph.Graph 'test_graph'>"
 
 class TestNetworkXGraphOperation:
     """Test the copy, deepcopy, chain, subgraph, subgraph copy based on networkx."""

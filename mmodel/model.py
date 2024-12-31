@@ -1,9 +1,10 @@
 from mmodel.utility import (
     modify_func,
-    construction_dict,
     is_node_attr_defined,
     is_edge_attr_defined,
     modelgraph_returns,
+    EditMixin,
+    ReprMixin,
 )
 
 import networkx as nx
@@ -13,7 +14,7 @@ from inspect import signature
 from mmodel.visualizer import visualizer
 
 
-class Model:
+class Model(EditMixin, ReprMixin):
     """Create the model callable.
 
     :param str name: Model name
@@ -190,9 +191,7 @@ class Model:
         if "graph" in kwargs and "returns" not in kwargs:
             kwargs["returns"] = None
 
-        constructor_dict = construction_dict(
-            self, ["graph", "returns", "modifiers", "handler_kwargs", "defaults"]
-        )
-        constructor_dict.update(kwargs)
+        edit_dict = self.edit_dict
+        edit_dict.update(kwargs)
 
-        return self.__class__(**constructor_dict)
+        return self.__class__(**edit_dict)

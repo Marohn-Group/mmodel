@@ -1,10 +1,15 @@
 from mmodel.signature import convert_func, get_node_signature, get_parameters
 from mmodel.metadata import nodeformatter
-from mmodel.utility import construction_dict, modify_func, parse_functype
+from mmodel.utility import (
+    modify_func,
+    parse_functype,
+    EditMixin,
+    ReprMixin,
+)
 from inspect import signature
 
 
-class Node:
+class Node(EditMixin, ReprMixin):
     """A node class that formats node function and metadata."""
 
     def __init__(
@@ -67,20 +72,10 @@ class Node:
 
         return convert_func(func, node_sig)
 
-
     @property
     def inputs(self):
         """Return a copy of inputs."""
         return self._inputs.copy()
-    # @property
-    # def arglist(self):
-    #     """Return a copy of arglist."""
-    #     return self._arglist.copy()
-
-    # @property
-    # def kwarglist(self):
-    #     """Return a copy of kwarglist."""
-    #     return self._kwarglist.copy()
 
     @property
     def modifiers(self):
@@ -90,21 +85,14 @@ class Node:
     def edit(self, **kwargs):
         """Edit node. A new node object is created."""
 
-        con_dict = construction_dict(
-            self,
-            ["inputs", "modifiers"],
-            ["functype", "doc", "node_func"],
-        )
-
         # if the the function is updated, the inputs are reset
         if "func" in kwargs:
             kwargs["inputs"] = kwargs.get("inputs", None)
-            # kwargs["arglist"] = kwargs.get("arglist", None)
-            # kwargs["kwarglist"] = kwargs.get("kwarglist", None)
 
-        con_dict.update(kwargs)
+        edit_dict = self.edit_dict
+        edit_dict.update(kwargs)
 
-        return self.__class__(**con_dict)
+        return self.__class__(**edit_dict)
 
     def __call__(self, *args, **kwargs):
         """Node function callable.

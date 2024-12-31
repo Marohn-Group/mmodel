@@ -33,6 +33,7 @@ class TestModel:
         assert model_instance.order == ("add", "subtract", "power", "log", "multiply")
         # doc works for inspect.getdoc and help()
         assert inspect.getdoc(model_instance) == model_instance.doc
+        assert repr(model_instance) == "<mmodel.model.Model 'model_instance'>"
 
     def test_model_str(self, model_instance):
         """Test model representation."""

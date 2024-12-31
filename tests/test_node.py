@@ -55,6 +55,7 @@ class TestSetNodeObject:
         assert node.__signature__ == node.signature
         assert node.doc == "Base function."
         assert node.add_attr == "additional attribute"
+        assert repr(node) == "<mmodel.node.Node 'func_a'>"
 
     def test_str_representation(self, node):
         """Test if view node outputs node information correctly."""

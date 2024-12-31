@@ -2,12 +2,12 @@ import networkx as nx
 from mmodel.visualizer import plain_visualizer
 from copy import deepcopy
 from mmodel.filter import subnodes_by_inputs, subnodes_by_outputs
-from mmodel.utility import replace_subgraph
+from mmodel.utility import replace_subgraph, ReprMixin
 from itertools import product
 from collections import defaultdict
 
 
-class Graph(nx.DiGraph):
+class Graph(nx.DiGraph, ReprMixin):
     """Create model graphs.
 
     mmodel.Graph inherits from `networkx.DiGraph()`.
