@@ -285,7 +285,7 @@ class TestModifiedModel:
         assert new_model.returns == ["k", "m"]
         assert new_model(a_loop=[1, 2], d=15, f=1) == [(-36, math.log2(3)), (-44, 2)]
 
-    def test_model_edit_node(self, mod_model_instance):
+    def test_model_edit_node_exception(self, mod_model_instance):
         """Test if the edit method resets edge attribute if incorrect."""
 
         with pytest.raises(
