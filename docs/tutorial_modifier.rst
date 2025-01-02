@@ -3,7 +3,9 @@ Modify nodes and models
 
 Traditionally, to modify a component of a pre-defined model, one has to rewrite the
 code. The approach is error-prone and not scalable. *mmodel* uses DAG to create
-modular models that allow easy modification of nodes and models post-definition using modifiers. A modifier is a decorator that can modify the function of a node or the model itself.  For example, to add a loop modifier to the node "add":
+modular models that allow easy modification of nodes and models post-definition using modifiers.
+A modifier is a decorator that can modify the function of a node or the model itself. 
+For example, to add a loop modifier to the node "add":
 
 .. code-block:: python
 
@@ -44,5 +46,27 @@ Modifier chaining
 Because the modifiers are decorators, they can be chained. The modifiers in the
 list are applied in the order of the ``modifiers`` argument.
 
-See :doc:`modifier API </api_modifier>` for modifier API,
-and `modifier reference </ref_modifier>` for all available modifiers.
+
+Available modifiers
+-------------------
+
+.. list-table:: Available modifiers
+    :widths: 10 10 90
+    :header-rows: 1
+
+    * - Modifier
+      - Module
+      - Description
+    * - :mod:`loop_input <mmodel.modifier.loop_input>`
+      - :mod:`mmodel.modifier`
+      - Modify function to iterate one given parameter.
+    * - :mod:`zip_loop_inputs <mmodel.modifier.zip_loop_inputs>`
+      - :mod:`mmodel.modifier`
+      - Modify function to iterate the parameters pairwise.
+    * - :mod:`profile_time <mmodel.modifier.profile_time>`
+      - :mod:`mmodel.modifier`
+      - Profile the execution time of a function.
+
+
+See :doc:`modifier API </api_modifier>` for modifier API to create custom modifiers.
+See `modifier reference </ref_modifier>` for all available modifiers.
