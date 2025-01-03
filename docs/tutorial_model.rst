@@ -95,3 +95,22 @@ output for the model. All other handler parameters can be directly passed
 as keyword arguments.
 
 See :doc:`handler reference </ref_handler>` for all available handlers. 
+
+Apply defaults to parameters
+------------------------------
+
+Any parameter default values should be applied at the model level.
+To add default values, use the "param_defaults" argument:
+
+.. code-block:: python
+
+    model = Model(name='model', graph=G, handler=MemHandler, doc="Test model.",
+                  param_defaults={"log_base": 10})
+
+    >>> print(model)
+    model(x, y, log_base=10)
+    returns: result
+    graph: example_graph
+    handler: MemHandler
+
+    Test model.

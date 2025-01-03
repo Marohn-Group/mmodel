@@ -201,7 +201,7 @@ class TestModel:
             "model_instance",
             mmodel_G,
             BasicHandler,
-            defaults={"a": 10, "b": 2},
+            param_defaults={"a": 10, "b": 2},
             doc="Old doc",
             add_args="additional arguments",
         )
@@ -214,7 +214,7 @@ class TestModel:
         assert new_model.__doc__ == "Model description."
         assert new_model.handler == MemHandler
         assert model.graph is not new_model.graph
-        assert model.defaults == new_model.defaults
+        assert model.param_defaults == new_model.param_defaults
         assert new_model.add_args == "additional arguments"
         assert new_model(a=10, d=15, f=1, b=2) == (-36, math.log(12, 2))
 
@@ -225,7 +225,7 @@ class TestModel:
             "model_instance",
             mmodel_G,
             BasicHandler,
-            defaults={"a": 10, "b": 2},
+            param_defaults={"a": 10, "b": 2},
         )
         assert list(model.signature.parameters.keys()) == ["d", "f", "a", "b"]
         assert model(d=15, f=1) == (-36, math.log(12, 2))

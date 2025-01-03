@@ -30,6 +30,7 @@ Changed
   four edges (a, c), (a, d), (b, c), and (b, d).
 - Change default graph attribute to {graph_type: mmodel}.
 - Change instance representation to show names of instance in nodes, graphs, models and model groups.
+- Change the "defaults" parameter to "param_defaults" in the Model class to avoid naming collision.
 
 Added
 ^^^^^
