@@ -16,7 +16,7 @@ class ModelGroup(EditMixin, ReprMixin):
     """
 
     model_type = Model
-    graph_type = Graph
+    graph_module = Graph
 
     def __init__(
         self,
@@ -62,7 +62,7 @@ class ModelGroup(EditMixin, ReprMixin):
         model_args = model_args.copy()
 
         edges = model_args.pop("grouped_edges")
-        G = self.graph_type(name=f"{name}_graph")
+        G = self.graph_module(name=f"{name}_graph")
         G.add_grouped_edges_from(edges)
 
         node_obj_list = []

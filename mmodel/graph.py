@@ -13,10 +13,10 @@ class Graph(nx.DiGraph, ReprMixin):
 
     mmodel.Graph inherits from `networkx.DiGraph()`.
 
-    The class adds the "graph_type" and "node_type" attribute to
+    The class adds the "graph_module" and "node_type" attribute to
     the graph attribute. The factory method
     returns a copy of the dictionary. It is equivalent to
-    ``{"graph_type": "mmodel_graph", "node_type": Node}.copy()``
+    ``{"graph_module": "mmodel_graph", "node_type": Node}.copy()``
     when called.
 
     The additional graph operations are added:
@@ -25,7 +25,7 @@ class Graph(nx.DiGraph, ReprMixin):
     - Method ``set_node_object`` updates nodes with the node callable "func" and output.
     """
 
-    graph_attr_dict_factory = {"graph_type": "mmodel", "node_type": Node}.copy
+    graph_attr_dict_factory = {"graph_module": "mmodel", "node_type": Node}.copy
 
     def set_node_object(self, node_object):
         """Add or update the functions of an existing node."""

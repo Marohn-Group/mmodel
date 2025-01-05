@@ -22,13 +22,13 @@ Fixed
 Changed
 ^^^^^^^
 
-- Change the Node class "inputs" bahaviors.
+- Change the Node class "inputs" behaviors.
     - "inputs" can be used to explicitly define *arg, and **kwargs by adding "*" as
       a separator.
 - Allow adding grouped edges with two lists. The resulting edges are the
   product of two edges. For example, a grouped edge [[a, b], [c, d]] produces
   four edges (a, c), (a, d), (b, c), and (b, d).
-- Change default graph attribute to {graph_type: mmodel}.
+- Change default graph attribute to {graph_module: 'mmodel'}.
 - Change instance representation to show names of instance in nodes, graphs, models and model groups.
 - Change the "defaults" parameter to "param_defaults" in the Model class to avoid naming collision.
 
@@ -37,8 +37,8 @@ Added
 
 - Add property "grouped_edges" to the Graph class that returns a list of grouped edges.
 - Add "modifier" decorator for wrapped modifier functions to provide additional information and metadata.
-- Add ``ModelGroup`` class that can group multiple model defintion together.
-- Add the "shortcut" module and two shortcuts ``print_shortcut`` and ``loop_shortcut``.
+- Add ``ModelGroup`` class that can group multiple model definition together.
+- Add "shortcut" module and two shortcuts ``print_shortcut`` and ``loop_shortcut``.
 
 [0.7.0]
 ------------
@@ -77,7 +77,7 @@ Changed
 Removed
 ^^^^^^^
 
-- Remove ``shorcut`` module.
+- Remove ``shortcut`` module.
 
 Added
 ^^^^^
