@@ -161,7 +161,7 @@ class TestModel:
         # the output of the path is the repr instead of the string
         assert "handler: H5Handler" in str(h5model)
         assert "handler_kwargs" in str(h5model)
-        assert re.search(r"- fname: .*? \[\.\.\.\]", str(h5model))
+        assert re.search(r"- fname: .*? \.\.\.", str(h5model))
 
     def test_model_returns_order(self, mmodel_G):
         """Test model with custom returns order.

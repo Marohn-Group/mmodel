@@ -6,6 +6,7 @@ from mmodel.group import ModelGroup
 from mmodel.handler import BasicHandler
 import pytest
 from textwrap import dedent
+from mmodel.modifier import loop_input
 
 
 @pytest.fixture
@@ -94,6 +95,13 @@ def test_group_str_representation(node_objects, grouped_edges):
     test_group_object
     models: ['test']
     nodes: ['add', 'subtract', 'power', 'multiply', 'log']
+    model_defaults: {
+    list_attr: ['a', 'b']
+    long_string: this is a very long string that need to be replaced with a ...
+    modifiers:
+    - loop_input(parameter='d')
+    - loop_input(parameter='d')
+    }
 
     Test group description."""
 
@@ -102,10 +110,17 @@ def test_group_str_representation(node_objects, grouped_edges):
         "doc": "Test instruction.",
         "handler": BasicHandler,
     }
+    model_defaults = {
+        "list_attr": ["a", "b"],
+        "long_string": "this is a very long string that need to "
+        "be replaced with a placeholder",
+        "modifiers": [loop_input("d"), loop_input("d")],
+    }
     group = ModelGroup(
         "test_group_object",
         node_objects,
         {"test": instruction},
+        model_defaults,
         doc="Test group description.",
     )
 
@@ -116,7 +131,7 @@ def test_group_str_representation(node_objects, grouped_edges):
     models: None
     nodes: ['add', 'subtract', 'power', 'multiply', 'log']"""
 
-    group = ModelGroup("test_group", node_objects, "")
+    group = ModelGroup("test_group", node_objects, doc="")
     assert str(group) == dedent(group_str)
 
 

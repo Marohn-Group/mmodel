@@ -7,10 +7,11 @@ from dataclasses import dataclass, field
 class MetaDataFormatter:
     """Metadata Formatter."""
 
-    format_dict: dict
+    formatter_dict: dict
     meta_order: list
     text_wrapper: callable
     shorten_list: list = field(default_factory=list)
+    shorten_placeholder: str = " ..."
 
     def __call__(self, obj):
         """Convert metadata dictionary to string.
@@ -19,7 +20,7 @@ class MetaDataFormatter:
         If the formatter is not found in the formatter dictionary,
         the default string output is "key: value".
 
-        :param dict format_dict: format function dictionary
+        :param dict formatter_dict: format function dictionary
         :param list meta_order: metadata key order, entry is None if linebreak needed.
             Defaults to dictionary key order.
         """
@@ -36,8 +37,8 @@ class MetaDataFormatter:
                 value = getattr(obj, key, None)
 
             # the format functions return a list, for potential multi-liners strings
-            if key in self.format_dict:
-                entry = self.format_dict[key](key, value)
+            if key in self.formatter_dict:
+                entry = self.formatter_dict[key](key, value)
             elif value:
                 entry = [f"{key}: {value}"]
             else:
@@ -45,7 +46,14 @@ class MetaDataFormatter:
 
             if key in self.shorten_list:
                 # replace the original list
-                entry = [shorten(ele, width=self.text_wrapper.width) for ele in entry]
+                entry = [
+                    shorten(
+                        ele,
+                        width=self.text_wrapper.width,
+                        placeholder=self.shorten_placeholder,
+                    )
+                    for ele in entry
+                ]
 
             metadata_list.extend(entry)
 
@@ -75,7 +83,6 @@ def format_list(key, value):
     """Format the metadata value that is a list."""
 
     if not value:
-        # return [f"{key}: []"]
         return []
     elements = [f"\t- {v}" for v in value]
     return [f"{key}:"] + elements
@@ -245,12 +252,32 @@ nodeformatter = MetaDataFormatter(
     wrapper80,
 )
 
+
+def format_group_content(key, value, formatter=modelformatter):
+    """Format the metadata value that is a dictionary of model arguments.
+
+    Here use the model formatter dictionary to parse the content.
+    """
+
+    if not value:
+        return []
+
+    meta_list = [key + ": {"]
+    for sub_key, sub_value in value.items():
+        if sub_key in formatter.formatter_dict:
+            meta_list.extend(formatter.formatter_dict[sub_key](sub_key, sub_value))
+        else:
+            meta_list.append(f"  {sub_key}: {sub_value}")
+    meta_list.append("}")
+    return meta_list
+
+
 modelgroupformatter = MetaDataFormatter(
     {
         "name": format_value,
         "models": format_dictkeys,
         "nodes": format_dictkeys,
-        "model_defaults": format_dictargs,
+        "model_defaults": format_group_content,
         "doc": format_value,
     },
     ["name", "models", "nodes", "model_defaults", "_", "doc"],

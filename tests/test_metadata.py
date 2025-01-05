@@ -87,7 +87,7 @@ class TestMetaDataFormatter:
     def test_shorten(self, wrap):
         """Test shorten options."""
 
-        formatter = meta.MetaDataFormatter({}, ["a"], wrap, ["a"])
+        formatter = meta.MetaDataFormatter({}, ["a"], wrap, ["a"], shorten_placeholder=" [...]")
         assert (
             formatter(SNs(a="This is a test string for testing shorten options."))
             == "a: This is a [...]"
@@ -98,9 +98,9 @@ class TestMetaDataFormatter:
 
         shorten_str = """\
         a:
-        - This is a [...]
+        - This is a test ...
         - a short string
-        - Again a very [...]"""
+        - Again a very ..."""
 
         formatter = meta.MetaDataFormatter({"a": meta.format_list}, ["a"], wrap, ["a"])
         assert formatter(
@@ -375,6 +375,6 @@ class TestFormatedString:
           character wrapping.
         p: 'repr representation'
         empty: None
-        This is a long test string for [...]"""
+        This is a long test string for test ..."""
 
         assert formatter(metadata_obj) == dedent(expected)
