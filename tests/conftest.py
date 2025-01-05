@@ -7,6 +7,8 @@ import math
 import numpy as np
 from mmodel.node import Node
 from functools import wraps
+from mmodel.model import Model
+from mmodel.handler import BasicHandler
 
 
 # define the global functions for two graph
@@ -82,6 +84,7 @@ def standard_G():
 
     G = nx.DiGraph(name="test_graph")
     G.graph["graph_type"] = "mmodel"  # for comparison
+    G.graph["node_type"] = Node
 
     G.add_nodes_from(node_list)
     G.add_edges_from(edge_list)
@@ -123,6 +126,16 @@ def mmodel_signature():
     ]
 
     return Signature(param_list)
+
+
+@pytest.fixture
+def model_instance(mmodel_G):
+    """Construct a model_instance."""
+    description = (
+        "A long description that tests if the model module"
+        " wraps the Model output string description at 90 characters."
+    )
+    return Model("model_instance", mmodel_G, BasicHandler, doc=description)
 
 
 @pytest.fixture

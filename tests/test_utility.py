@@ -309,6 +309,7 @@ def test_ReprMixin():
     obj = ExampleClass("test_object")
     assert repr(obj) == "<tests.test_utility.ExampleClass 'test_object'>"
 
+
 def test_ReprMixin_without_name():
     """Test ReprMixin without name attribute."""
 

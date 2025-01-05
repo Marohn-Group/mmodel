@@ -3,8 +3,11 @@ from mmodel.modifier import (
     zip_loop_inputs,
     profile_time,
     format_time,
-    modifier,
+    add_modifier_metadata,
     format_parameters,
+    print_inputs,
+    print_output,
+    parse_fields,
 )
 import pytest
 import re
@@ -30,7 +33,7 @@ def test_parameter_stdout():
 def test_modifier_decorator():
     """Test the modifier decorator."""
 
-    @modifier("test_modifier", 1, 2, a="ab", b=2)
+    @add_modifier_metadata("test_modifier", 1, 2, a="ab", b=2)
     def test_func(a, b):
         return a + b
 
@@ -43,7 +46,7 @@ def test_modifier_decorator():
 def test_modifier_metadata_immutable():
     """Test modifier metadata is immutable."""
 
-    @modifier("test_modifier", 1, 2, a="ab", b=2)
+    @add_modifier_metadata("test_modifier", 1, 2, a="ab", b=2)
     def test_func(a, b):
         return a + b
 
@@ -118,3 +121,54 @@ def test_profile_time_verbose(example_func, capsys):
     pattern = r"func - raw times: \[[0-9.e\-]+, [0-9.e\-]+\]"
 
     assert re.match(pattern, captured.out) is not None
+
+
+class TestPrintModifiers:
+    @pytest.fixture
+    def func(self):
+        def b_tot(b1, b0, bz):
+            return b1 + b0 + bz
+
+        return b_tot
+
+    def test_parse_field_with_attributes_or_slicers(self):
+        """Test the parse_field that can parse field with attributes or slicers."""
+
+        assert sorted(parse_fields("{b0[0]} [mT] b0 {b0[1]:.3e} [mT] {b1.value}")) == [
+            "b0",
+            "b1",
+        ]
+
+    def test_parse_field(self):
+        """Test the parse_field function."""
+
+        assert sorted(
+            parse_fields("b1 {b1:.3f} [mT] b0 {b0:.3e} [mT] bz {bz} [mT]")
+        ) == [
+            "b0",
+            "b1",
+            "bz",
+        ]
+
+    def test_print_inputs(self, capsys, func):
+        """Test the print_inputs."""
+
+        mod = print_inputs("b1 {b1:.3f} [mT] b0 {b0:.3e} [mT] bz {bz}", end="--")
+        mod_func = mod(func)
+        mod_func(b1=1, b0=2, bz=3)
+        captured = capsys.readouterr()
+        assert captured.out == "b1 1.000 [mT] b0 2.000e+00 [mT] bz 3--"
+        assert (
+            mod.metadata == "print_inputs(format_str='b1 {b1:.3f} "
+            "[mT] b0 {b0:.3e} [mT] bz {bz}', end='--')"
+        )
+
+    def test_print_output_modifier(self, capsys, func):
+        """Test the stdout_output_modifier."""
+
+        mod = print_output("b_tot {b_tot:.1f} [mT]")
+        mod_func = mod(func)
+        mod_func(b1=1, b0=2, bz=3)
+        captured = capsys.readouterr()
+        assert captured.out == "b_tot 6.0 [mT]\n"
+        assert mod.metadata == "print_output(format_str='b_tot {b_tot:.1f} [mT]')"

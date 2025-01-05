@@ -12,15 +12,6 @@ from mmodel.modifier import loop_input
 class TestModel:
     """Test Model instances."""
 
-    @pytest.fixture
-    def model_instance(self, mmodel_G):
-        """Construct a model_instance."""
-        description = (
-            "A long description that tests if the model module"
-            " wraps the Model output string description at 90 characters."
-        )
-        return Model("model_instance", mmodel_G, BasicHandler, doc=description)
-
     def test_model_attr(self, model_instance, mmodel_signature):
         """Test the model has the correct name, signature, returns."""
 

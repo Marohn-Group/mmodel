@@ -23,7 +23,7 @@ class Model(EditMixin, ReprMixin):
         the keyword arguments.
     :param dict handler_kwargs: keyword arguments for the handler class.
     :param list modifiers: modifiers used for the whole graph model executable.
-    :param list returns: If not suplied, the returns are the returns of the terminal
+    :param list returns: If not provided, the returns are the returns of the terminal
         roots. The order of model returns defaults to the topological order.
     :param str doc: model docstring
     :param dict param_defaults: default values for the model signature.
@@ -127,8 +127,7 @@ class Model(EditMixin, ReprMixin):
     def _is_valid_graph(G):
         """Check if the model graph is valid to build an executable.
 
-        ``mmodel`` does not allow cycle graphs, graphs with isolated nodes,
-        and all nodes have callable attributes defined.
+        The ``Model`` class does not allow cycle graphs.
         The method is bound to the Model class because the features
         are specific to ``Model`` class.
         """

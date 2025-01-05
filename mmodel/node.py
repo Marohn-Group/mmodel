@@ -26,7 +26,6 @@ class Node(EditMixin, ReprMixin):
         self.output = output
 
         self._inputs = inputs or []
-        # self._kwarglist = kwarglist or []
         self._modifiers = modifiers or []
 
         self.func = func
@@ -60,7 +59,7 @@ class Node(EditMixin, ReprMixin):
 
         To replace the positional or positional-or-keyword parameters,
         the list arglist needs to be defined. The user can select
-        desired keyword-only parameters with kwarglist. To replace the
+        desired keyword-only parameters after "*" in the input. To replace the
         keyword-only parameters, a custom function needs to be defined
         to replace the function.
 

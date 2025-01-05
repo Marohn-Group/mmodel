@@ -281,6 +281,7 @@ class TestGraphBasics:
 
         assert repr(mmodel_G) == "<mmodel.graph.Graph 'test_graph'>"
 
+
 class TestNetworkXGraphOperation:
     """Test the copy, deepcopy, chain, subgraph, subgraph copy based on networkx."""
 

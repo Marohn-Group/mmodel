@@ -3,6 +3,7 @@ from mmodel.visualizer import plain_visualizer
 from copy import deepcopy
 from mmodel.filter import subnodes_by_inputs, subnodes_by_outputs
 from mmodel.utility import replace_subgraph, ReprMixin
+from mmodel.node import Node
 from itertools import product
 from collections import defaultdict
 
@@ -12,18 +13,19 @@ class Graph(nx.DiGraph, ReprMixin):
 
     mmodel.Graph inherits from `networkx.DiGraph()`.
 
-    The class adds the "type" attribute to the graph attribute. The factory method
+    The class adds the "graph_type" and "node_type" attribute to
+    the graph attribute. The factory method
     returns a copy of the dictionary. It is equivalent to
-    ``{"type": "mmodel_graph"}.copy()`` when called.
+    ``{"graph_type": "mmodel_graph", "node_type": Node}.copy()``
+    when called.
 
     The additional graph operations are added:
     - add_grouped_edges and set_node_objects.
     - Method ``add_grouped_edges``, cannot have both edges list.
     - Method ``set_node_object`` updates nodes with the node callable "func" and output.
-    - The method adds 'signature' to the node attribute.
     """
 
-    graph_attr_dict_factory = {"graph_type": "mmodel"}.copy
+    graph_attr_dict_factory = {"graph_type": "mmodel", "node_type": Node}.copy
 
     def set_node_object(self, node_object):
         """Add or update the functions of an existing node."""

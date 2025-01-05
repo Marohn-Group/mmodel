@@ -38,6 +38,7 @@ Added
 - Add property "grouped_edges" to the Graph class that returns a list of grouped edges.
 - Add "modifier" decorator for wrapped modifier functions to provide additional information and metadata.
 - Add ``ModelGroup`` class that can group multiple model defintion together.
+- Add the "shortcut" module and two shortcuts ``print_shortcut`` and ``loop_shortcut``.
 
 [0.7.0]
 ------------

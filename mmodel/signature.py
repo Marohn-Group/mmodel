@@ -43,14 +43,14 @@ def get_parameters(func):
 def get_node_signature(base_params, inputs_list):
     """Get the node signature based on the function and argument lists.
 
-    If the arglist and kwarglist are empty, the function returns
+    If the inputs_list are empty, the function returns
     the signature with only the required parameters and no var- parameters.
-    If the arglist and kwarglist are not empty, the function checks if the
+    If the inputs_list are not empty, the function checks if the
     argument lists meet the minimum and maximum requirements of the function.
+    The inputs can be separated by "*" to indicate the keyword only parameters.
 
     :param dict param_dict: dictionary of parameters
-    :param list arglist: list of positional arguments
-    :param list kwarglist: list of keyword arguments
+    :param list inputs_list: list of input parameters
     """
 
     if not inputs_list:
@@ -162,70 +162,3 @@ def check_args(base_params, arglist):
     """
 
     return check_signature(base_params, arglist, "positional", [0, 1], [2])
-
-
-# def check_kwargs(param_list, kwarglist):
-#     """Check if kwargs list is valid.
-
-#     :param list kwsig: list of signature parameters
-#     :param list kwarglist: list of keyword arguments
-#     """
-
-#     kwname = []
-#     required = []
-#     var_kw = False
-#     for param in param_list:
-#         if param.kind == 4:
-#             var_kw = True
-#         elif param.kind == 3:
-#             kwname.append(param.name)
-#             if param.default is Parameter.empty:
-#                 required.append(param.name)
-
-#     if not var_kw:
-#         # check if the name match
-#         diff = set(kwarglist) - (set(kwarglist) & set(kwname))
-#         if diff:
-#             raise Exception(f"invalid keyword argument(s): {', '.join(diff)}")
-
-#     required_diff = set(required) - set(kwarglist)
-#     if required_diff:
-#         raise Exception(
-#             f"missing required keyword argument(s): {', '.join(required_diff)}"
-#         )
-
-#     return True
-
-
-# def check_args(param_list, arglist):
-#     """Check if args list i valid.
-
-#     :param list argsig: list of signature parameters
-#     :param list arglist: list of positional arguments
-#     """
-
-#     argname = []
-#     required = []
-#     var_args = False
-#     for param in param_list:
-#         if param.kind == 2:
-#             var_args = True
-#         elif param.kind < 2:
-#             argname.append(param.name)
-#             if param.default is Parameter.empty:
-#                 required.append(param.name)
-
-#     if not var_args:
-#         if len(arglist) > len(argname):
-#             raise Exception(
-#                 f"too many positional arguments, "
-#                 f"maximum {len(argname)} but got {len(arglist)}"
-#             )
-
-#     if len(arglist) < len(required):
-#         raise Exception(
-#             f"not enough positional arguments, "
-#             f"minimum {len(required)} but got {len(arglist)}"
-#         )
-
-#     return True

@@ -132,18 +132,16 @@ class TestNodeSignature:
 
     def test_check_kwargs_with_var_kw(self, param_set1):
         """Test the check_kwargs function."""
-#               Parameter("pos_only", 0),
-#             Parameter("pos_or_kw", 1),
-#             Parameter("var_pos", 2),
-#             Parameter("kw_only", 3),
-#             Parameter("var_kw", 4),
-
+        #               Parameter("pos_only", 0),
+        #             Parameter("pos_or_kw", 1),
+        #             Parameter("var_pos", 2),
+        #             Parameter("kw_only", 3),
+        #             Parameter("var_kw", 4),
 
         # regular replacement with the same name
         assert check_kwargs(param_set1, ["kw_only"])
         # allow for other keyword arguments with var_kw
         assert check_kwargs(param_set1, ["kw_only", "a", "b"])
-
 
         # check the minimum length
         with pytest.raises(
@@ -182,8 +180,7 @@ class TestNodeSignature:
 
         # check the maximum length
         with pytest.raises(
-            Exception,
-            match=r"too many keyword arguments, maximum 3 but got 4"
+            Exception, match=r"too many keyword arguments, maximum 3 but got 4"
         ):
             check_kwargs(param_set3, ["a", "b", "c", "d"])
 

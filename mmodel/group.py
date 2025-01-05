@@ -11,7 +11,7 @@ class ModelGroup(EditMixin, ReprMixin):
     of nodes. The class reduces redundancy in node definitions.
 
     If different type of models are used, the subclass should change the
-    ``model_type`` class attribute.  The class are effectively unmutable.
+    ``model_type`` class attribute.  The class are effectively immutable.
     However, we allow the edit method for bulk model default value changes.
     """
 
