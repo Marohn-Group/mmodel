@@ -43,6 +43,7 @@ Indices and tables
 
    api_handler
    api_modifier_shortcut
+   api_metadata
 
 .. toctree::
    :maxdepth: 2
