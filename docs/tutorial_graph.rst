@@ -6,8 +6,7 @@ The model graphs in *mmodel* are based on the DAG, where each node represents
 an execution step, and each edge represents the data flow from one callable
 to another. DAG structure allows us to create model graphs with nonlinear
 nodes.
-
-Define a graph
+dDefine a graph
 --------------
 
 The ``Graph`` class is the main graph class to establish a model graph.
@@ -116,10 +115,10 @@ The object is stored as a node attribute, and the function signature
 (`inspect.Signature`) is stored. The parameter values are converted
 to signature objects.
 
-Graph Methods
+graph Methods
 ----------------
 
-Visualization
+visualization
 ~~~~~~~~~~~~~~
 
 The graph can be visualized or saved using the ``visualize`` method.
@@ -134,7 +133,7 @@ The graph can be visualized or saved using the ``visualize`` method.
 
 
 
-Name and docstring
+name and docstring
 ----------------------
 
 The name and graph string behaves as the *networkx* graphs. To add the name to the graph:
@@ -154,7 +153,7 @@ The name and graph string behaves as the *networkx* graphs. To add the name to t
     >>> print(G)
     Graph named 'Graph Example' with 0 nodes and 0 edges
 
-Mutability
+mutability
 ------------
 
 The graph object is mutable. A shallow or deepcopy might be needed to create a copy

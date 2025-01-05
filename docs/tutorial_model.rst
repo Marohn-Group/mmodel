@@ -66,7 +66,7 @@ Then, we create the model instance.
 
 The model determines the parameter for the model instance.
 
-Edit the model
+edit the model
 ----------------
 
 The model can be edited by appling one or multiple change of the arguments.
@@ -86,7 +86,7 @@ use the ``edit`` method. A new model instance is returned.
     New documentation.
 
 
-Extra return variables
+extra return variables
 ----------------------------
 
 The default return of the model is the output of the terminal nodes. To
@@ -96,7 +96,7 @@ as keyword arguments.
 
 See :doc:`handler reference </ref_handler>` for all available handlers. 
 
-Apply defaults to parameters
+apply defaults to parameters
 ------------------------------
 
 Any parameter default values should be applied at the model level.

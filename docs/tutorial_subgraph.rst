@@ -25,7 +25,7 @@ The graph used in the tutorial is defined as follows:
     G.add_grouped_edges_from(grouped_edges)
     G.set_node_objects_from(node_objects)
 
-Create a subgraph
+create a subgraph
 --------------------------------
 
 There are three methods provided for creating a subgraph from the graph:
@@ -61,7 +61,7 @@ Create a model based on a subgraph
 Subgraphing is also helpful if we apply modifiers to part of the
 graph. For example, we want to loop a variable that only part of the subgraph
 uses. Here, we loop the "log_base" parameter from the README example.
-``replace_subgraph`` outputs a new graph.
+The ``replace_subgraph`` function outputs a new graph.
 
 .. code-block:: python 
 
@@ -90,3 +90,5 @@ The steps are:
    ``replace_subgraph``. Use "output" to specify the output name of the subgraph node.
 4. Build the model for the graph with ``Model``. The handler is the same as
    the loop_node.
+
+The above process can be replaced with the ``loop_shortcut``.

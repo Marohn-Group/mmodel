@@ -80,6 +80,7 @@ be plotted using the ``visualize`` method.
 
 .. code-block:: python
 
+    # model representation
     >>> example_model
     <mmodel.model.Model 'example_model'>
 
@@ -129,11 +130,6 @@ Example: Use ``loop_input`` modifier on the graph to loop the nodes that require
 
     looped_model = Model("looped_model", looped_G, loop_node.handler)
 
-
-We can inspect the loop node as well as the new model.
-
-.. code-block:: python 
-
     >>> print(looped_model)
     looped_model(log_base, x, y)
     returns: looped_z
@@ -141,6 +137,8 @@ We can inspect the loop node as well as the new model.
     handler: MemHandler
     
     >>> print(looped_model.get_node_object("loop_node"))
+    loop_node
+
     submodel(log_base, sum_xy)
     return: looped_z
     functype: mmodel.model.Model
@@ -150,8 +148,28 @@ We can inspect the loop node as well as the new model.
     >>> looped_model([2, 4], 5, 3) # (5 + 3)log(5 + 3, 2) + 6
     [30.0, 18.0]
 
+The above process is included in the ``shortcut`` module and we can use the
+``loop_shortcut`` to directly apply the above process. Note that the shortcut
+changes the input parameter name to ``(name)_loop`` to distinguish
+between the models.
 
-Use the ``visualize`` method to draw the graph. For a graph, a simple diagram
+.. code-block:: python
+
+    from mmodel.shortcut import loop_shortcut
+    looped_model = loop_shortcut(example_model, "log_base", name="looped_model")
+
+    >>> print(looped_model)
+    looped_model(log_base_loop, x, y)
+    returns: result
+    graph: example_graph
+    handler: MemHandler
+
+    Test model.
+
+    >>> looped_model([2, 4], 5, 3) # (5 + 3)log(5 + 3, 2) + 6
+    [30.0, 18.0]
+
+We can use the ``visualize`` method to draw the graph. For a graph, a simple diagram
 with only node names shown, and for a model, the diagram shows detailed
 node and model information. Customized plotting objects can be created
 using the Visualizer class.

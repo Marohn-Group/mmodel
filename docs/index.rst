@@ -42,7 +42,7 @@ Indices and tables
    :hidden:
 
    api_handler
-   api_modifier
+   api_modifier_shortcut
 
 .. toctree::
    :maxdepth: 2
@@ -55,6 +55,7 @@ Indices and tables
    ref_model
    ref_handler
    ref_modifier
+   ref_shortcut
    ref_filter
    ref_signature
    ref_metadata

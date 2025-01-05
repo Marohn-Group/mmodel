@@ -39,7 +39,7 @@ The resulting node object can be executed directly.
     >>> node_a(m=1, n=2)
     3
 
-Remapping function parameter signature
+remapping function parameter signature
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To avoid re-defining functions using different input parameters or for functions
 that only allow positional arguments (built-in functions and numpy.ufunc), the
@@ -55,7 +55,7 @@ is used to re-define the function signature.
 The "*" symbol is used to separate the positional arguments from the keyword-only arguments.
 For variable positional parameters, attach the parameters after the positional-or-keyword
 arguments and for keyword-only parameters, attach the parameters after the keyword-only
-arguments. Parmeters with default values can be ignored based on the number of parameter inputs.
+arguments. Parameters with default values can be ignored based on the number of parameter inputs.
 Default values are not allowed at the node level. The default value can be defined at the model
 level or a custom function should be defined.
 
@@ -65,7 +65,7 @@ level or a custom function should be defined.
 
     * - function signature
       - target signature
-      - ``inputs`` arugment
+      - ``inputs`` argument
       - parameter mapping
     * - foo(a, b, \*, c, d)
       - foo(a, b, \*, c, d)
@@ -109,7 +109,7 @@ level or a custom function should be defined.
 
 
 
-Built-in functions and functions without signature
+built-in functions and functions without signature
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 There are different types of functions that ``inspect.signature`` cannot extract
@@ -118,7 +118,7 @@ the parameters from, namely:
 1. python's built-in functions
 2. *NumPy* ufuncs
 
-mmodel can identify the above functions and replace the signature:
+*mmodel* can identify the above functions and replace the signature:
 
 .. code-block:: python
 
@@ -153,7 +153,7 @@ mmodel can identify the above functions and replace the signature:
 The ``Node`` class also accepts additional keyword arguments. For example,
 the user can override the function docstring using the "doc" argument.
 
-Edit a node
+edit a node
 ----------------
 
 The node can be edited by applying one or multiple changes to the arguments.

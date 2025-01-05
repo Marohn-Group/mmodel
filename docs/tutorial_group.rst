@@ -3,7 +3,7 @@ Create a model group
 
 In the *mmodel* design, we intend to keep the graph behavior
 similar to the *NetworkX* graph. Therefore, all the nodes and edges
-are used in the final graph. However, there are cases that graphes
+are used in the final graph. However, there are cases that graphs
 and models shares the similar pool of nodes but different edges.
 
 In this case, a model group can be created to store multiple similar
@@ -91,7 +91,7 @@ The models can be extracted and executed.
     >>> model_B(2, 3, 4)
     24.0
 
-Edit the model group
+edit the model group
 --------------------
 
 The model group can be edited by applying one or multiple changes to the arguments.
