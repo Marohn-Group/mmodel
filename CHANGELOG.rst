@@ -40,8 +40,8 @@ Added
 - Add ``ModelGroup`` class that can group multiple model definition together.
 - Add "shortcut" module and two shortcuts ``print_shortcut`` and ``loop_shortcut``.
 
-[0.7.0]
-------------
+[0.7.0] - 2024-01-31
+-----------------------
 
 Major changes to internal APIs. Only Python >= 3.10 are supported.
 The signature binding behavior is rewritten to reduce node overhead.
