@@ -23,7 +23,7 @@ Changed
 ^^^^^^^
 
 - Change the Node class "inputs" behaviors.
-    - "inputs" can be used to explicitly define *arg, and **kwargs by adding "*" as
+    - "inputs" can be used to explicitly define \*arg, and \*\*kwargs by adding "\*" as
       a separator.
 - Allow adding grouped edges with two lists. The resulting edges are the
   product of two edges. For example, a grouped edge [[a, b], [c, d]] produces
@@ -94,7 +94,7 @@ Added
 Changed
 ^^^^^^^
 
-- `set_node_object` accepts additional keyword arguments.
+- ``set_node_object`` accepts additional keyword arguments.
 - Allow ``modifier_shortcut`` to change the model name.
 
 [0.6.1] - 2023-4-18
@@ -196,7 +196,7 @@ Fixed
 ^^^^^
 
 - Fix the issue where modify subgraph cannot add inputs or modifiers.
-- Fix the issue in tests that node attributes are not compared in `graph_equal()`.
+- Fix the issue in tests that node attributes are not compared in ``graph_equal()``.
 - Fix the issue that the original graph freezes when creating a model.
 - Fix the inconsistency between node and model metadata.
 - Fix the issue that "None" is included in the returns list.
@@ -222,7 +222,7 @@ Added
 ^^^^^^
 
 - Add graph modification when less than graph returns are specified.
-- Add "__name__" attribute to handler instance.
+- Add ``__name__`` attribute to handler instance.
 - ``pos_signature_modifier`` allows for node objects to have positional-only parameters.
 - Graph node definition allows for built-in and numpy.ufunc functions.
 - Graph node inputs allow default value with a (parameter, default) tuple.
@@ -260,8 +260,8 @@ Changed
 Added
 ^^^^^
 
-- Add custom dictionary `MemData`` as MemHandler's data instance.
-- Add custom class `H5Data` as H5Handler's data instance.
+- Add custom dictionary ``MemData`` as MemHandler's data instance.
+- Add custom class ``H5Data`` as H5Handler's data instance.
 - Add "returns" parameter to Model.
 
 Removed
