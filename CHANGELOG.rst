@@ -7,8 +7,41 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
-[0.7.0]
+[0.8.0]
 ------------
+
+Fixed
+^^^^^^^
+
+- Fixed the issue that the "node_func" attribute can be overwritten during editing.
+- Fixed the issue that the "output" attribute of the edge is not updated during editing.
+- Fixed the issue of the different behavior of numpy.ufunc signature due to
+  ``inspect.signature`` change in the Python version 3.11.9.
+- Rewrite node internal logic for converting function.
+
+Changed
+^^^^^^^
+
+- Change the Node class "inputs" behaviors.
+    - "inputs" can be used to explicitly define \*arg, and \*\*kwargs by adding "\*" as
+      a separator.
+- Allow adding grouped edges with two lists. The resulting edges are the
+  product of two edges. For example, a grouped edge [[a, b], [c, d]] produces
+  four edges (a, c), (a, d), (b, c), and (b, d).
+- Change default graph attribute to {graph_module: 'mmodel'}.
+- Change instance representation to show names of instance in nodes, graphs, models and model groups.
+- Change the "defaults" parameter to "param_defaults" in the Model class to avoid naming collision.
+
+Added
+^^^^^
+
+- Add property "grouped_edges" to the Graph class that returns a list of grouped edges.
+- Add "modifier" decorator for wrapped modifier functions to provide additional information and metadata.
+- Add ``ModelGroup`` class that can group multiple model definition together.
+- Add "shortcut" module and two shortcuts ``print_shortcut`` and ``loop_shortcut``.
+
+[0.7.0] - 2024-01-31
+-----------------------
 
 Major changes to internal APIs. Only Python >= 3.10 are supported.
 The signature binding behavior is rewritten to reduce node overhead.
@@ -44,7 +77,7 @@ Changed
 Removed
 ^^^^^^^
 
-- Remove ``shorcut`` module.
+- Remove ``shortcut`` module.
 
 Added
 ^^^^^
@@ -61,7 +94,7 @@ Added
 Changed
 ^^^^^^^
 
-- `set_node_object` accepts additional keyword arguments.
+- ``set_node_object`` accepts additional keyword arguments.
 - Allow ``modifier_shortcut`` to change the model name.
 
 [0.6.1] - 2023-4-18
@@ -163,7 +196,7 @@ Fixed
 ^^^^^
 
 - Fix the issue where modify subgraph cannot add inputs or modifiers.
-- Fix the issue in tests that node attributes are not compared in `graph_equal()`.
+- Fix the issue in tests that node attributes are not compared in ``graph_equal()``.
 - Fix the issue that the original graph freezes when creating a model.
 - Fix the inconsistency between node and model metadata.
 - Fix the issue that "None" is included in the returns list.
@@ -189,7 +222,7 @@ Added
 ^^^^^^
 
 - Add graph modification when less than graph returns are specified.
-- Add "__name__" attribute to handler instance.
+- Add ``__name__`` attribute to handler instance.
 - ``pos_signature_modifier`` allows for node objects to have positional-only parameters.
 - Graph node definition allows for built-in and numpy.ufunc functions.
 - Graph node inputs allow default value with a (parameter, default) tuple.
@@ -227,8 +260,8 @@ Changed
 Added
 ^^^^^
 
-- Add custom dictionary `MemData`` as MemHandler's data instance.
-- Add custom class `H5Data` as H5Handler's data instance.
+- Add custom dictionary ``MemData`` as MemHandler's data instance.
+- Add custom class ``H5Data`` as H5Handler's data instance.
 - Add "returns" parameter to Model.
 
 Removed

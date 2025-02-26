@@ -87,7 +87,7 @@ class TestMetaDataFormatter:
     def test_shorten(self, wrap):
         """Test shorten options."""
 
-        formatter = meta.MetaDataFormatter({}, ["a"], wrap, ["a"])
+        formatter = meta.MetaDataFormatter({}, ["a"], wrap, ["a"], shorten_placeholder=" [...]")
         assert (
             formatter(SNs(a="This is a test string for testing shorten options."))
             == "a: This is a [...]"
@@ -98,13 +98,11 @@ class TestMetaDataFormatter:
 
         shorten_str = """\
         a:
-        - This is a [...]
+        - This is a test ...
         - a short string
-        - Again a very [...]"""
+        - Again a very ..."""
 
-        formatter = meta.MetaDataFormatter(
-            {"a": meta.format_list}, ["a"], wrap, ["a"]
-        )
+        formatter = meta.MetaDataFormatter({"a": meta.format_list}, ["a"], wrap, ["a"])
         assert formatter(
             SNs(
                 a=[
@@ -158,9 +156,20 @@ class TestFormatFunction:
             This is the extended part of docstring."""
             return
 
+        def test_incorrect_docstring():
+            """this is a short docstring without a period
+            this is a short docstring without capital letter."""
+            return
+
         assert meta.format_shortdocstring("test", test_func.__doc__) == [
             "This is a short docstring."
         ]
+
+        # incorrect docstring
+        assert meta.format_shortdocstring("test", test_incorrect_docstring.__doc__) == [
+            "this is a short docstring without a period"
+        ]
+
         # built-in
         assert meta.format_shortdocstring("test", operator.add.__doc__) == [
             "Same as a + b."
@@ -177,7 +186,6 @@ class TestFormatFunction:
 
         # lambda
         assert meta.format_shortdocstring("test", (lambda x: x).__doc__) == []
-
 
     def test_foramt_returns(self):
         """Test format_returns function."""
@@ -197,7 +205,7 @@ class TestFormatFunction:
 
         obj = SNs(name="object")
         assert meta.format_obj_name("a", obj) == ["a: object"]
-        assert meta.format_obj_name('a', None) == []
+        assert meta.format_obj_name("a", None) == []
 
     def test_format_obj_name_func(self):
         """Test format_obj_name on function."""
@@ -212,26 +220,31 @@ class TestFormatFunction:
 
         assert meta.format_obj_name("a", SNs(a=1)) == ["a: namespace(a=1)"]
 
+    def test_format_dictkeys(self):
+        """Test format_dictkeys function."""
+
+        assert meta.format_dictkeys("a", {"b": 1, "c": "str"}) == ["a: ['b', 'c']"]
+
 
 class TestModifierMetadata:
     """Test modifier metadata functions."""
 
     @pytest.fixture
     def modifier_with_meta(self):
-        """Closure with arguments and "meta" attribute."""
+        """Closure with arguments and "metadata" attribute."""
 
-        def modifier(value):
-            def mod(func):
+        def mod(value):
+            def wrapper(func):
                 @functools.wraps(func)
                 def wrapped(*args, **kwargs):
                     return func(*args, **kwargs) + value
 
                 return wrapped
 
-            mod.metadata = f"modifier({value})"
-            return mod
+            wrapper.metadata = f"modifier({value})"
+            return wrapper
 
-        return modifier
+        return mod
 
     @pytest.fixture
     def modifier(self):
@@ -305,7 +318,7 @@ class TestFormatedString:
                 "k": meta.format_value,
                 "m": meta.format_value,
                 "o": lambda key, value: [f"p: {repr(value)}"],
-                "empty": lambda k, v: [f'{k}: {v}'],
+                "empty": lambda k, v: [f"{k}: {v}"],
                 "last": meta.format_shortdocstring,  # empty string
             },
             [
@@ -362,6 +375,6 @@ class TestFormatedString:
           character wrapping.
         p: 'repr representation'
         empty: None
-        This is a long test string for [...]"""
+        This is a long test string for test ..."""
 
         assert formatter(metadata_obj) == dedent(expected)

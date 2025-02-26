@@ -1,7 +1,6 @@
 from collections import UserDict
 from mmodel.utility import graph_topological_sort, param_counter, modelgraph_signature
 from datetime import datetime
-import h5py
 import string
 import random
 from textwrap import dedent
@@ -27,8 +26,6 @@ class TopologicalHandler:
     DataClass: type = callable
 
     def __init__(self, graph, returns: list, **datacls_kwargs):
-        # self.__name__ = name
-        # __signature__ allows the inspect module to properly generate the signature
         self.__signature__ = modelgraph_signature(graph)
         self.returns = returns
         self.order = graph_topological_sort(graph)
@@ -151,6 +148,8 @@ class H5Data:
     """
 
     def __init__(self, data, fname, gname):
+        import h5py  # lazy import
+
         self.fname = fname
 
         self.f = h5py.File(self.fname, "a")

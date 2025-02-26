@@ -1,8 +1,7 @@
-from inspect import Signature, Parameter
+from inspect import Signature, Parameter, signature
 import networkx as nx
 
 
-# graph properties
 def modelgraph_signature(graph):
     """Obtain the signature from the model graph.
 
@@ -217,27 +216,6 @@ def is_edge_attr_defined(graph, attr: str):
     return True
 
 
-def construction_dict(obj, property_list=None, exclude_list=None):
-    """Return a dictionary that contains object construction parameters.
-
-    The property list and exclude list need to be manually input.
-    The exclude list is used for object attributes that are not
-    part of the object construction but are public attributes.
-    The object attribute omits private ('_') values but includes all
-    public attributes not in the exclude list.
-    """
-    property_list = property_list or []
-    exclude_list = exclude_list or []
-
-    ppt_dict = {key: getattr(obj, key) for key in property_list}
-    attr_dict = {
-        key: value
-        for key, value in obj.__dict__.items()
-        if not key.startswith("_") and key not in exclude_list
-    }
-    return {**ppt_dict, **attr_dict}
-
-
 def modify_func(func, modifiers):
     """Apply modifiers to function."""
 
@@ -260,3 +238,53 @@ def parse_functype(func):
 
     else:
         return f"{tp.__module__}.{tp.__qualname__}"
+
+
+class EditMixin:
+    """Mixin class that records the parameters that used in constructor.
+
+    For classes that allows the edit method to create a new instance,
+    we keep track of the constructor parameter with the __new__ method.
+    Some of the constructor parameters might not be saved as attributes
+    or attributes of the same name, therefore the values are stored as well.
+    """
+
+    def __new__(cls, *args, **kwargs):
+        """Create a new instance of the model.
+
+        Here we modify the __new__ method to store the constructor parameters
+        in the instance. We combine the __init__ signature, and the
+        applied keyword arguments.
+        """
+        # remove self; **kwargs is still in the signature but that's okay
+        init_keys = list(signature(cls.__init__).parameters.keys())[1:]
+        init_dict = dict(zip(init_keys, args))
+        init_dict.update(kwargs)
+
+        instance = super().__new__(cls)
+        instance._init_dict = init_dict
+        return instance
+
+    @property
+    def edit_dict(self):
+        """Get the current attributes based on init_dict.
+
+        Some parameters are defined as properties to avoid the same reference.
+        The method here updates the current values of the attributes.
+        """
+        return {k: getattr(self, k, self._init_dict[k]) for k in self._init_dict}
+
+
+class ReprMixin:
+
+    def __repr__(self):
+        """Return the representation of the object.
+
+        The representation outputs the class name and the instance name.
+        The class requires to have a "name" attribute.
+        """
+
+        name = getattr(self, "name", None)
+        name_str = f" {repr(name)}" if name else ""
+
+        return f"<{type(self).__module__}.{self.__class__.__name__}{name_str}>"

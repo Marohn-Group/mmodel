@@ -8,9 +8,9 @@ import math
 
 @pytest.fixture
 def func():
-    def func_a(m, n):
+    def func_a(m, n, *, c=0):
         """Base function."""
-        return m + n
+        return m + n - c
 
     return func_a
 
@@ -26,7 +26,7 @@ class TestSetNodeObject:
             "func_a",
             func,
             output="o",
-            inputs=["a", "b"],
+            inputs=["a", "b", "*", "c"],
             modifiers=[value_modifier(value=1)],
             add_attr="additional attribute",
         )
@@ -38,20 +38,24 @@ class TestSetNodeObject:
 
         assert node.name == "func_a"
         assert node.__name__ == "func_a"
-        assert node.func(1, 2) == 3
-        assert node.node_func(a=1, b=2) == 4  # kw only
-        assert node(1, 2) == 4
+        # original function
+        assert node.func(1, 2, c=3) == 0
+        assert node._base_func(a=1, b=2, c=3) == 0
+        # modified function + 1 in value
+        assert node.node_func(a=1, b=2, c=3) == 1  # kw only
+        assert node(1, 2, c=3) == 1
         assert node.output == "o"
-        assert node.inputs == ["a", "b"]
+        assert node.inputs == ["a", "b", "*", "c"]
         assert (
             node.modifiers[0].__qualname__
             == "value_modifier.<locals>.add_value.<locals>.mod"
         )
-        assert list(node.signature.parameters.keys()) == ["a", "b"]
+        assert list(node.signature.parameters.keys()) == ["a", "b", "c"]
         assert node.functype == "function"
         assert node.__signature__ == node.signature
         assert node.doc == "Base function."
         assert node.add_attr == "additional attribute"
+        assert repr(node) == "<mmodel.node.Node 'func_a'>"
 
     def test_str_representation(self, node):
         """Test if view node outputs node information correctly."""
@@ -59,7 +63,7 @@ class TestSetNodeObject:
         node_s = """\
         func_a
 
-        func_a(a, b)
+        func_a(a, b, *, c)
         return: o
         functype: function
         modifiers:
@@ -95,7 +99,7 @@ class TestSetNodeObject:
 
         assert node.inputs is not node.inputs
         node.inputs.append("f")
-        assert node.inputs == ["a", "b"]
+        assert node.inputs == ["a", "b", "*", "c"]
 
 
 class TestNodeConstruction:
@@ -153,8 +157,7 @@ class TestNodeConstruction:
         assert str(node) == dedent(node_s)
 
     def test_node_callable(self):
-        """Test the node callable checks the input correctly.
-        """
+        """Test the node callable checks the input correctly."""
 
         node = Node("Test", lambda x: x)
         with pytest.raises(TypeError, match="too many positional arguments"):
@@ -165,6 +168,7 @@ class TestNodeConstruction:
 
         with pytest.raises(TypeError, match="got an unexpected keyword argument 'y'"):
             node(x=1, y=4)
+
 
 class TestSignatureModification:
     """Test node object input for builtin func and ufunc."""
@@ -181,28 +185,33 @@ class TestSignatureModification:
         This function is intended specifically for use with numeric values and may
         reject non-numeric types."""
 
-        assert node.signature == Signature(
-            parameters=[Parameter("iters", Parameter.POSITIONAL_OR_KEYWORD)]
-        )
+        assert node.signature == Signature(parameters=[Parameter("iters", 1)])
         assert node([1, 2]) == 3
         assert node.doc == dedent(doc)
 
     def test_ufunc(self):
-        """Test node object input for builtin func."""
+        """Test node object argument_list for builtin func."""
 
         node = Node("Test", np.sum, ["array"])
 
-        assert node.signature == Signature(
-            parameters=[Parameter("array", Parameter.POSITIONAL_OR_KEYWORD)]
-        )
+        assert node.signature == Signature(parameters=[Parameter("array", 1)])
         assert node([1, 2]) == 3
         assert "Sum of array elements over a given axis." in node.doc
 
-    def test_signature_less_exception(self):
-        """Test exception when a node does not have inputs defined."""
+    def test_ufunc_with_keyword(self):
+        """Test node object argument_list for builtin func."""
 
-        with pytest.raises(Exception, match="'inputs' required for node 'Test'"):
-            Node("Test", np.add)
+        node = Node("Test", np.sum, inputs=["array"])
+
+        assert node.signature == Signature([Parameter("array", 1)])
+        assert node([1, 2]) == 3.0
+        assert "Sum of array elements over a given axis." in node.doc
+
+    def test_signature_less(self):
+        """Test when a node does not have signature nor arguments defined."""
+
+        node = Node("Test", np.add)
+        assert node.signature == Signature()
 
     def test_model_as_function(self, mmodel_G):
         """Test ``model_func`` is used when the function input is a Model instance."""
@@ -213,12 +222,8 @@ class TestSignatureModification:
 
         # check the model_func is used
         # the underlying function does not check inputs
-        # it gives key error due to the dictionary access
+        # it gives a type error due to the dictionary access
         assert node.node_func(a=1, b=4, d=2, f=3) == (27, math.log(3, 4))
 
-        with pytest.raises(KeyError, match="'f'"):
+        with pytest.raises(TypeError, match="missing a required argument: 'f'"):
             node.node_func(a=1, b=4, d=2)
-
-        # the g value is ignored
-        # this is a planned behavior
-        node.node_func(a=1, b=4, d=2, f=3, g=4)

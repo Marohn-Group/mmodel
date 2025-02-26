@@ -12,15 +12,6 @@ from mmodel.modifier import loop_input
 class TestModel:
     """Test Model instances."""
 
-    @pytest.fixture
-    def model_instance(self, mmodel_G):
-        """Construct a model_instance."""
-        description = (
-            "A long description that tests if the model module"
-            " wraps the Model output string description at 90 characters."
-        )
-        return Model("model_instance", mmodel_G, BasicHandler, doc=description)
-
     def test_model_attr(self, model_instance, mmodel_signature):
         """Test the model has the correct name, signature, returns."""
 
@@ -33,6 +24,7 @@ class TestModel:
         assert model_instance.order == ("add", "subtract", "power", "log", "multiply")
         # doc works for inspect.getdoc and help()
         assert inspect.getdoc(model_instance) == model_instance.doc
+        assert repr(model_instance) == "<mmodel.model.Model 'model_instance'>"
 
     def test_model_str(self, model_instance):
         """Test model representation."""
@@ -169,7 +161,7 @@ class TestModel:
         # the output of the path is the repr instead of the string
         assert "handler: H5Handler" in str(h5model)
         assert "handler_kwargs" in str(h5model)
-        assert re.search(r"- fname: .*? \[\.\.\.\]", str(h5model))
+        assert re.search(r"- fname: .*? \.\.\.", str(h5model))
 
     def test_model_returns_order(self, mmodel_G):
         """Test model with custom returns order.
@@ -200,7 +192,7 @@ class TestModel:
             "model_instance",
             mmodel_G,
             BasicHandler,
-            defaults={"a": 10, "b": 2},
+            param_defaults={"a": 10, "b": 2},
             doc="Old doc",
             add_args="additional arguments",
         )
@@ -213,7 +205,7 @@ class TestModel:
         assert new_model.__doc__ == "Model description."
         assert new_model.handler == MemHandler
         assert model.graph is not new_model.graph
-        assert model.defaults == new_model.defaults
+        assert model.param_defaults == new_model.param_defaults
         assert new_model.add_args == "additional arguments"
         assert new_model(a=10, d=15, f=1, b=2) == (-36, math.log(12, 2))
 
@@ -224,7 +216,7 @@ class TestModel:
             "model_instance",
             mmodel_G,
             BasicHandler,
-            defaults={"a": 10, "b": 2},
+            param_defaults={"a": 10, "b": 2},
         )
         assert list(model.signature.parameters.keys()) == ["d", "f", "a", "b"]
         assert model(d=15, f=1) == (-36, math.log(12, 2))
@@ -267,7 +259,7 @@ class TestModifiedModel:
         graph: test_graph
         handler: BasicHandler
         modifiers:
-        - loop_input('a')
+        - loop_input(parameter='a')
         
         Modified model."""
         assert str(mod_model_instance) == dedent(mod_model_s)
@@ -283,6 +275,16 @@ class TestModifiedModel:
         assert new_model.add_args == "additional arguments"
         assert new_model.returns == ["k", "m"]
         assert new_model(a_loop=[1, 2], d=15, f=1) == [(-36, math.log2(3)), (-44, 2)]
+
+    def test_model_edit_node_exception(self, mod_model_instance):
+        """Test if the edit method resets edge attribute if incorrect."""
+
+        with pytest.raises(
+            Exception,
+            match=r"invalid graph \(test_graph\): attribute 'output' "
+            r"is not defined for edge\(s\) \[\('power', 'multiply'\)\].",
+        ):
+            mod_model_instance.edit_node("power", output="incorrect_output")
 
 
 class TestModelValidation:

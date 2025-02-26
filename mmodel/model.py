@@ -1,9 +1,10 @@
 from mmodel.utility import (
     modify_func,
-    construction_dict,
     is_node_attr_defined,
     is_edge_attr_defined,
     modelgraph_returns,
+    EditMixin,
+    ReprMixin,
 )
 
 import networkx as nx
@@ -13,7 +14,7 @@ from inspect import signature
 from mmodel.visualizer import visualizer
 
 
-class Model:
+class Model(EditMixin, ReprMixin):
     """Create the model callable.
 
     :param str name: Model name
@@ -22,10 +23,10 @@ class Model:
         the keyword arguments.
     :param dict handler_kwargs: keyword arguments for the handler class.
     :param list modifiers: modifiers used for the whole graph model executable.
-    :param list returns: The order of model returns; defaults to the
-        topological search.
+    :param list returns: If not provided, the returns are the returns of the terminal
+        roots. The order of model returns defaults to the topological order.
     :param str doc: model docstring
-    :param dict defaults: default values for the model signature.
+    :param dict param_defaults: default values for the model signature.
     :param bool kw_only: whether to convert signature to keyword-only signature
     """
 
@@ -37,7 +38,7 @@ class Model:
         handler_kwargs: dict = None,
         modifiers: list = None,
         returns: list = None,
-        defaults: dict = None,
+        param_defaults: dict = None,
         doc: str = "",
         **kwargs,
     ):
@@ -49,7 +50,7 @@ class Model:
         self._modifiers = modifiers or list()
         self.handler = handler
         self._handler_kwargs = handler_kwargs or {}
-        self._defaults = defaults or {}
+        self._param_defaults = param_defaults or {}
         self.doc = self.__doc__ = doc
 
         # update the kwargs
@@ -64,7 +65,7 @@ class Model:
         self.model_func = modify_func(self._runner, self._modifiers)
         # apply defaults to model_func
         self.model_func.__signature__ = restructure_signature(
-            signature(self.model_func), self._defaults
+            signature(self.model_func), self._param_defaults
         )
 
     @property
@@ -99,9 +100,9 @@ class Model:
         return self._modifiers.copy()
 
     @property
-    def defaults(self):
+    def param_defaults(self):
         """Shallow copy of the defaults."""
-        return self._defaults.copy()
+        return self._param_defaults.copy()
 
     @property
     def handler_kwargs(self):
@@ -126,8 +127,7 @@ class Model:
     def _is_valid_graph(G):
         """Check if the model graph is valid to build an executable.
 
-        ``mmodel`` does not allow cycle graphs, graphs with isolated nodes,
-        and all nodes have callable attributes defined.
+        The ``Model`` class does not allow cycle graphs.
         The method is bound to the Model class because the features
         are specific to ``Model`` class.
         """
@@ -190,9 +190,7 @@ class Model:
         if "graph" in kwargs and "returns" not in kwargs:
             kwargs["returns"] = None
 
-        constructor_dict = construction_dict(
-            self, ["graph", "returns", "modifiers", "handler_kwargs", "defaults"]
-        )
-        constructor_dict.update(kwargs)
+        edit_dict = self.edit_dict
+        edit_dict.update(kwargs)
 
-        return self.__class__(**constructor_dict)
+        return self.__class__(**edit_dict)

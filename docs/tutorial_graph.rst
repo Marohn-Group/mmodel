@@ -6,8 +6,7 @@ The model graphs in *mmodel* are based on the DAG, where each node represents
 an execution step, and each edge represents the data flow from one callable
 to another. DAG structure allows us to create model graphs with nonlinear
 nodes.
-
-Define a graph
+dDefine a graph
 --------------
 
 The ``Graph`` class is the main graph class to establish a model graph.
@@ -27,7 +26,6 @@ Aside from the *NetworkX* operations,
     from mmodel import Graph, Node
     
     G = Graph()
-
     G.add_grouped_edge(['a', 'b'], 'c')
 
     # equivalent to
@@ -44,23 +42,14 @@ Similarly, with multiple grouped edges
     ]
 
     G = Graph()
-
     G.add_grouped_edges_from(grouped_edges)
-    
+
+    >>> G # no name is given
+    <mmodel.graph.Graph>
+
     >>> print(G)
     Graph with 5 nodes and 4 edges
 
-Set node objects
------------------
-
-Each node in the graph represents an execution, and the edges represent the data
-flow. Therefore, we need to link the node to its execution method. In *mmodel*
-a node object is a combination of:
-
-1. callable, function, or function-like ("func")
-2. callable return variable name ("output")
-3. callable input parameter list ("inputs")
-4. modifications list ("modifiers")
 
 For linking the node object to the node, two methods are provided:
 ``set_node_object`` and ``set_node_objects_from``. 
@@ -78,10 +67,22 @@ The latter accepts a list of node objects.
         return x - y
 
 
-    G.set_node_object(Node(node="a", func=add, output="z"))
+    def multiply(x, y):
+        """The product of x and y."""
+        return x * y
 
 
-    >>> print(G.node_metadata("a"))
+    G = Graph()
+    G.add_grouped_edge(['a', 'b'], 'c')
+    G.set_node_object(Node(name="a", func=add, output="z"))
+
+The node object can be accessed using the ``get_node_object`` method.
+
+.. code-block:: python
+
+    node_a = G.get_node_object("a")
+
+    >>> print(node_a)
     a
 
     add(x, y)
@@ -95,10 +96,12 @@ The latter accepts a list of node objects.
     node_objects = [
         Node("a", add, output="z"),
         Node("b", subtract, output="m"),
+        Node("c", multiply, output="n", inputs=["z", "m"]),
     ]
     G.set_node_objects_from(node_objects)
 
-    >>> print(G.node_metadata("b"))
+    >>> node_b = G.get_node_object("b")
+    >>> print(node_b)
     b
 
     subtract(x, y)
@@ -111,148 +114,26 @@ The latter accepts a list of node objects.
 The object is stored as a node attribute, and the function signature
 (`inspect.Signature`) is stored. The parameter values are converted
 to signature objects.
-The note output is a single variable. If the node outputs multiple variables,
-the return tuple is assigned to the defined output variable.
 
-.. Note::
+graph Methods
+----------------
 
-    To have the function docstring correctly displayed in the node's metadata,
-    it needs to start with an upper case letter and end with a period.
+visualization
+~~~~~~~~~~~~~~
 
-
-
-Change function input parameters
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To avoid re-defining functions using different input parameters or for functions
-that only allow positional arguments (built-in functions and numpy.ufunc), the
-"inputs" parameter of the ``set_node_object`` can change the node signature.
-The signature replacement is a thin wrapper with a very small performance overhead.
-The signature change only occurs at the node level. The original function is
-not affected.
-
-.. code-block:: python
-    
-    def add(a, b):
-        """Sum of x and y."""
-        return a + b
-
-    G.set_node_object(Node("a", func=add, output="z", inputs=["m", "n"]))
-
-    >>> print(G.node_metadata("a"))
-    a
-
-    add(m, n)
-    return: z
-    functype: function
-
-    Sum of x and y.
-
-.. Note:: 
-
-    The graph variable flows are restricted to keyword arguments only for function parameters.
-    They can be modified by changing the inputs of the function, and the modified
-    function allows keyword arguments.
-
-Built-in functions and functions without signature
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-There are different types of functions that ``inspect.signature`` cannot extract
-the parameters from, namely:
-
-1. python's built-in functions
-2. *NumPy* ufuncs
-
-mmodel can identify the above functions and replace the signature:
-
-.. code-block:: python
-
-    from operator import add
-
-    G.set_node_object(Node("a", func=add, output="z", inputs=["m", "n"]))
-
-    import numpy as np
-
-    G.set_node_object(Node("b", func=np.sum, output="z", inputs=["m", "n"]))
-
-
-    >>> print(G.get_node_object("a"))
-    a
-
-    add(m, n)
-    return: z
-    functype: builtin_function_or_method
-
-    Same as a + b.
-
-
-    >>> print(G.get_node_object("b"))
-    b
-
-    sum(m, n)
-    return: d
-    functype: function
-
-    Sum of array elements over a given axis.
-
-The ``set_node_object`` method can also accept additional keyword arguments that are
-stored in the graph node attribute. The "doc" attribute is reserved for the docstring
-of the function, however, it can be overridden by the user.
-
-Function with variable length of arguments
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-In a *mmodel* graph, the argument length of a node is fixed. For a function with a variable
-length of arguments, additional arguments can be provided using the input function.
+The graph can be visualized or saved using the ``visualize`` method.
 
 
 .. code-block:: python
 
-    def test_func_kwargs(a, b, **kwargs):
-        return a + b, kwargs
+    G.visualize()
+
+    # or with a filename
+    G.visualize(outfile="graph.png")
 
 
-    G.set_node_object(Node(node="a", func=test_func_kwargs, output="z", inputs=["m", "n", "p"]))
 
-    >>> print(G.get_node_object("a"))
-    a
-
-    test_func_kwargs(m, n, p)
-    return: z
-    functype: function
-
-    >>> G.get_node_object("a")(m=1, n=2, p=4)
-    (3, {'p': 4})
-
-Function with default arguments
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-For functions with default arguments, the inputs can be shorter than the total number
-of parameters.
-
-.. code-block:: python
-
-    def test_func_defaults(m, n, p=2):
-        return m + n + p
-    
-    G.set_node_object(Node("a", func=test_func_defaults, output="z", inputs=["m", "n"]))
-
-    >>> print(G.get_node_object("a"))
-    a
-
-    test_func_defaults(m, n)
-    return: z
-    functype: function
-    
-    >>> G.get_node_object("a")(m=1, n=2)
-    5
-
-.. Note::
-
-    To avoid performance overhead, signature_modifier modifies the signature in order.
-    Currently, it is not possible to replace selected parameters.
-
-Name and docstring
+name and docstring
 ----------------------
 
 The name and graph string behaves as the *networkx* graphs. To add the name to the graph:
@@ -266,10 +147,13 @@ The name and graph string behaves as the *networkx* graphs. To add the name to t
     # after definition
     # G.graph['name'] = 'ModelGraph Example'
 
+    >>> G
+    <mmodel.graph.Graph 'Graph Example'>
+
     >>> print(G)
     Graph named 'Graph Example' with 0 nodes and 0 edges
 
-Mutability
+mutability
 ------------
 
 The graph object is mutable. A shallow or deepcopy might be needed to create a copy

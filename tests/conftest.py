@@ -1,13 +1,3 @@
-"""Configuration for testing,
-
-The configuration file provides several default graph fixtures
-and test functions.
-
-1. `standard_G` - test graph generated using DiGraph, scope: function
-2. `mmodel_G` - test graph generated using Graph, scope: function
-"""
-
-
 import pytest
 from inspect import Signature, Parameter
 import networkx as nx
@@ -17,6 +7,8 @@ import math
 import numpy as np
 from mmodel.node import Node
 from functools import wraps
+from mmodel.model import Model
+from mmodel.handler import BasicHandler
 
 
 # define the global functions for two graph
@@ -35,9 +27,9 @@ def logarithm(c, b):
 
 
 add_node = Node("add", addition, output="c")
-sub_node = Node("subtract", operator.sub, ["c", "d"], "e")
-power_node = Node("power", math.pow, ["c", "f"], "g")
-multi_node = Node("multiply", np.multiply, ["e", "g"], "k")
+sub_node = Node("subtract", operator.sub, ["c", "d"], output="e")
+power_node = Node("power", math.pow, ["c", "f"], output="g")
+multi_node = Node("multiply", np.multiply, ["e", "g"], output="k")
 log_node = Node("log", logarithm, output="m")
 
 
@@ -91,7 +83,8 @@ def standard_G():
     ]
 
     G = nx.DiGraph(name="test_graph")
-    G.graph["type"] = "mmodel_graph"  # for comparison
+    G.graph["graph_module"] = "mmodel"  # for comparison
+    G.graph["node_type"] = Node
 
     G.add_nodes_from(node_list)
     G.add_edges_from(edge_list)
@@ -136,6 +129,16 @@ def mmodel_signature():
 
 
 @pytest.fixture
+def model_instance(mmodel_G):
+    """Construct a model_instance."""
+    description = (
+        "A long description that tests if the model module"
+        " wraps the Model output string description at 90 characters."
+    )
+    return Model("model_instance", mmodel_G, BasicHandler, doc=description)
+
+
+@pytest.fixture
 def value_modifier():
     """Return a modifier function that adds value to the result."""
 
@@ -147,6 +150,7 @@ def value_modifier():
 
             return wrapped
 
+        mod.metadata = f"add_value(value={value})"
         return mod
 
     return add_value

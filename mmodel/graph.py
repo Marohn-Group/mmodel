@@ -2,27 +2,30 @@ import networkx as nx
 from mmodel.visualizer import plain_visualizer
 from copy import deepcopy
 from mmodel.filter import subnodes_by_inputs, subnodes_by_outputs
-from mmodel.utility import replace_subgraph
+from mmodel.utility import replace_subgraph, ReprMixin
+from mmodel.node import Node
+from itertools import product
+from collections import defaultdict
 
 
-class Graph(nx.DiGraph):
+class Graph(nx.DiGraph, ReprMixin):
     """Create model graphs.
 
-    mmodel.Graph inherits from `networkx.DiGraph()`, which has all `DiGraph`
-    methods.
+    mmodel.Graph inherits from `networkx.DiGraph()`.
 
-    The class adds the "type" attribute to the graph attribute. The factory method
+    The class adds the "graph_module" and "node_type" attribute to
+    the graph attribute. The factory method
     returns a copy of the dictionary. It is equivalent to
-    ``{"type": "mmodel_graph"}.copy()`` when called.
+    ``{"graph_module": "mmodel_graph", "node_type": Node}.copy()``
+    when called.
 
     The additional graph operations are added:
     - add_grouped_edges and set_node_objects.
     - Method ``add_grouped_edges``, cannot have both edges list.
     - Method ``set_node_object`` updates nodes with the node callable "func" and output.
-    - The method adds callable signature 'sig' to the node attribute.
     """
 
-    graph_attr_dict_factory = {"type": "mmodel_graph"}.copy
+    graph_attr_dict_factory = {"graph_module": "mmodel", "node_type": Node}.copy
 
     def set_node_object(self, node_object):
         """Add or update the functions of an existing node."""
@@ -61,17 +64,10 @@ class Graph(nx.DiGraph):
         nodes flowing into one node.
         """
 
-        if isinstance(u, list) and isinstance(v, list):
-            raise Exception("only one edge node can be a list")
-
-        # use add edges from to run less update graph
-        # currently a compromise
-        if isinstance(u, list):
-            self.add_edges_from([(_u, v) for _u in u])
-        elif isinstance(v, list):
-            self.add_edges_from([(u, _v) for _v in v])
-        else:  # neither is a list
-            self.add_edge(u, v)
+        u = [u] if isinstance(u, str) else u
+        v = [v] if isinstance(v, str) else v
+        edge_list = list(product(u, v))
+        self.add_edges_from(edge_list)
 
     def add_grouped_edges_from(self, group_edges: list):
         """Add edges from grouped values."""
@@ -79,18 +75,41 @@ class Graph(nx.DiGraph):
         for u, v in group_edges:
             self.add_grouped_edge(u, v)
 
+    @property
+    def grouped_edges(self):
+        """Return grouped edges based on the graph."""
+        g_edges_reversed = defaultdict(list)
+
+        for u, v in self.edges:
+            g_edges_reversed[v].append(u)
+
+        g_edges = defaultdict(list)
+
+        for u, v in g_edges_reversed.items():
+            g_edges[tuple(v)].append(u)
+
+        grouped_edges = []
+        for k, v in g_edges.items():
+            k = k[0] if len(k) == 1 else list(k)
+            v = v[0] if len(v) == 1 else v
+            grouped_edges.append([k, v])
+
+        return grouped_edges
+
     def update_graph(self):
-        """Update edge attributes based on node objects and edges."""
+        """Update edge attributes based on node objects and edges.
+
+        The edge "output" is not defined if the parent node does not have
+        the "output" attribute or the child node does not have the parameter.
+        """
 
         for u, v in self.edges:
             if self.nodes[u] and self.nodes[v]:
-                # the edge "output" is not defined if the parent node does not
-                # have "output" attribute or the child node does not have
-                # the parameter
-                # extract the parameter dictionary
                 v_sig = self.nodes[v]["signature"].parameters
                 if self.nodes[u]["output"] in v_sig:
                     self.edges[u, v]["output"] = self.nodes[u]["output"]
+                elif "output" in self.edges[u, v]:  # reset edge output
+                    del self.edges[u, v]["output"]
 
     # graph operations
     def subgraph(self, nodes=None, inputs=None, outputs=None):

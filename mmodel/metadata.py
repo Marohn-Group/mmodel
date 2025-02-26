@@ -7,10 +7,11 @@ from dataclasses import dataclass, field
 class MetaDataFormatter:
     """Metadata Formatter."""
 
-    format_dict: dict
+    formatter_dict: dict
     meta_order: list
     text_wrapper: callable
     shorten_list: list = field(default_factory=list)
+    shorten_placeholder: str = " ..."
 
     def __call__(self, obj):
         """Convert metadata dictionary to string.
@@ -19,7 +20,7 @@ class MetaDataFormatter:
         If the formatter is not found in the formatter dictionary,
         the default string output is "key: value".
 
-        :param dict format_dict: format function dictionary
+        :param dict formatter_dict: format function dictionary
         :param list meta_order: metadata key order, entry is None if linebreak needed.
             Defaults to dictionary key order.
         """
@@ -36,8 +37,8 @@ class MetaDataFormatter:
                 value = getattr(obj, key, None)
 
             # the format functions return a list, for potential multi-liners strings
-            if key in self.format_dict:
-                entry = self.format_dict[key](key, value)
+            if key in self.formatter_dict:
+                entry = self.formatter_dict[key](key, value)
             elif value:
                 entry = [f"{key}: {value}"]
             else:
@@ -45,7 +46,14 @@ class MetaDataFormatter:
 
             if key in self.shorten_list:
                 # replace the original list
-                entry = [shorten(ele, width=self.text_wrapper.width) for ele in entry]
+                entry = [
+                    shorten(
+                        ele,
+                        width=self.text_wrapper.width,
+                        placeholder=self.shorten_placeholder,
+                    )
+                    for ele in entry
+                ]
 
             metadata_list.extend(entry)
 
@@ -75,7 +83,6 @@ def format_list(key, value):
     """Format the metadata value that is a list."""
 
     if not value:
-        # return [f"{key}: []"]
         return []
     elements = [f"\t- {v}" for v in value]
     return [f"{key}:"] + elements
@@ -92,35 +99,18 @@ def format_dictargs(key, value):
     return [f"{key}:"] + elements
 
 
-def modifier_metadata(closure):
+def modifier_metadata(func):
     """Extract metadata from closure, including the name and the arguments.
 
     The order of extraction:
     1. If the object has the "metadata" attribute defined.
-    2. If the closure takes no arguments, the name is the function name.
-    3. If the closure takes arguments, the "metadata" attribute is not defined.
-
-    Note::
-
-        inspect.getclosurevars(closure).nonlocals can only parse values
-        if the value is used in the closure.
+    2. If not, the metadata returns the function name itself.
     """
 
-    if hasattr(closure, "metadata"):
-        return closure.metadata
-    elif not inspect.getclosurevars(closure).nonlocals:
-        return closure.__name__
-
-    else:  # closure takes arguments
-        # In some rare cases, the closure is a nested function.
-        # For example, in the tests, the nested closure reflects the
-        # path of the parent function. Here we remove the nested
-        # parent function name.
-
-        name = closure.__qualname__.rsplit(".<locals>.")[-2]
-        kwargs = inspect.getclosurevars(closure).nonlocals
-        kwargs_str = ", ".join(f"{k}={repr(v)}" for k, v in kwargs.items())
-        return f"{name}({kwargs_str})"
+    if hasattr(func, "metadata"):
+        return func.metadata
+    else:
+        return func.__name__
 
 
 def format_modifierlist(key, value):
@@ -143,7 +133,8 @@ def format_shortdocstring(key, value):
     some module/function has the repr at the first line,
     and some don't.
     Here we try to grab the first line that starts with
-    an upper case and ends with a period.
+    an upper case and ends with a period. If the docstring
+    is improperly formatted, the first line is used.
     """
     if not value:
         return []
@@ -152,9 +143,9 @@ def format_shortdocstring(key, value):
         line = line.strip()
         if line and line[0].isupper() and line.endswith("."):
             doc = line
-            break
+            return [f"{doc}"]
 
-    return [f"{doc}"]
+    return value.splitlines()[:1]
 
 
 def format_returns(key, value):
@@ -202,6 +193,18 @@ def format_obj_name(key, value):
     return [f"{key}: {name}"]
 
 
+def format_dictkeys(key, value):
+    """Formating function that only shows dictionary keys.
+
+    If the value dictionary is empty return None.
+    """
+
+    if value:
+        return [f"{key}: {list(value.keys())}"]
+    else:
+        return [f"{key}: None"]
+
+
 # customized textwrapper
 wrapper80 = TextWrapper(
     width=80,
@@ -225,6 +228,7 @@ modelformatter = MetaDataFormatter(
     [
         "self",
         "returns",
+        "group",
         "graph",
         "handler",
         "handler_kwargs",
@@ -246,4 +250,37 @@ nodeformatter = MetaDataFormatter(
     },
     ["name", "_", "node_func", "output", "functype", "modifiers", "_", "doc"],
     wrapper80,
+)
+
+
+def format_group_content(key, value, formatter=modelformatter):
+    """Format the metadata value that is a dictionary of model arguments.
+
+    Here use the model formatter dictionary to parse the content.
+    """
+
+    if not value:
+        return []
+
+    meta_list = [key + ": {"]
+    for sub_key, sub_value in value.items():
+        if sub_key in formatter.formatter_dict:
+            meta_list.extend(formatter.formatter_dict[sub_key](sub_key, sub_value))
+        else:
+            meta_list.append(f"  {sub_key}: {sub_value}")
+    meta_list.append("}")
+    return meta_list
+
+
+modelgroupformatter = MetaDataFormatter(
+    {
+        "name": format_value,
+        "models": format_dictkeys,
+        "nodes": format_dictkeys,
+        "model_defaults": format_group_content,
+        "doc": format_value,
+    },
+    ["name", "models", "nodes", "model_defaults", "_", "doc"],
+    wrapper80,
+    ["model_defaults", "nodes"],
 )

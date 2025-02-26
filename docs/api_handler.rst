@@ -5,7 +5,7 @@ Handlers in *mmodel* represent different execution methods for the provided
 graph. Currently, all handlers are executed in topological order,
 inherited from ``TopologicalHandler``.
 
-Handler class
+handler class
 --------------
 
 There are three required elements of a handler class/instance:
@@ -18,7 +18,7 @@ There are three required elements of a handler class/instance:
 
 Modify the ``Model`` class if these conditions cannot be satisfied.
 
-Handler Data class and TopologicalHandler
+handler data class and TopologicalHandler
 ------------------------------------------
 Handler data stores the input value and all return values of the node execution.
 To define a custom handler, a Data class should be defined, 

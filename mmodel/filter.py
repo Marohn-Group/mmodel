@@ -1,4 +1,5 @@
 """Filters that used to create subgraph."""
+
 import networkx as nx
 
 

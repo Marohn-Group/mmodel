@@ -28,8 +28,10 @@ Indices and tables
    :caption: Tutorial
    :hidden:
 
+   tutorial_node
    tutorial_graph
    tutorial_model
+   tutorial_group
    tutorial_modifier
    tutorial_subgraph
 
@@ -39,9 +41,9 @@ Indices and tables
    :caption: API Guideline
    :hidden:
 
-   api_signature
    api_handler
-   api_modifier
+   api_modifier_shortcut
+   api_metadata
 
 .. toctree::
    :maxdepth: 2
@@ -54,6 +56,7 @@ Indices and tables
    ref_model
    ref_handler
    ref_modifier
+   ref_shortcut
    ref_filter
    ref_signature
    ref_metadata

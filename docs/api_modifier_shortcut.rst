@@ -1,5 +1,8 @@
-Modifier API
-=============
+Modifer and shortcut API
+==========================
+
+modifiers
+---------
 
 The modifiers are defined as decorator functions that can modify a function
 and take additional input parameters. See
@@ -47,14 +50,14 @@ Here is an example of a loop modifier:
         return loop
 
 The modifier takes an additional argument "parameter" and returns a modified function.
-For a node, the equivalent function is :code:``loop_input(parameter)(func)``.
+For a node, the equivalent function is ``loop_input(parameter)(func)``.
 The function signature is modified under the ``loop`` function to indicate that the parameter
 requires an iterable input. Under the ``loop_wrapped`` function, the loop parameter is 
 isolated, and the function loops over the iterable to create a list result.
 
 Notice that the ``loop_wrapped`` function takes keyword-only arguments. The decision
-is made to reduce the overhead of the function call. All nodes in the Model are supplied
-with keyword-only arguments. See :doc:`signature API </api_signature>` for more information.
+is made to reduce the overhead of the function call. All modifiers should have
+keyword-only arguments.
 
 .. Note::
 
@@ -66,5 +69,20 @@ with keyword-only arguments. See :doc:`signature API </api_signature>` for more 
     at the node and model level. The metadata is a string passed to the "metadata" attribute of
     the modifier function.
 
-See :doc:`modifier tutorial </tutorial_modifier>` for how to use modifiers,
-and `modifier reference </ref_modifier>` for all available modifiers.
+shortcuts
+-----------
+
+There are not many restrictions of shortcuts. To ensure the same behavior, the shortcut
+should take the model as the frist argument and return a new model. It is recommended
+to use ``model.edit`` method to create a new model.
+
+To allow the shortcuts to be used in inherited model, make sure to generate new node, graph
+and model using the same class as the input model. The class of the input model and graph
+can be directly accessed using ``model.__class__`` and ``model.graph.__class__`` or 
+type(model) and type(model.graph). The graph carries the information of the node, accessed
+by ``model.graph.graph[node_type]``.
+
+
+See :doc:`modifier and shortcut tutorial </tutorial_modifier>` for how to use modifiers and shortcuts.
+See :doc:`modifier reference </ref_modifier>` and :doc:`shortcut reference </ref_shortcut>`
+for all available modifiers.

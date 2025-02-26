@@ -92,14 +92,53 @@ class TestAddEdge:
             ("func_c", "func_d"),
         ] == list(base_G.edges)
 
-    def test_add_grouped_edge_fails(self, base_G):
-        """Test add_grouped_edge.
+    def test_add_grouped_edges_with_two_lists(self, base_G):
+        """Test add_grouped_edge if both are lists."""
 
-        The method raises an exception when u and v are both lists.
-        """
+        base_G.add_grouped_edge(["func_a", "func_b"], ["func_c", "func_d"])
+        assert [
+            ("func_a", "func_c"),
+            ("func_a", "func_d"),
+            ("func_b", "func_c"),
+            ("func_b", "func_d"),
+        ] == list(base_G.edges)
 
-        with pytest.raises(Exception, match="only one edge node can be a list"):
-            base_G.add_grouped_edge(["func_a", "func_b"], ["func_c", "func_d"])
+    def test_grouped_edges_output_mixed(self):
+        """Test group_edges method."""
+
+        G = Graph()
+        G.add_edge("a", "b")
+        G.add_edge("a", "c")
+        G.add_edge("b", "d")
+        G.add_edge("c", "d")
+        G.add_edge("c", "f")
+        G.add_edge("d", "f")
+
+        grouped_edges = G.grouped_edges
+        assert grouped_edges == [
+            ["a", ["b", "c"]],
+            [["b", "c"], "d"],
+            [["c", "d"], "f"],
+        ]
+
+    def test_grouped_edges_output_string(self):
+        """Test group_edges method."""
+
+        G = Graph()
+        G.add_edge("a", "b")
+        G.add_edge("c", "d")
+
+        grouped_edges = G.grouped_edges
+        assert grouped_edges == [["a", "b"], ["c", "d"]]
+
+    def test_grouped_edges_output_two_lists(self):
+        """Test group_edges method."""
+
+        G = Graph()
+        G.add_edge("a", "b")
+
+        grouped_edges = G.grouped_edges
+        assert grouped_edges == [["a", "b"]]
 
 
 class TestSetNodeObject:
@@ -236,6 +275,11 @@ class TestGraphBasics:
         Logarithm operation."""
 
         assert str(mmodel_G.nodes["log"]["node_object"]) == dedent(node_s)
+
+    def test_repr_representation(self, mmodel_G):
+        """Test the repr representation of the graph."""
+
+        assert repr(mmodel_G) == "<mmodel.graph.Graph 'test_graph'>"
 
 
 class TestNetworkXGraphOperation:
@@ -426,3 +470,12 @@ class TestMGraphOperation:
         ]
         assert new_obj(first=1, second=2) == 5
         assert new_obj != old_obj
+
+    def test_edit_node_reset_output(self, mmodel_G):
+        """Test edit_node that with an incorrect output resets edge attribute."""
+
+        G = mmodel_G.edit_node("add", output="incorrect")
+
+        assert "output" not in G.edges["add", "log"]
+        assert "output" not in G.edges["add", "power"]
+        assert "output" not in G.edges["add", "subtract"]

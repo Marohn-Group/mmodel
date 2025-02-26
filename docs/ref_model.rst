@@ -2,7 +2,7 @@ Model
 ======
 
 *mmodel* model building favors composition over inheritance.
-The ``Model`` class takes three components: graph, handler, and
+The ``Model`` class takes several components, namely, graph, handler, and
 modifiers. A handler handles the graph calculation and data
 flow, and a modifier is a wrapper that applies simple modifications
 to the callable. The handler class is passed to the "handler" argument,

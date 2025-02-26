@@ -1,237 +1,164 @@
 from inspect import signature, Parameter, Signature
 from functools import wraps
 from mmodel.utility import param_sorter
-from collections import defaultdict
 
 
-def split_arguments(sig, arguments):
-    """Split the input argument into args and kwargs based on the signature.
-
-    The kwargs need to match the inputs completely. The function
-    takes care of the position-only variable in the old function.
-
-    :param inspect.Signature sig: signature of the original function
-    :param dict arguments: keyword argument values
-    """
-
-    args = []
-    for param in sig.parameters.values():
-        if param.kind == 0:
-            args.append(arguments.pop(param.name))
-
-    return args, arguments
-
-
-def modify_signature(func, inputs):
-    """Modify function signature to custom-defined inputs.
-
-    The inputs replace the original signature in the same
-    order. The resulting function is a keyword-only function.
-    The conversion ignores VAR_POSITIONAL (args). For these
-    functions, create a new function instead.
-
-    :param callable func: function to change signature
-    :param list inputs: new input parameters for the function.
-    """
-
-    sig = signature(func)
-
-    # check if input parameters are less than the parameters required
-    # excludes parameters with defaults
-    sig_dict = defaultdict(list)
-    sig_default_dict = defaultdict(list)
-
-    for param in sig.parameters.values():
-        sig_dict[param.kind].append(param.name)
-        if param.default is not Parameter.empty:
-            sig_default_dict[param.kind].append(param.name)
-
-    sig_count = [len(sig_dict[key]) for key in [0, 1, 2, 3, 4]]
-    nd_sig_count = [
-        len(sig_dict[key]) - len(sig_default_dict[key]) for key in [0, 1, 2, 3, 4]
-    ]
-
-    # there are four cases for max_length
-    # case 1: var_kw - max = unlimited
-    # case 1: kw_only, no var_kw - max = pos + pos_or_kw + kw_only
-    # case 3: var_pos, no var_kw, no kw_only - max = unlimited
-    # case 4: no var_pos, no kw_only, no var_kw - max = pos + pos_or_kw
-    pos_expand = False
-    if sig_count[4] > 0:
-        max_length = None
-    elif sig_count[3] > 0:
-        max_length = sig_count[0] + sig_count[1] + sig_count[3]
-    elif sig_count[2] > 0:
-        max_length = None
-        pos_expand = True
-    else:
-        max_length = sig_count[0] + sig_count[1]
-
-    # there are three cases for min_length (nd = non-default)
-    # case 1: nd kw_only - min = nd kw + pos_or_kw + pos
-    # case 2: nd pos_or_kw, no nd kw_only - min = nd pos_or_kw + pos
-    # case 3: no nd pos_or_kw, no nd kw_only - min = nd pos
-
-    if nd_sig_count[3] > 0:
-        min_length = nd_sig_count[3] + sig_count[1] + sig_count[0]
-    elif nd_sig_count[1] > 0:
-        min_length = nd_sig_count[1] + sig_count[0]
-    else:
-        min_length = nd_sig_count[0]
-
-    # check if the inputs are enough for the function
-    if min_length > len(inputs):
-        raise ValueError("Not enough inputs for the function")
-    elif max_length is not None and max_length < len(inputs):
-        raise ValueError("Too many inputs for the function")
-
-    new_param = []
-    for element in inputs:
-        new_param.append(Parameter(element, kind=Parameter.POSITIONAL_OR_KEYWORD))
-    new_sig = Signature(new_param)
-
-    # remove the *args and **kwargs
-    param_list = sig_dict[0] + sig_dict[1] + sig_dict[3]
-    param_pair = list(zip(param_list, inputs))
-
-    @wraps(func)
-    def wrapped(**kwargs):
-        # all parameters are positional
-        if pos_expand:
-            return func(*kwargs.values())
-
-        # if keyword argument exists in the original signature
-        adjusted_args = []
-        adjusted_kwargs = {}
-
-        for old_key, new_key in param_pair:
-            if old_key in sig_dict[0]:
-                adjusted_args.append(kwargs.pop(new_key))
-            else:
-                adjusted_kwargs[old_key] = kwargs.pop(new_key)
-
-        adjusted_kwargs.update(kwargs)
-
-        return func(*adjusted_args, **adjusted_kwargs)
-
-    wrapped.__signature__ = new_sig
-    return wrapped
-
-
-def add_signature(func, inputs):
-    """Add signature to ufunc and builtin function.
-
-    Numpy's ufunc and builtin type do not have signatures,
-    therefore, a new signature is created, and the input arguments
-    are mapped as positional-only values.
-
-    :param callable func: function to change signature
-    :param list inputs: new input parameters for the function.
-    """
-
-    new_param = []
-    for element in inputs:
-        new_param.append(Parameter(element, kind=Parameter.POSITIONAL_OR_KEYWORD))
-
-    new_sig = Signature(new_param)
-
-    @wraps(func)
-    def wrapped(**kwargs):
-        return func(*kwargs.values())
-
-    wrapped.__signature__ = new_sig
-    return wrapped
-
-
-def convert_signature(func):
-    """Convert function signature to pos_or_keywords.
-
-    The method ignores "args", and "kwargs".
-    Note the signature does not include parameters with default values.
-    Use inputs to include the parameters.
-    """
-
-    sig = signature(func)
-    parameters = dict(sig.parameters)
-
-    param_list = []
-    for param in parameters.values():
-        if (param.kind == 1 or param.kind == 3) and param.default is Parameter.empty:
-            param_list.append(param)
-        elif param.kind == 0:  # defaults cannot be added to pos only parameter
-            param_list.append(
-                Parameter(param.name, kind=Parameter.POSITIONAL_OR_KEYWORD)
-            )
-
-    new_sig = Signature(parameters=param_list)
-
-    @wraps(func)
-    def wrapped(**kwargs):
-        # arguments = new_sig.bind(*args, **kwargs).arguments
-        args, kwargs = split_arguments(sig, kwargs)
-        return func(*args, **kwargs)
-
-    wrapped.__signature__ = new_sig
-    return wrapped
-
-
-def restructure_signature(
-    signature, default_dict, kind=Parameter.POSITIONAL_OR_KEYWORD
-):
+def restructure_signature(signature, default_dict):
     """Add defaults to signature for Model.
 
     Here the parameter kinds are replaced with kind (defaults
-    to POSITIONAL_OR_KEYWORD), and defaults are applied.
-    The final signatures are sorted. The function is used in
-    the Model signature definition, therefore no VAR_POSITIONAL
-    or VAR_KEYWORD should be in the signature.
-
+    to positional-or-keyword), and defaults are applied.
+    The final signatures are sorted.
 
     :param inspect.Signature signature: signature to add defaults
     :param dict default_dict: default values for the parameters
-    :param int kind: parameter kind
     """
 
     param_list = []
     for param in signature.parameters.values():
-        param_list.append(
-            Parameter(
-                param.name,
-                kind=kind,
-                default=default_dict.get(param.name, Parameter.empty),
-            )
-        )
+        default = default_dict.get(param.name, Parameter.empty)
+        param_list.append(Parameter(param.name, kind=1, default=default))
 
     return Signature(sorted(param_list, key=param_sorter))
 
 
-def has_signature(func):
-    """Check if the function has a signature.
+def get_parameters(func):
+    r"""Get the parameter dictionary for the function.
 
-    The function checks if the function has a signature. If the
-    function has a signature, the function returns True. If the
-    function does not have a signature, the function returns False.
+    If the function has no signature, the function returns
+    a dictionary with \*args and \*\*kwargs.
+    Empty input definition is allowed, therefore a function
+    without a signature and without argument lists is valid.
+
+    :param callable func: function to get the parameters
     """
 
     try:
-        signature(func)
-        return True
+        sig = signature(func)
+        return list(sig.parameters.values())
     except ValueError:
-        return False
+        return [Parameter("args", kind=2), Parameter("kwargs", kind=4)]
 
 
-def check_signature(func):
-    """Check if the function signature has parameters with default values.
+def get_node_signature(base_params, inputs_list):
+    """Get the node signature based on the function and argument lists.
 
-    If the function has position-only, or var-positional,
-    or var-keyword, or default values, the function returns False.
+    If the inputs_list are empty, the function returns
+    the signature with only the required parameters and no var- parameters.
+    If the inputs_list are not empty, the function checks if the
+    argument lists meet the minimum and maximum requirements of the function.
+    The inputs can be separated by "*" to indicate the keyword only parameters.
+
+    :param dict param_dict: dictionary of parameters
+    :param list inputs_list: list of input parameters
     """
 
-    sig = signature(func)
-    for param in sig.parameters.values():
-        if (
-            param.kind not in [Parameter.KEYWORD_ONLY, Parameter.POSITIONAL_OR_KEYWORD]
-            or param.default is not Parameter.empty
-        ):
-            return False
+    if not inputs_list:
+        sig_param = []
+        for param in base_params:
+            if param.default is Parameter.empty and param.kind != 2 and param.kind != 4:
+                sig_param.append(param)
+
+    else:
+        if "*" in inputs_list:
+            var_index = inputs_list.index("*")
+            arglist = inputs_list[:var_index]
+            kwarglist = inputs_list[var_index + 1 :]
+        else:
+            arglist = inputs_list
+            kwarglist = []
+
+        assert check_args(base_params, arglist)
+        assert check_kwargs(base_params, kwarglist)
+
+        # create the new signature
+        sig_param = [Parameter(name, kind=1) for name in arglist] + [
+            Parameter(name, kind=3) for name in kwarglist
+        ]
+
+    node_sig = Signature(sig_param)
+    return node_sig
+
+
+def convert_func(func, sig):
+    """Wrap the input node function and redirect the input parameters.
+
+    The signature is constructed in the node definition that defines
+    the new signature following the old signature.
+    The wrapper split the into the positional and keyword arguments,
+    and apply them to the function.
+    """
+
+    params = sig.parameters.values()
+    arg_keys = [p.name for p in params if p.kind < 2]
+    kwarg_keys = [p.name for p in params if p.kind > 2]
+
+    @wraps(func)
+    def wrapper(**kwargs):
+        # order the dictionary first
+        try:
+            arg_list = [kwargs[k] for k in arg_keys]
+            kwarg_dict = {k: kwargs[k] for k in kwarg_keys}
+        except KeyError as e:
+            # have the same behavior as a regular function
+            raise TypeError(f"missing a required argument: {e}")
+
+        return func(*arg_list, **kwarg_dict)
+
+    wrapper.__signature__ = sig
+
+    return wrapper
+
+
+def check_signature(base_params, param_list, param_type, nonvar_kind, var_kind):
+    """Check if the function signature is valid.
+
+    Check for the number of parameters based on original
+    signature requirements.
+    """
+
+    argname = []
+    required = []
+    var_args = False
+    for param in base_params:
+        if param.kind in var_kind:
+            var_args = True
+        elif param.kind in nonvar_kind:
+            argname.append(param.name)
+            if param.default is Parameter.empty:
+                required.append(param.name)
+
+    if not var_args:
+        if len(param_list) > len(argname):
+            raise Exception(
+                f"too many {param_type} arguments, "
+                f"maximum {len(argname)} but got {len(param_list)}"
+            )
+
+    if len(param_list) < len(required):
+        raise Exception(
+            f"not enough {param_type} arguments, "
+            f"minimum {len(required)} but got {len(param_list)}"
+        )
+
     return True
+
+
+def check_kwargs(base_params, kwarglist):
+    """Check if kwargs list is valid.
+
+    :param list base_params: list of signature parameters
+    :param list kwarglist: list of keyword arguments
+    """
+
+    return check_signature(base_params, kwarglist, "keyword", [3], [4])
+
+
+def check_args(base_params, arglist):
+    """Check if args list is valid.
+
+    :param list base_params: list of signature parameters
+    :param list arglist: list of positional arguments
+    """
+
+    return check_signature(base_params, arglist, "positional", [0, 1], [2])
