@@ -4,6 +4,7 @@ from mmodel.utility import (
     is_edge_attr_defined,
     is_node_output_unique,
     modelgraph_returns,
+    check_model_returns,
     EditMixin,
     ReprMixin,
 )
@@ -73,18 +74,13 @@ class Model(EditMixin, ReprMixin):
         """Set the returns of the model.
 
         For user defined returns, check returns exist in the graph.
+        The returns can be the node output as well as the input.
         """
         if returns is None:
             return modelgraph_returns(graph)
         elif returns == []:
             return []  # empty returns, the model returns None
-        else:
-            graph_returns = nx.get_node_attributes(graph, "output").values()
-            for return_var in returns:
-                if return_var not in graph_returns:
-                    raise ValueError(
-                        f"return variable {repr(return_var)} not in the graph."
-                    )
+        elif check_model_returns(graph, returns):
             return returns
 
     @property

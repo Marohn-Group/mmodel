@@ -108,6 +108,23 @@ def test_modelgraph_returns_None():
     assert util.modelgraph_returns(G) == []
 
 
+def test_check_model_returns(mmodel_G):
+    """Test check_model_returns."""
+
+    assert util.check_model_returns(mmodel_G, ["k", "m"])
+
+    with pytest.raises(
+        Exception,
+        match="user defined return 'xy' not in the graph.",
+    ):
+        util.check_model_returns(mmodel_G, ["xy"])
+
+def test_check_model_returns_inputs(mmodel_G):
+    """Test check_model_returns allow input parameter."""
+
+    assert util.check_model_returns(mmodel_G, ["a", "k", "m"])
+
+
 def test_graph_topological_sort(mmodel_G):
     """Test graph_topological_sort.
 

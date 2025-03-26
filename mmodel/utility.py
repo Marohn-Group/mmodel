@@ -38,6 +38,28 @@ def modelgraph_returns(graph):
     return returns_list
 
 
+def check_model_returns(graph, returns):
+    """Check if the user defined returns are valid.
+
+    The function is used by the model, where only returns
+    with elements are passed.
+
+    :param list returns: returns to check.
+    :rtype: list
+    """
+
+    ouputs = list(nx.get_node_attributes(graph, "output").values())
+    inputs = list(modelgraph_signature(graph).parameters.keys())
+    graph_returns = ouputs + inputs
+
+    for return_var in returns:
+        if return_var not in graph_returns:
+            raise ValueError(
+                f"user defined return {repr(return_var)} not in the graph."
+            )
+    return True
+
+
 def param_sorter(parameter):
     """Sorter for argument parameter.
 

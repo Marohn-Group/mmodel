@@ -188,37 +188,25 @@ class TestModel:
 
         with pytest.raises(
             ValueError,
-            match=r"return variable 'x' not in the graph.",
+            match=r"user defined return 'x' not in the graph.",
         ):
             Model("model_instance", mmodel_G, BasicHandler, returns=["m", "k", "x"])
 
         model = Model("model_instance", mmodel_G, BasicHandler)
         with pytest.raises(
             ValueError,
-            match=r"return variable 'x' not in the graph.",
+            match=r"user defined return 'x' not in the graph.",
         ):
 
             model.edit(returns=["m", "k", "x"])
 
-    def test_model_returns_incorrect_variable(self, mmodel_G):
-        """Test model with incorrect return variable.
+    def test_model_returns_input_parameter(self, mmodel_G):
+        """Test model with return parameter set to input.
 
-        The function should raise an error.
+        The behavior is allowed.
         """
-
-        with pytest.raises(
-            ValueError,
-            match=r"return variable 'x' not in the graph.",
-        ):
-            Model("model_instance", mmodel_G, BasicHandler, returns=["m", "k", "x"])
-
-        model = Model("model_instance", mmodel_G, BasicHandler)
-        with pytest.raises(
-            ValueError,
-            match=r"return variable 'x' not in the graph.",
-        ):
-
-            model.edit(returns=["m", "k", "x"])
+        model = Model("model_instance", mmodel_G, BasicHandler, returns=["m", "k", "a"])
+        assert model.returns == ["m", "k", "a"]
 
     def test_model_returns_empty_list(self, mmodel_G):
         """Test model with empty returns list."""
