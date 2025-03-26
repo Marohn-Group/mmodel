@@ -10,7 +10,7 @@ or the model itself. To go step further, *mmodel* also provides shortcuts,
 that is designed to apply directly to a model.
 The shortcuts applies modifiers to the model or nodes in the model.
 
-available modifiers and shortcuts
+Available modifiers and shortcuts
 ----------------------------------
 
 .. list-table:: Available modifiers
@@ -43,7 +43,7 @@ available modifiers and shortcuts
       - Apply ``print_inputs`` and ``print_output`` shortcuts to individual nodes
         that print out intermediate variable values during node execution.
 
-apply a modifier to a node or model
+Apply a modifier to a node or model
 -----------------------------------
 
 For example, to add a loop modifier to the node "add":
@@ -80,7 +80,7 @@ For example, to add a loop modifier to the node "add":
 
 Similarly, use the ``modifiers`` argument to define model modifiers.
 
-shortcut usage
+Shortcut usage
 --------------
 
 loop shortcut
@@ -203,7 +203,7 @@ the print-related shortcuts quickly. Users are encouraged to create
 additional nodes for monitoring the execution process, which can benefit from 
 the ``print_shortcut`` as well.
 
-modifier and shortcut chaining
+Modifier and Shortcut chaining
 --------------------------------
 
 Because the modifiers are decorators, they can be chained. The modifiers in the

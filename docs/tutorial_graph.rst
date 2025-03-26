@@ -120,11 +120,8 @@ to signature objects.
 
     The node output parameter needs to be unique.
 
-graph methods
-----------------
-
-visualization
-~~~~~~~~~~~~~~
+Graph visualization
+--------------------
 
 The graph can be visualized or saved using the ``visualize`` method.
 
@@ -137,8 +134,7 @@ The graph can be visualized or saved using the ``visualize`` method.
     G.visualize(outfile="graph.png")
 
 
-
-name and docstring
+Name and docstring
 ----------------------
 
 The name and graph string behaves as the *networkx* graphs. To add the name to the graph:
@@ -158,10 +154,10 @@ The name and graph string behaves as the *networkx* graphs. To add the name to t
     >>> print(G)
     Graph named 'Graph Example' with 0 nodes and 0 edges
 
-mutability
+Mutability
 ------------
 
-The graph object is mutable. A shallow or deepcopy might be needed to create a copy
+A graph object is mutable. A shallow or deepcopy is needed to create a copy
 of the graph.
 
 .. code-block:: python

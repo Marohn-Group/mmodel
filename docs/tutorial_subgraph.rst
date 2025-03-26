@@ -25,7 +25,7 @@ The graph used in the tutorial is defined as follows:
     G.add_grouped_edges_from(grouped_edges)
     G.add_node_objects_from(node_objects)
 
-create a subgraph
+Create a subgraph
 --------------------------------
 
 There are three methods provided for creating a subgraph from the graph:

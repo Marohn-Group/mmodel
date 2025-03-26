@@ -39,8 +39,9 @@ The resulting node object can be executed directly.
     >>> node_a(m=1, n=2)
     3
 
-remapping function parameter signature
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Remapping function parameter signature
+---------------------------------------
+
 To avoid re-defining functions using different input parameters or for functions
 that only allow positional arguments (built-in functions and numpy.ufunc), the
 "inputs" parameter can change the node signature.
@@ -109,8 +110,8 @@ level or a custom function should be defined.
 
 
 
-built-in functions and functions without signature
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Built-in functions and functions without signature
+---------------------------------------------------
 
 There are different types of functions that ``inspect.signature`` cannot extract
 the parameters from, namely:
@@ -153,7 +154,7 @@ the parameters from, namely:
 The ``Node`` class also accepts additional keyword arguments. For example,
 the user can override the function docstring using the "doc" argument.
 
-edit a node
+Edit a node
 ----------------
 
 The node can be edited by applying one or multiple changes to the arguments.

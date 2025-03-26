@@ -91,7 +91,7 @@ The models can be extracted and executed.
     >>> model_B(2, 3, 4)
     24.0
 
-edit the model group
+Edit the model group
 --------------------
 
 The model group can be edited by applying one or multiple changes to the arguments.

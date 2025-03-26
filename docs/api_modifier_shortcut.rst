@@ -1,7 +1,7 @@
-Modifer and shortcut API
+Modifier and shortcut API
 ==========================
 
-modifiers
+Modifiers
 ---------
 
 The modifiers are defined as decorator functions that can modify a function
@@ -69,7 +69,7 @@ keyword-only arguments.
     at the node and model level. The metadata is a string passed to the "metadata" attribute of
     the modifier function.
 
-shortcuts
+Shortcuts
 -----------
 
 There are not many restrictions of shortcuts. To ensure the same behavior, the shortcut
