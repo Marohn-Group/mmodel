@@ -68,10 +68,10 @@ For example, to add a loop modifier to the node "add":
 
     G.add_edge("add", "squared")
     # set object without modifiers
-    G.set_node_object(Node("squared", squared, "d"))
+    G.add_node_object(Node("squared", squared, "d"))
 
     # set object with modifier
-    G.set_node_object(Node("add", add, "c", modifiers=[loop_input(parameter='b')]))
+    G.add_node_object(Node("add", add, "c", modifiers=[loop_input(parameter='b')]))
 
     # post modification
     # a new copy of the graph is created

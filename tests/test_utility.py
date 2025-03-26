@@ -103,8 +103,7 @@ def test_modelgraph_returns_None():
     from mmodel.graph import Graph
 
     G = Graph()
-    G.add_node("Test")
-    G.set_node_object(Node("Test", lambda x: None, output=None))
+    G.add_node_object(Node("Test", lambda x: None, output=None))
 
     assert util.modelgraph_returns(G) == []
 
@@ -249,6 +248,28 @@ def test_is_edge_attr_defined():
         ),
     ):
         util.is_edge_attr_defined(g, "w")
+
+
+def test_is_node_output_duplicated():
+    """Test is_node_output_duplicated."""
+
+    # all nodes defined
+    g = nx.DiGraph()
+    g.add_node(1, output="a")
+    g.add_node(2, output="b")
+
+    assert util.is_node_output_unique(g)
+
+    # missing attribute
+    g = nx.DiGraph()
+    g.add_node(1, output="a")
+    g.add_node(2, output="a")
+
+    with pytest.raises(
+        Exception,
+        match=(r"invalid graph: duplicated output 'a' for node 2."),
+    ):
+        util.is_node_output_unique(g)
 
 
 def test_parse_functype(func):

@@ -23,7 +23,7 @@ The graph used in the tutorial is defined as follows:
 
     G = Graph(name="example_graph")
     G.add_grouped_edges_from(grouped_edges)
-    G.set_node_objects_from(node_objects)
+    G.add_node_objects_from(node_objects)
 
 create a subgraph
 --------------------------------

@@ -105,8 +105,8 @@ def replace_subgraph(graph, subgraph, subgraph_node):
 
     graph.remove_nodes_from(subgraph.nodes)
     # remove unique edges
+    graph.add_node_object(subgraph_node)
     graph.add_edges_from(set(new_edges))
-    graph.set_node_object(subgraph_node)
 
     return graph
 
@@ -212,6 +212,36 @@ def is_edge_attr_defined(graph, attr: str):
             f"invalid {graph_str}: attribute {repr(attr)}"
             f" is not defined for edge(s) {edge_list}."
         )
+
+    return True
+
+
+def is_node_output_unique(graph):
+    """Check if all node output attribute are unique.
+
+    The restriction is added in version 0.8.1. The reason
+    being that several methods including the subgraph filter
+    and the intermediate returns relies on the unique output.
+
+    Here we allow None values to be duplicated.
+    The algorithm is simply to start a new list for comparison.
+    Raise an exception if the node attribute values are not unique.
+    """
+
+    if graph.name:
+        graph_str = f"graph ({graph.name})"
+    else:
+        graph_str = "graph"
+
+    compare_list = []
+    for node, output in nx.get_node_attributes(graph, "output").items():
+        if output is not None:
+            if output in compare_list:
+                raise Exception(
+                    f"invalid {graph_str}: duplicated output {repr(output)}"
+                    f" for node {repr(node)}."
+                )
+            compare_list.append(output)
 
     return True
 

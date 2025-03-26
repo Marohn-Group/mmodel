@@ -2,6 +2,7 @@ from mmodel.utility import (
     modify_func,
     is_node_attr_defined,
     is_edge_attr_defined,
+    is_node_output_unique,
     modelgraph_returns,
     EditMixin,
     ReprMixin,
@@ -46,7 +47,7 @@ class Model(EditMixin, ReprMixin):
         self.name = self.__name__ = name
         # create a copy of the graph
         self._graph = nx.freeze(graph.deepcopy())
-        self._returns = returns or modelgraph_returns(graph)  # tuples
+        self._returns = self.set_returns(graph, returns)  # tuples
         self._modifiers = modifiers or list()
         self.handler = handler
         self._handler_kwargs = handler_kwargs or {}
@@ -67,6 +68,24 @@ class Model(EditMixin, ReprMixin):
         self.model_func.__signature__ = restructure_signature(
             signature(self.model_func), self._param_defaults
         )
+
+    def set_returns(self, graph, returns):
+        """Set the returns of the model.
+
+        For user defined returns, check returns exist in the graph.
+        """
+        if returns is None:
+            return modelgraph_returns(graph)
+        elif returns == []:
+            return []  # empty returns, the model returns None
+        else:
+            graph_returns = nx.get_node_attributes(graph, "output").values()
+            for return_var in returns:
+                if return_var not in graph_returns:
+                    raise ValueError(
+                        f"return variable {repr(return_var)} not in the graph."
+                    )
+            return returns
 
     @property
     def order(self):
@@ -131,15 +150,20 @@ class Model(EditMixin, ReprMixin):
         The method is bound to the Model class because the features
         are specific to ``Model`` class.
         """
+        if G.name:
+            G_str = f"graph ({G.name})"
+        else:
+            G_str = "graph"
 
-        assert nx.is_directed(G), f"invalid graph ({G.name}): undirected graph."
+        assert nx.is_directed(G), f"invalid {G_str}: undirected graph."
         assert not nx.recursive_simple_cycles(
             G
-        ), f"invalid graph ({G.name}): graph contains cycles."
+        ), f"invalid {G_str}: graph contains cycles."
 
         assert is_node_attr_defined(G, "node_object")
         # the following might occur when the node object is incorrectly constructed
         assert is_node_attr_defined(G, "output")
+        assert is_node_output_unique(G)
         assert is_node_attr_defined(G, "signature")
         assert is_edge_attr_defined(G, "output")
         return True

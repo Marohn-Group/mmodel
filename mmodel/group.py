@@ -47,7 +47,6 @@ class ModelGroup(EditMixin, ReprMixin):
 
         node_objects = node_objects or []
         self._node_dict = {n.name: n for n in node_objects}
-        # self.add_node_objects_from(node_objects)
 
         self._experiments = {}
         self._model_defaults = model_defaults or {}
@@ -71,7 +70,7 @@ class ModelGroup(EditMixin, ReprMixin):
                 raise KeyError(f"node {repr(node)} not found")
             node_obj_list.append(self._node_dict[node])
 
-        G.set_node_objects_from(node_obj_list)
+        G.add_node_objects_from(node_obj_list)
 
         base = {"group": self.name, "name": name}
         kwargs = {**base, **self._model_defaults, **model_args}

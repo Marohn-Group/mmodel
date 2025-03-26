@@ -7,15 +7,30 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_
 
+[Unreleased]
+------------
+
+Changed
+^^^^^^^
+
+- Change the ``.set_node_object`` and ``.set_node_object_from`` methods from the ``ModelGraph`` class
+  to ``.add_node_object`` and ``.add_node_objects_from``. The new class is no longer backward compatible.
+
+Fixed
+^^^^^
+
+- Fix the issue that user defined returns are unchecked in the model.
+
+
 [0.8.0] - 2025-02-05
 ---------------------
 
 Fixed
 ^^^^^^^
 
-- Fixed the issue that the "node_func" attribute can be overwritten during editing.
-- Fixed the issue that the "output" attribute of the edge is not updated during editing.
-- Fixed the issue of the different behavior of numpy.ufunc signature due to
+- Fixe the issue that the "node_func" attribute can be overwritten during editing.
+- Fixe the issue that the "output" attribute of the edge is not updated during editing.
+- Fixe the issue of the different behavior of numpy.ufunc signature due to
   ``inspect.signature`` change in the Python version 3.11.9.
 - Rewrite node internal logic for converting function.
 

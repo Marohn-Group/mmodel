@@ -20,21 +20,23 @@ class Graph(nx.DiGraph, ReprMixin):
     when called.
 
     The additional graph operations are added:
-    - add_grouped_edges and set_node_objects.
+    - add_grouped_edges and add_node_objects.
     - Method ``add_grouped_edges``, cannot have both edges list.
-    - Method ``set_node_object`` updates nodes with the node callable "func" and output.
+    - Method ``add_node_object`` updates nodes with the node callable "func" and output.
     """
 
     graph_attr_dict_factory = {"graph_module": "mmodel", "node_type": Node}.copy
 
-    def set_node_object(self, node_object):
+    def add_node_object(self, node_object):
         """Add or update the functions of an existing node."""
+        if node_object.name not in self.nodes:
+            self.add_node(node_object.name)
         self.nodes[node_object.name]["node_object"] = node_object
         self.nodes[node_object.name]["signature"] = node_object.signature
         self.nodes[node_object.name]["output"] = node_object.output
         self.update_graph()
 
-    def set_node_objects_from(self, node_objects: list):
+    def add_node_objects_from(self, node_objects: list):
         """Update the functions of existing nodes.
 
         The method is the same as adding a node object.
@@ -42,7 +44,7 @@ class Graph(nx.DiGraph, ReprMixin):
 
         for node_object in node_objects:
             # unzipping works for input with or without modifiers
-            self.set_node_object(node_object)
+            self.add_node_object(node_object)
 
     def add_edge(self, u_of_edge, v_of_edge, **attr):
         """Modify add_edge to update the edge attribute in the end."""
@@ -153,7 +155,7 @@ class Graph(nx.DiGraph, ReprMixin):
         node_object = self.nodes[node]["node_object"].edit(**kwargs)
 
         graph = self.deepcopy()
-        graph.set_node_object(node_object)
+        graph.add_node_object(node_object)
 
         return graph
 

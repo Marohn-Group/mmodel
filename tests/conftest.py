@@ -109,8 +109,9 @@ def mmodel_G():
     node_objects = [add_node, sub_node, power_node, multi_node, log_node]
 
     G = Graph(name="test_graph")
+    G.add_node_objects_from(node_objects)
     G.add_grouped_edges_from(grouped_edges)
-    G.set_node_objects_from(node_objects)
+    
     return G
 
 

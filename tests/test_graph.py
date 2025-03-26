@@ -142,7 +142,7 @@ class TestAddEdge:
 
 
 class TestSetNodeObject:
-    """Test set_node_object and set_node_objects_from."""
+    """Test add_node_object and add_node_objects_from."""
 
     @pytest.fixture
     def node(self, value_modifier):
@@ -167,22 +167,21 @@ class TestSetNodeObject:
         """Basic Graph with pre-defined edges."""
 
         G = Graph()
+        G.add_node_object(node)
         G.add_edge("func_a", "func_b")
         G.add_edge("func_a", "func_c")
 
-        G.set_node_object(node)
-
         return G
 
-    def test_set_node_object(self, base_G, node):
+    def test_add_node_object(self, base_G, node):
         """Test node basic attributes."""
 
         assert base_G.nodes["func_a"]["node_object"].__dict__ == node.__dict__
         assert base_G.nodes["func_a"]["output"] == "o"
         assert base_G.nodes["func_a"]["signature"] == node.signature
 
-    def test_set_node_objects_from(self, base_G):
-        """Test set_node_objects_from method.
+    def test_add_node_objects_from(self, base_G):
+        """Test add_node_objects_from method.
 
         Test if the edge attributes are updated.
         """
@@ -193,7 +192,7 @@ class TestSetNodeObject:
         def func_c(o, s):
             return o + s
 
-        base_G.set_node_objects_from(
+        base_G.add_node_objects_from(
             [Node("func_b", func_b, output=["q"]), Node("func_c", func_c, output=["t"])]
         )
 

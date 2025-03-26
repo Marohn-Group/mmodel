@@ -90,8 +90,7 @@ class TestModel:
         The function has an output and execution should ignore the output.
         """
         G = Graph()
-        G.add_node("Test")
-        G.set_node_object(Node("Test", lambda x: x))
+        G.add_node_object(Node("Test", lambda x: x))
         model = Model("test_model", G, BasicHandler, doc="Test model.")
 
         assert model(1) == None  # test if the return is None
@@ -100,8 +99,7 @@ class TestModel:
         """Test model with no inputs."""
 
         G = Graph()
-        G.add_node("Test")
-        G.set_node_object(Node("Test", lambda: 1, output="value"))
+        G.add_node_object(Node("Test", lambda: 1, output="value"))
         model = Model("test_model", G, BasicHandler, doc="Test model.")
 
         assert model() == 1
@@ -181,6 +179,53 @@ class TestModel:
 
         assert model.returns == ["m", "k", "c"]
         assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36, 12)
+
+    def test_model_returns_incorrect_variable(self, mmodel_G):
+        """Test model with incorrect return variable.
+
+        The function should raise an error.
+        """
+
+        with pytest.raises(
+            ValueError,
+            match=r"return variable 'x' not in the graph.",
+        ):
+            Model("model_instance", mmodel_G, BasicHandler, returns=["m", "k", "x"])
+
+        model = Model("model_instance", mmodel_G, BasicHandler)
+        with pytest.raises(
+            ValueError,
+            match=r"return variable 'x' not in the graph.",
+        ):
+
+            model.edit(returns=["m", "k", "x"])
+
+    def test_model_returns_incorrect_variable(self, mmodel_G):
+        """Test model with incorrect return variable.
+
+        The function should raise an error.
+        """
+
+        with pytest.raises(
+            ValueError,
+            match=r"return variable 'x' not in the graph.",
+        ):
+            Model("model_instance", mmodel_G, BasicHandler, returns=["m", "k", "x"])
+
+        model = Model("model_instance", mmodel_G, BasicHandler)
+        with pytest.raises(
+            ValueError,
+            match=r"return variable 'x' not in the graph.",
+        ):
+
+            model.edit(returns=["m", "k", "x"])
+
+    def test_model_returns_empty_list(self, mmodel_G):
+        """Test model with empty returns list."""
+
+        model = Model("model_instance", mmodel_G, BasicHandler, returns=[])
+
+        assert model.returns == []
 
     def test_model_edit(self, mmodel_G):
         """Test model editing.
@@ -300,6 +345,13 @@ class TestModelValidation:
             AssertionError, match=r"invalid graph \(test_graph\): undirected graph"
         ):
             Model._is_valid_graph(G)
+    
+    def test_if_single_node_graph_is_valid(self, mmodel_G):
+        """Test is_graph_valid that correctly identifies single node graphs."""
+        G = mmodel_G.__class__()
+        G.add_node_object(Node("test", lambda x: x, output="c", inputs=["a"]))
+
+        assert Model._is_valid_graph(G)
 
     def test_is_valid_graph_cycles(self):
         """Test is_graph_valid that correctly identifies cycles.
@@ -361,7 +413,7 @@ class TestModelValidation:
         ):
             Model._is_valid_graph(G)
 
-        G.nodes["test"]["output"] = "c"
+        G.nodes["test"]["output"] = "f"
 
         with pytest.raises(
             Exception,
@@ -387,6 +439,22 @@ class TestModelValidation:
 
         G.edges["log", "test"]["output"] = "t"
         assert Model._is_valid_graph(G)
+
+    def test_is_valid_graph_duplicated_node_outputs(self, mmodel_G):
+        """Test is_valid_graph that correctly identifies duplicated node outputs."""
+
+        G = deepcopy(mmodel_G)
+        node_obj = Node("test2", lambda x, y: (x, y), output="c", inputs=["a", "b"])
+        G.add_node_object(node_obj)
+        G.add_edge("log", "test2", output="c")
+
+        with pytest.raises(
+            Exception,
+            match=(
+                r"invalid graph \(test_graph\): duplicated output 'c' for node 'test2'."
+            ),
+        ):
+            Model._is_valid_graph(G)
 
     def test_is_valid_graph_passing(self, mmodel_G):
         """Test is_valid_graph that correctly passing."""

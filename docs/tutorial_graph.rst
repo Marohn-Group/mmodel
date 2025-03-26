@@ -52,7 +52,7 @@ Similarly, with multiple grouped edges
 
 
 For linking the node object to the node, two methods are provided:
-``set_node_object`` and ``set_node_objects_from``. 
+``add_node_object`` and ``add_node_objects_from``. 
 The latter accepts a list of node objects. 
 
 .. code-block:: python
@@ -74,7 +74,7 @@ The latter accepts a list of node objects.
 
     G = Graph()
     G.add_grouped_edge(['a', 'b'], 'c')
-    G.set_node_object(Node(name="a", func=add, output="z"))
+    G.add_node_object(Node(name="a", func=add, output="z"))
 
 The node object can be accessed using the ``get_node_object`` method.
 
@@ -98,7 +98,7 @@ The node object can be accessed using the ``get_node_object`` method.
         Node("b", subtract, output="m"),
         Node("c", multiply, output="n", inputs=["z", "m"]),
     ]
-    G.set_node_objects_from(node_objects)
+    G.add_node_objects_from(node_objects)
 
     >>> node_b = G.get_node_object("b")
     >>> print(node_b)

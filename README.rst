@@ -50,8 +50,8 @@ positional inputs, keyword inputs, output, and modifiers as arguments.
 Partically, the positional inputs and keyword inputs are used to replace
 the original function inputs if necessary. The inputs are given as lists.
 
-The node object can be added to the graph using the ``set_node_object``. The
-``set_node_objects_from`` method is used for multiple nodes.
+The node object can be added to the graph using the ``add_node_object``. The
+``add_node_objects_from`` method is used for multiple nodes.
 
 .. code-block:: python
 
@@ -63,8 +63,8 @@ The node object can be added to the graph using the ``set_node_object``. The
     ]
 
     G = Graph(name="example_graph")
+    G.add_node_objects_from(node_objects)
     G.add_grouped_edges_from(grouped_edges)
-    G.set_node_objects_from(node_objects)
 
 To define the model, the name, graph, and handler need to be specified. Additional
 parameters include modifiers, descriptions, and returns lists. The input parameters
