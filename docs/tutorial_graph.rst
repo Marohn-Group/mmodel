@@ -6,7 +6,8 @@ The model graphs in *mmodel* are based on the DAG, where each node represents
 an execution step, and each edge represents the data flow from one callable
 to another. DAG structure allows us to create model graphs with nonlinear
 nodes.
-dDefine a graph
+
+Define a graph
 --------------
 
 The ``Graph`` class is the main graph class to establish a model graph.
@@ -115,7 +116,11 @@ The object is stored as a node attribute, and the function signature
 (`inspect.Signature`) is stored. The parameter values are converted
 to signature objects.
 
-graph Methods
+.. note::
+
+    The node output parameter needs to be unique.
+
+graph methods
 ----------------
 
 visualization
