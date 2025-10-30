@@ -17,6 +17,7 @@ Describe the problem this feature would solve or the use case it would address.
 ## Proposed Solution
 
 Describe how you envision this feature working. Include:
+
 - API design (if applicable)
 - User interface changes
 - Any implementation details you've considered
