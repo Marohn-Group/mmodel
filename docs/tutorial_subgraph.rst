@@ -14,7 +14,7 @@ The graph used in the tutorial is defined as follows:
         ("log", "function node"),
     ]
 
-    # define note objects
+    # define node objects
     node_objects = [
         Node("add", np.add, inputs=["x", "y"], output="sum_xy"),
         Node("log", math.log, inputs=["sum_xy", "log_base"], output="log_xy"),
@@ -46,6 +46,8 @@ README.rst):
 
 .. code-block:: python
 
+    from mmodel import Model, MemHandler
+
     H = G.subgraph(outputs=["log_xy"])
     model = Model("model", H, MemHandler)
 
@@ -64,6 +66,8 @@ uses. Here, we loop the "log_base" parameter from the README example.
 The ``replace_subgraph`` function outputs a new graph.
 
 .. code-block:: python 
+
+    from mmodel.modifier import loop_input
 
     H = G.subgraph(inputs=["log_base"])
     loop_node = Model(

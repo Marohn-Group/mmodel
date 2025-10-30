@@ -23,7 +23,7 @@ class are:
     import numpy as np
     import math
 
-    # define note objects
+    # define node objects
     node_objects = [
         Node("add", np.add, inputs=["x", "y"], output="sum_xy"),
         Node("log", math.log, inputs=["sum_xy", "log_base"], output="log_xy"),

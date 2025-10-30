@@ -6,11 +6,11 @@ from mmodel.utility import param_sorter
 def restructure_signature(signature, default_dict):
     """Add defaults to signature for Model.
 
-    Here the parameter kinds are replaced with kind (defaults
-    to positional-or-keyword), and defaults are applied.
-    The final signatures are sorted.
+    Here the parameter kinds are replaced with kind defaults
+    to positional-or-keyword, and defaults are applied.
+    The final signature is sorted.
 
-    :param inspect.Signature signature: signature to add defaults
+    :param inspect.Signature signature: signature to add defaults to
     :param dict default_dict: default values for the parameters
     """
 
@@ -23,14 +23,14 @@ def restructure_signature(signature, default_dict):
 
 
 def get_parameters(func):
-    r"""Get the parameter dictionary for the function.
+    r"""Get the parameter list for the function.
 
     If the function has no signature, the function returns
-    a dictionary with \*args and \*\*kwargs.
-    Empty input definition is allowed, therefore a function
+    a list with \*args and \*\*kwargs.
+    Empty input definition is allowed; therefore, a function
     without a signature and without argument lists is valid.
 
-    :param callable func: function to get the parameters
+    :param callable func: function to get the parameters from
     """
 
     try:
@@ -43,13 +43,13 @@ def get_parameters(func):
 def get_node_signature(base_params, inputs_list):
     """Get the node signature based on the function and argument lists.
 
-    If the inputs_list are empty, the function returns
-    the signature with only the required parameters and no var- parameters.
-    If the inputs_list are not empty, the function checks if the
+    If the inputs_list is empty, the function returns
+    the signature with only the required parameters and no var-parameters.
+    If the inputs_list is not empty, the function checks if the
     argument lists meet the minimum and maximum requirements of the function.
-    The inputs can be separated by "*" to indicate the keyword only parameters.
+    The inputs can be separated by "*" to indicate keyword-only parameters.
 
-    :param dict param_dict: dictionary of parameters
+    :param list base_params: list of parameters
     :param list inputs_list: list of input parameters
     """
 
@@ -85,8 +85,8 @@ def convert_func(func, sig):
 
     The signature is constructed in the node definition that defines
     the new signature following the old signature.
-    The wrapper split the into the positional and keyword arguments,
-    and apply them to the function.
+    The wrapper splits the arguments into positional and keyword arguments,
+    and applies them to the function.
     """
 
     params = sig.parameters.values()

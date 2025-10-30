@@ -5,7 +5,7 @@ import networkx as nx
 def modelgraph_signature(graph):
     """Obtain the signature from the model graph.
 
-    :param DiGraph graph: ``networkx.Digraph`` object,
+    :param DiGraph graph: ``networkx.DiGraph`` object
         with "signature" and "output" defined for nodes
         and "parameters" for edges.
         The args are a dictionary of inspected signatures.
@@ -39,12 +39,12 @@ def modelgraph_returns(graph):
 
 
 def check_model_returns(graph, returns):
-    """Check if the user defined returns are valid.
+    """Check if the user-defined returns are valid.
 
     The function is used by the model, where only returns
     with elements are passed.
 
-    :param list returns: returns to check.
+    :param list returns: returns to check
     :rtype: list
     """
 
@@ -61,15 +61,15 @@ def check_model_returns(graph, returns):
 
 
 def param_sorter(parameter):
-    """Sorter for argument parameter.
+    """Sorter for argument parameters.
 
     The values in the tuple are compared in sequential order:
     1. Order by parameter kind
-    2. Default parameter rank at the end of its kind
+    2. Default parameters rank at the end of their kind
     3. Alphabetical order
 
     :param inspect.Parameter parameter: parameter object
-    :rtype: (bool, parameter.name, parameter.kind)
+    :rtype: tuple(int, bool, str)
     """
 
     if parameter.default is not parameter.empty:
@@ -82,11 +82,10 @@ def graph_topological_sort(graph):
     """Determine the topological order.
 
     `nx.topological_generations` outputs a generator with each node list generation.
-    However, it does not carry the node attributes. The method
-    outputs a list of nodes for each generation.
+    However, it does not carry the node attributes. This function
+    outputs a list of nodes with their attributes.
 
-    :return: topological order of the graph. Returns a list of nodes and their
-        attributes.
+    :return: topological order of the graph. Returns a list of (node, attributes) tuples.
     :rtype: list
 
     """
@@ -239,15 +238,11 @@ def is_edge_attr_defined(graph, attr: str):
 
 
 def is_node_output_unique(graph):
-    """Check if all node output attribute are unique.
-
-    The restriction is added in version 0.8.1. The reason
-    being that several methods including the subgraph filter
-    and the intermediate returns relies on the unique output.
+    """Check if all node output attributes are unique.
 
     Here we allow None values to be duplicated.
-    The algorithm is simply to start a new list for comparison.
-    Raise an exception if the node attribute values are not unique.
+    The algorithm simply starts a new list for comparison.
+    Raises an exception if the node attribute values are not unique.
     """
 
     if graph.name:
@@ -293,12 +288,12 @@ def parse_functype(func):
 
 
 class EditMixin:
-    """Mixin class that records the parameters that used in constructor.
+    """Mixin class that records the parameters used in the constructor.
 
-    For classes that allows the edit method to create a new instance,
-    we keep track of the constructor parameter with the __new__ method.
+    For classes that allow the edit method to create a new instance,
+    we keep track of the constructor parameters with the __new__ method.
     Some of the constructor parameters might not be saved as attributes
-    or attributes of the same name, therefore the values are stored as well.
+    or as attributes of the same name; therefore, the values are stored as well.
     """
 
     def __new__(cls, *args, **kwargs):

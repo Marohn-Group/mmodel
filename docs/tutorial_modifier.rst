@@ -6,9 +6,9 @@ the code.
 The approach is error-prone and not scalable. *mmodel* uses DAG to create
 modular models that allow easy modification of nodes and models post-definition
 using modifiers. A modifier is a decorator that can modify the function of a node
-or the model itself. To go step further, *mmodel* also provides shortcuts,
-that is designed to apply directly to a model.
-The shortcuts applies modifiers to the model or nodes in the model.
+or the model itself. To go a step further, *mmodel* also provides shortcuts,
+which are designed to apply directly to a model.
+The shortcuts apply modifiers to the model or nodes in the model.
 
 Available modifiers and shortcuts
 ----------------------------------
@@ -22,10 +22,10 @@ Available modifiers and shortcuts
       - Description
     * - :mod:`loop_input <mmodel.modifier.loop_input>`
       - :mod:`mmodel.modifier`
-      - Modify function to iterate one given parameter.
+      - Modify a function to iterate one given parameter.
     * - :mod:`zip_loop_inputs <mmodel.modifier.zip_loop_inputs>`
       - :mod:`mmodel.modifier`
-      - Modify function to iterate the parameters pairwise.
+      - Modify a function to iterate the parameters pairwise.
     * - :mod:`profile_time <mmodel.modifier.profile_time>`
       - :mod:`mmodel.modifier`
       - Profile the execution time of a function.
@@ -88,8 +88,8 @@ loop shortcut
 
 The loop shortcut works by locating the first dependency of the parameter 
 in the graph. It then creates a subgraph that contains all the nodes that
-depend on the parameter. A new experiment is created with the subgraph as a 
-single node, and the node function is an experiment model. When multiple 
+depend on the parameter. A new model is created with the subgraph as a 
+single node, and the node function is a model. When multiple 
 parameters need to be looped, the user needs to inspect the order of the 
 parameter appearance in the graph to achieve an optimal result.
 
@@ -104,7 +104,7 @@ For example, a graph of :math:`G=\{V=\{A, B, C\}, E=\{(A, B), (B, C)\}\}`::
 The optimal way to loop c and e is to define the loop of parameter e in 
 node C first and then define the loop of parameter c in node B second. If 
 the order given is reversed, both parameters c and e are looped at node B 
-level. The reason for the behavior is that when loop c is created, the 
+level. The reason for the behavior is that when the loop for c is created, the 
 graph::
 
     A -> BC
@@ -113,7 +113,7 @@ graph::
     BC(c, d, e, f)
 
 As a result, the subsequent loop definition only recognizes the subgraph 
-node BC and loop the node instead.
+node BC and loops the node instead.
 
 .. note::
 
@@ -136,7 +136,7 @@ The user decides the string format and output style to maintain flexibility.
 For the shortcut's unachievable output style, the
 users are encouraged to add modifiers to the nodes directly.
 
-For example a graph of :math:`G=\{V=\{A, B, C\}, E=\{(A, B), (B, C)\}\}`::
+For example, a graph of :math:`G=\{V=\{A, B, C\}, E=\{(A, B), (B, C)\}\}`::
 
     A -> B -> C
 
@@ -153,7 +153,7 @@ For example a graph of :math:`G=\{V=\{A, B, C\}, E=\{(A, B), (B, C)\}\}`::
         return g
 
 And the model is ``M = Model(graph=G, ...)``. To output the input value a, 
-intermediate value of c and e:
+intermediate values of c and e:
 
 .. code-block:: python
 
@@ -208,7 +208,7 @@ Modifier and Shortcut chaining
 
 Because the modifiers are decorators, they can be chained. The modifiers in the
 list are applied in the order of the ``modifiers`` argument. The output of a
-shortcut is a model, therefore, we can apply multiple shortcuts to a single model.
+shortcut is a model; therefore, we can apply multiple shortcuts to a single model.
 
 
 See :doc:`modifier and shortcut API reference </api_modifier_shortcut>` for

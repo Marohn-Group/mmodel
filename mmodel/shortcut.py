@@ -12,15 +12,16 @@ import networkx as nx
 def print_shortcut(model, stdout_format_list, **pargs):
     """Shortcut to add print modifiers to nodes.
 
-    :param model: mrfmsim experiment
-    :param list stdout_format_list: list of format strings
-        each format string should only contain one variable.
+    :param model: model instance
+    :param list stdout_format_list: list of format strings.
+        Each format string should only contain one variable.
+    :param pargs: keyword arguments for the print function
 
     If the variable is not in the inputs or outputs of the nodes,
     the variable is ignored. The printout prioritizes inputs in a
     node. If a parameter is a node input and output, the first
     occurrence is used (when it is the output of the node). The
-    decision to make all output the same setting (pargs for print())
+    decision to make all outputs use the same setting (pargs for print())
     is to simplify the implementation. If the user wants to have
     customized printout behavior, use the regular modifier for each
     node.
@@ -70,15 +71,15 @@ def print_shortcut(model, stdout_format_list, **pargs):
 def loop_shortcut(model, parameter: str, name=None):
     """Shortcut to add a loop to a subgraph.
 
-    The parameter needs to be in the graph signature. Otherwise,
+    The parameter needs to be in the graph signature; otherwise,
     an exception is raised. For parameters that are not from the
     graph (signature modified by modifiers), use regular loops or change
-    modifiers.
+    the modifiers.
 
     :param model: executable model
     :param str parameter: loop parameter
-    :param str name: name of the new model, defaults to old model name.
-    :return: a new model with looped parameter
+    :param str name: name of the new model; defaults to the old model name.
+    :return: a new model with the looped parameter
     """
 
     G = model.graph

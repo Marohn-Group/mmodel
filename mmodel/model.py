@@ -73,7 +73,7 @@ class Model(EditMixin, ReprMixin):
     def set_returns(self, graph, returns):
         """Set the returns of the model.
 
-        For user defined returns, check returns exist in the graph.
+        For user-defined returns, check that returns exist in the graph.
         The returns can be the node output as well as the input.
         """
         if returns is None:
@@ -142,9 +142,9 @@ class Model(EditMixin, ReprMixin):
     def _is_valid_graph(G):
         """Check if the model graph is valid to build an executable.
 
-        The ``Model`` class does not allow cycle graphs.
+        The ``Model`` class does not allow cyclic graphs.
         The method is bound to the Model class because the features
-        are specific to ``Model`` class.
+        are specific to the ``Model`` class.
         """
         if G.name:
             G_str = f"graph ({G.name})"
@@ -202,8 +202,8 @@ class Model(EditMixin, ReprMixin):
         """Edit components of the model to create a new model.
 
         Editing the graph component of the model is not recommended.
-        Although it does create a new model, "edit" is for building
-        a new model with the same graph.
+        Although it does create a new model, the "edit" method is intended for
+        building a new model with the same graph.
         """
 
         # reset returns when the graph is changed

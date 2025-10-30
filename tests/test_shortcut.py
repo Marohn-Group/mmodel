@@ -101,7 +101,7 @@ class TestLoopShortcut:
         assert sorted(list(subnode.func.graph.nodes)) == ["multiply", "subtract"]
 
     def test_loop_shortcut_middle_execution(self, model_instance):
-        """Test loop_shorcut submodel execution."""
+        """Test loop_shortcut submodel execution."""
         loop_model = loop_shortcut(model_instance, "d", "loop_model")
 
         assert loop_model(a=0, b=2, d_loop=[1, 2], f=3) == ([8, 0], 1.0)

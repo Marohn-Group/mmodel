@@ -1,4 +1,4 @@
-"""Filters that used to create subgraph."""
+"""Filters that are used to create subgraphs."""
 
 import networkx as nx
 
@@ -26,8 +26,8 @@ def subnodes_by_inputs(graph, inputs: list) -> list:
 def subnodes_by_outputs(graph, outputs: list) -> list:
     """Obtain a list of subgraph nodes based on node outputs.
 
-    For mmodel graphs, outputs from all the internal nodes are unique.
-    Therefore the function only checks if function nodes overlap with
+    For mmodel graphs, outputs from all internal nodes are unique.
+    Therefore, the function only checks if function nodes overlap with
     the target return list. If a child node is included, so are the
     parent nodes.
 

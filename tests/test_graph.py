@@ -53,9 +53,9 @@ class TestAddEdge:
         """Test edge updates.
 
         The edges are not updated if:
-        1. the parent edge is not defined
-        1. the child edge is not defined
-        2. the parent out does not match the child parameter
+        1. the parent node is not defined
+        2. the child node is not defined
+        3. the parent output does not match the child parameter
         """
 
         base_G.add_edge("func_a", "func_d")
@@ -340,13 +340,13 @@ class TestNetworkXGraphOperation:
         assert G.adj != {}
 
     def test_subgraph_deepcopy(self, mmodel_G):
-        """Test the subgraph is copied.
+        """Test that the subgraph is copied.
 
         The subgraph no longer shares the graph attribute dictionary
         with the original graph.
 
         The subgraph view retains the graph attribute, and the copy method is only a
-        shallow copy. Modify a copied subgraph attribute changes the original graph.
+        shallow copy. Modifying a copied subgraph attribute changes the original graph.
         """
 
         H = mmodel_G.subgraph(["subtract", "multiply"]).deepcopy()
@@ -390,7 +390,7 @@ class TestMGraphOperation:
         assert graph_equal(subgraph, mmodel_G)
 
     def test_replace_subgraph(self, mmodel_G, value_modifier):
-        """Test the replace_subgraph method replace the graph.
+        """Test that the replace_subgraph method replaces the graph.
 
         See utils.replace_subgraph for more tests.
         """

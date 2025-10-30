@@ -13,15 +13,14 @@ class Graph(nx.DiGraph, ReprMixin):
 
     mmodel.Graph inherits from `networkx.DiGraph()`.
 
-    The class adds the "graph_module" and "node_type" attribute to
-    the graph attribute. The factory method
-    returns a copy of the dictionary. It is equivalent to
-    ``{"graph_module": "mmodel_graph", "node_type": Node}.copy()``
+    The class adds the "graph_module" and "node_type" attributes to
+    the graph. The factory method returns a copy of the dictionary.
+    It is equivalent to ``{"graph_module": "mmodel", "node_type": Node}.copy()``
     when called.
 
-    The additional graph operations are added:
-    - add_grouped_edges and add_node_objects.
-    - Method ``add_grouped_edges``, cannot have both edges list.
+    The following additional graph operations are added:
+    
+    - add_grouped_edges and add_node_objects
     - Method ``add_node_object`` updates nodes with the node callable "func" and output.
     """
 
@@ -39,7 +38,7 @@ class Graph(nx.DiGraph, ReprMixin):
     def add_node_objects_from(self, node_objects: list):
         """Update the functions of existing nodes.
 
-        The method is the same as adding a node object.
+        This method is equivalent to adding node objects individually.
         """
 
         for node_object in node_objects:
@@ -61,9 +60,8 @@ class Graph(nx.DiGraph, ReprMixin):
     def add_grouped_edge(self, u, v):
         """Add linked edge.
 
-        For mmodel, a group edge (u, v) allows u or v
-        to be a list of nodes. A grouped edge represents one or several
-        nodes flowing into one node.
+        For mmodel, a grouped edge (u, v) allows u or v to be a list of nodes.
+        A grouped edge represents one or several nodes flowing into one node.
         """
 
         u = [u] if isinstance(u, str) else u
@@ -115,10 +113,10 @@ class Graph(nx.DiGraph, ReprMixin):
 
     # graph operations
     def subgraph(self, nodes=None, inputs=None, outputs=None):
-        """Extract subgraph by nodes, inputs, and output.
+        """Extract subgraph by nodes, inputs, and outputs.
 
         If multiple parameters are specified, the result is a union
-        of the selection. The subgraph is a deep copy of the original graph.
+        of the selections. The subgraph is a deep copy of the original graph.
         The behavior is different from the parent class method, where the subgraph
         returns a view of the original graph.
         """
@@ -150,6 +148,7 @@ class Graph(nx.DiGraph, ReprMixin):
 
     def edit_node(self, node, **kwargs):
         """Edit node attributes.
+
         Returns a new graph.
         """
         node_object = self.nodes[node]["node_object"].edit(**kwargs)
@@ -173,13 +172,13 @@ class Graph(nx.DiGraph, ReprMixin):
     def deepcopy(self):
         """Deepcopy graph.
 
-        The ``graph.copy`` method is a shallow copy. Deepcopy creates a copy for
+        The ``graph.copy`` method is a shallow copy. Deepcopy creates a copy of
         the attributes dictionary.
         `graph.copy<https://networkx.org/documentation/stable/reference/classes
         /generated/networkx.Graph.copy.html>_`
 
         However, for subgraphs, ``deepcopy`` is incredibly inefficient because
-        subgraph contains '_graph', which stores the original graph.
+        the subgraph contains '_graph', which stores the original graph.
         An alternative method is to copy the code from the copy method,
         but use ``deepcopy`` for the items.
 

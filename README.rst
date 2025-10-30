@@ -47,7 +47,7 @@ the *NetworkX* graph class. *mmodel* provides a way to add a node object to
 each node with the ``Node`` class. The class takes the node name, function,
 positional inputs, keyword inputs, output, and modifiers as arguments.
 
-Partically, the positional inputs and keyword inputs are used to replace
+Particularly, the positional inputs and keyword inputs are used to replace
 the original function inputs if necessary. The inputs are given as lists.
 
 The node object can be added to the graph using the ``add_node_object``. The
@@ -55,7 +55,7 @@ The node object can be added to the graph using the ``add_node_object``. The
 
 .. code-block:: python
 
-    # define note objects
+    # define node objects
     node_objects = [
         Node("add", np.add, inputs=["x", "y"], output="sum_xy"),
         Node("log", math.log, inputs=["sum_xy", "log_base"], output="log_xy"),
@@ -69,7 +69,7 @@ The node object can be added to the graph using the ``add_node_object``. The
 To define the model, the name, graph, and handler need to be specified. Additional
 parameters include modifiers, descriptions, and returns lists. The input parameters
 of the model are determined based on the node function parameter signature,
-or custom signature can be provides using the ``inputs`` parameter. 
+or custom signature can be provided using the ``inputs`` parameter. 
 
 .. code-block:: python
 
@@ -224,7 +224,7 @@ To create the documentation, run under the "/docs" directory::
 
     make html
 
-Citing *mmdoel*
+Citing *mmodel*
 ^^^^^^^^^^^^^^^^^^
 The work was `published <https://pubs.aip.org/aip/jcp/article/159/4/
 044801/2904249/mmodel-A-workflow-framework-to-accelerate-the>`_ in the Journal 

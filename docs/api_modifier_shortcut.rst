@@ -72,14 +72,14 @@ keyword-only arguments.
 Shortcuts
 -----------
 
-There are not many restrictions of shortcuts. To ensure the same behavior, the shortcut
-should take the model as the frist argument and return a new model. It is recommended
+There are not many restrictions on shortcuts. To ensure the same behavior, the shortcut
+should take the model as the first argument and return a new model. It is recommended
 to use ``model.edit`` method to create a new model.
 
-To allow the shortcuts to be used in inherited model, make sure to generate new node, graph
+To allow the shortcuts to be used with inherited models, make sure to generate new node, graph
 and model using the same class as the input model. The class of the input model and graph
 can be directly accessed using ``model.__class__`` and ``model.graph.__class__`` or 
-type(model) and type(model.graph). The graph carries the information of the node, accessed
+``type(model)`` and ``type(model.graph)``. The graph carries the information of the node, accessed
 by ``model.graph.graph[node_type]``.
 
 

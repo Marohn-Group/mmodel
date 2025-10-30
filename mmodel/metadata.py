@@ -21,7 +21,7 @@ class MetaDataFormatter:
         the default string output is "key: value".
 
         :param dict formatter_dict: format function dictionary
-        :param list meta_order: metadata key order, entry is None if linebreak needed.
+        :param list meta_order: metadata key order; entry is None if linebreak is needed.
             Defaults to dictionary key order.
         """
 
@@ -129,11 +129,11 @@ def format_shortdocstring(key, value):
     """Format function docstring.
 
     Only the short docstring is parsed. The built-in and
-    ufunc type docstring location is not consistent
-    some module/function has the repr at the first line,
+    ufunc type docstring locations are not consistent;
+    some modules/functions have the repr at the first line,
     and some don't.
     Here we try to grab the first line that starts with
-    an upper case and ends with a period. If the docstring
+    an uppercase letter and ends with a period. If the docstring
     is improperly formatted, the first line is used.
     """
     if not value:
@@ -152,8 +152,8 @@ def format_returns(key, value):
     """Format the metadata value that has a list of returns.
 
     The formatter is for the returns metadata. If the "returns" value is empty,
-    the output is None. If the returns only have one value, return the value; otherwise
-    , return the values separated by commas in a tuple representation.
+    the output is None. If the returns only have one value, return the value; otherwise,
+    return the values separated by commas in a tuple representation.
     """
 
     return_len = len(value)
@@ -182,7 +182,7 @@ def format_obj_name(key, value):
 
     Only show the name of the object. This is used for
     graph and handler objects.
-    The object needs to have __name__ or name attribute defined.
+    The object needs to have the __name__ or name attribute defined.
     If neither is defined, display the string representation.
     """
 
@@ -194,9 +194,9 @@ def format_obj_name(key, value):
 
 
 def format_dictkeys(key, value):
-    """Formating function that only shows dictionary keys.
+    """Formatting function that only shows dictionary keys.
 
-    If the value dictionary is empty return None.
+    If the value dictionary is empty, return None.
     """
 
     if value:

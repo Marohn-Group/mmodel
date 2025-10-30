@@ -38,7 +38,7 @@ def test_param_sorter(parameter, result, func):
 def test_param_sorter_order(func):
     """Test param_sorter sorting order.
 
-    The correct order is a, b, *args, c, **kwargs, d=10.s
+    The correct order is a, b, *args, c, **kwargs, d=10.
     """
 
     params = inspect.signature(func).parameters
@@ -119,8 +119,9 @@ def test_check_model_returns(mmodel_G):
     ):
         util.check_model_returns(mmodel_G, ["xy"])
 
+
 def test_check_model_returns_inputs(mmodel_G):
-    """Test check_model_returns allow input parameter."""
+    """Test check_model_returns allows input parameters."""
 
     assert util.check_model_returns(mmodel_G, ["a", "k", "m"])
 
@@ -130,8 +131,8 @@ def test_graph_topological_sort(mmodel_G):
 
     The order is: add, subtract, multiply, log, power.
 
-    each node should be (node, attr), where the node is the name
-    of the node, attr is a dictionary of attributes.
+    Each node should be (node, attr), where the node is the name
+    of the node and attr is a dictionary of attributes.
     """
 
     order = util.graph_topological_sort(mmodel_G)
@@ -182,7 +183,7 @@ def test_replace_subgraph_terminal(mmodel_G):
 def test_replace_subgraph_middle(mmodel_G):
     """Test redirect edges based on subgraph and subgraph node.
 
-    This test specifically the middle node.
+    This tests specifically the middle node.
     """
 
     subgraph = mmodel_G.subgraph(["subtract", "power"])

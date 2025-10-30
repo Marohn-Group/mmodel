@@ -7,7 +7,7 @@ a node object is defined by the ``Node`` class. The class takes the following
 arguments:
 
 
-1. ""name", string: node name
+1. "name", string: node name
 2. "func", callable: node function, or function-like
 3. "inputs", list: input parameter list (optional)
 4. "output", string: return variable name (defaults to None)

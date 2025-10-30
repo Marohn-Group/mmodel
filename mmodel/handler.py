@@ -10,9 +10,9 @@ import sys
 class TopologicalHandler:
     """Base class for executing graph nodes in topological order.
 
-    "Returns" specifies the output order. If there is only one return
-    the value is outputted, otherwise a tuple is outputted. This
-    behavior is similar to the Python function.
+    "Returns" specifies the output order. If there is only one return,
+    the value is outputted; otherwise, a tuple is outputted. This
+    behavior is similar to Python functions.
 
     The topological handler assumes each node has exactly one output.
 
@@ -34,6 +34,7 @@ class TopologicalHandler:
 
     def __call__(self, **kwargs):
         """Execute graph model by layer.
+
         The data object is not stored as an attribute to avoid repeated
         use and reduce memory usage.
         """
@@ -113,7 +114,7 @@ class TopologicalHandler:
 
 
 class MemData(UserDict):
-    """Modified dictionary that checks the counter every time a value is accessed."""
+    """Modified dictionary that checks the counter each time a value is accessed."""
 
     def __init__(self, data, counter):
         """Counter is a copy of the counter dictionary."""
@@ -123,8 +124,8 @@ class MemData(UserDict):
     def __getitem__(self, key):
         """When a key is accessed, reduce the counter.
 
-        If the counter has reached zero, pop the value (key is deleted)
-        else wise return the key.
+        If the counter has reached zero, pop the value (key is deleted);
+        otherwise, return the key.
         """
 
         self.counter[key] -= 1
@@ -178,7 +179,8 @@ class H5Data:
         """Write h5 dataset/attribute by the group.
 
         If the object type cannot be recognized by HDF5, the string representation
-        of the object is written as an attribute
+        of the object is written as an attribute.
+
         :param dict value_dict: the dictionary of values to write
         :param h5py.group group: open h5py group object
         """

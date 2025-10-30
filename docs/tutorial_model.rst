@@ -27,7 +27,7 @@ First, we define the nodes and the graph.
 
         return sum_xy * log_xy + 6
 
-    # define note objects
+    # define node objects
     node_objects = [
         Node("add", np.add, inputs=["x", "y"], output="sum_xy"),
         Node("log", math.log, inputs=["sum_xy", "log_base"], output="log_xy"),
@@ -42,7 +42,7 @@ Then, we create the model instance.
 
 .. code-block:: python
 
-    from mmodel import MemHandler
+    from mmodel import Model, MemHandler
 
     model = Model(name='model', graph=G, handler=MemHandler, doc="Test model.")
 
@@ -69,7 +69,7 @@ The model determines the parameter for the model instance.
 Edit the model
 ----------------
 
-The model can be edited by appling one or multiple change of the arguments.
+The model can be edited by applying one or multiple changes to the arguments.
 For example if we want to change the documentation of the model, we can
 use the ``edit`` method. A new model instance is returned.
 
