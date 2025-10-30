@@ -28,8 +28,6 @@ Closes #
 - [ ] All existing tests pass
 - [ ] New tests added for new features/bug fixes
 
-### Test Results
-
 
 ## Documentation
 <!-- Check all that apply -->
