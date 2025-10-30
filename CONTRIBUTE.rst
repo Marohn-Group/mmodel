@@ -86,21 +86,8 @@ Submitting Changes
    - Ensure all tests pass
    - Update documentation as needed
 
-Pull Request Checklist
-----------------------
-
-Before submitting your pull request, please ensure:
-
-- [ ] All tests pass
-- [ ] New tests are added for new features
-- [ ] Documentation is updated
-- [ ] Code follows the project's style guidelines
-- [ ] Commit messages are clear and descriptive
-
-
 Code of Conduct
 ---------------
 
 Please be respectful and considerate in all interactions with the community.
 We aim to foster an inclusive and welcoming environment for all contributors.
-
