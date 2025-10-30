@@ -13,8 +13,10 @@ and this project adheres to
 Changed
 ^^^^^^^
 
-- Change the ``.set_node_object`` and ``.set_node_object_from`` methods from the ``ModelGraph`` class
+- Change the ``.set_node_object`` and ``.set_node_object_from`` methods from the ``Graph`` class
   to ``.add_node_object`` and ``.add_node_objects_from``. The new class is no longer backward compatible.
+- Modify the function docstrings.
+- Modify the documentation.
 
 Fixed
 ^^^^^
