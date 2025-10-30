@@ -8,34 +8,28 @@ assignees: ''
 
 ## Feature Description
 
-A clear and concise description of the feature you'd like to see.
+<!-- A clear and concise description of the feature you'd like to see -->
 
 ## Problem/Motivation
 
-Describe the problem this feature would solve or the use case it would address.
+<!-- Is your feature request related to a problem? Please describe. -->
 
 ## Proposed Solution
 
-Describe how you envision this feature working. Include:
+<!-- Describe the solution you'd like to see implemented -->
 
-- API design (if applicable)
-- User interface changes
-- Any implementation details you've considered
+## Alternative Solutions
 
-## Example Usage
+<!-- Describe any alternative solutions or features you've considered -->
 
-```python
-# Show how the feature would be used in code
-```
+## Use Case
 
-## Alternatives Considered
-
-Describe any alternative solutions or features you've considered.
+<!-- Describe how this feature would be used and who would benefit from it -->
 
 ## Additional Context
 
-Add any other context, mockups, or examples about the feature request here.
+<!-- Add any other context, screenshots, code examples, or references about the feature request here -->
 
-## Potential Drawbacks
+## Potential Implementation
 
-Are there any potential downsides or challenges with this feature?
+<!-- If you have ideas about how this could be implemented, please share them here -->

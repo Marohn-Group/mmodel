@@ -1,25 +1,6 @@
-# Pull Request
-
 ## Description
 
 <!-- Provide a brief description of the changes in this PR -->
-
-## Type of Change
-
-<!-- Please check the relevant option(s) -->
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] Documentation update
-- [ ] Code refactoring
-- [ ] Performance improvement
-- [ ] Test improvement
-
-## Related Issue
-
-<!-- If this PR addresses an issue, please link it here -->
-
-Closes #
 
 ## Changes Made
 
@@ -29,11 +10,36 @@ Closes #
 - 
 - 
 
+
+## Type of Change
+
+<!-- Check the appropriate box by replacing [ ] with [x] -->
+
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to change)
+- [ ] Documentation update
+- [ ] Code refactoring
+- [ ] Performance improvement
+- [ ] Test coverage improvement
+- [ ] Other (please describe):
+
+## Related Issue(s)
+
+<!-- Link to related issue(s) if applicable -->
+<!-- Example: Fixes #123, Closes #456, Related to #789 -->
+
+## Breaking Changes
+
+<!-- If this PR introduces breaking changes, describe them here -->
+<!-- Otherwise, write "None" -->
+
+
 ## Testing
 
 <!-- Describe the tests you ran to verify your changes -->
 
-- [ ] All existing tests pass
+- [ ] All existing tests pass (`tox`)
 - [ ] New tests added for new features/bug fixes
 
 
@@ -41,30 +47,27 @@ Closes #
 
 <!-- Check all that apply -->
 
-- [ ] Documentation has been updated
-- [ ] Code examples added/updated
-- [ ] Docstrings added/updated
-- [ ] No documentation changes needed
+- [ ] Updated docstrings for new/modified functions and classes
+- [ ] Updated relevant documentation files (if applicable)
+- [ ] Added usage examples (if applicable)
+- [ ] Documentation builds without errors (`cd docs && make html`)
 
 ## Checklist
 
-<!-- Please verify all items before submitting -->
+<!-- Check all that apply -->
 
-- [ ] My code follows the project's style guidelines (PEP 8, black formatting)
-- [ ] I have commented my code where necessary
-- [ ] My changes generate no new warnings or errors
+- [ ] Code follows PEP 8 style guidelines (use ``Black`` formatter's default settings)
+- [ ] Used meaningful variable and function names
+- [ ] Code is modular and readable
+- [ ] Commented code, particularly in hard-to-understand areas
+- [ ] Changes generate no new warnings or errors
+- [ ] PR focuses on a single feature or bug fix
 
-## Screenshots/Output
-
-<!-- If applicable, add screenshots or output examples to help explain your changes -->
 
 ## Additional Notes
 
-<!-- Add any other context about the pull request here -->
-
-## Breaking Changes
-
-<!-- If this is a breaking change, describe the impact and migration path -->
+<!-- Any additional information that reviewers should know
+Add screenshots here if relevant -->
 
 ---
 **Target Branch**: This PR should be merged into the `develop` branch.

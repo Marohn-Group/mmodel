@@ -8,30 +8,20 @@ assignees: ''
 
 ## Documentation Issue
 
-A clear and concise description of the documentation issue.
+<!-- Describe the issue with the documentation -->
 
 ## Location
 
-- **Page/Section**: [e.g., tutorial_model.rst, API reference for Graph class]
-- **URL**: [if applicable]
+<!-- Where is this documentation located? Provide file path or URL -->
 
-## Issue Type
+## Current Documentation
 
-- [ ] Typo or grammar error
-- [ ] Missing information
-- [ ] Unclear explanation
-- [ ] Incorrect code example
-- [ ] Other (please describe)
-
-## Current Content
-
-Quote or describe the current problematic content.
+<!-- What does the current documentation say (if applicable)? -->
 
 ## Suggested Improvement
 
-Describe how the documentation should be improved or provide corrected content.
+<!-- What should the documentation say instead, or what should be added? -->
 
 ## Additional Context
 
-Add any other context or screenshots about the documentation issue here.
-
+<!-- Add any other context, examples, or screenshots about the documentation issue here -->
