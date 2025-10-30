@@ -61,7 +61,7 @@ class Visualizer:
 
 
 plain_visualizer = Visualizer(
-    lambda node, ndict: format_label(node), lambda u, v, edict: "\l"
+    lambda node, ndict: format_label(node), lambda u, v, edict: r"\l"
 )
 visualizer = Visualizer(
     lambda node, ndict: format_label(nodeformatter(ndict["node_object"])),
