@@ -6,6 +6,8 @@ License
 
 .. include:: ../LICENSE
 
+.. include:: ../CONTRIBUTE.rst
+
 Indices and tables
 ==================
 
