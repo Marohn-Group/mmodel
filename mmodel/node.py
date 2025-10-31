@@ -58,10 +58,9 @@ class Node(EditMixin, ReprMixin):
         """Convert function to a node function.
 
         To replace the positional or positional-or-keyword parameters,
-        the list arglist needs to be defined. The user can select
+        the inputs_list needs to be defined. The user can select
         desired keyword-only parameters after "*" in the input. To replace the
-        keyword-only parameters, a custom function needs to be defined
-        to replace the function.
+        keyword-only parameters, a custom function needs to be defined.
 
         For functions that already fit the criteria and have no argument
         list, we still wrap the function. The overhead is minimal.
@@ -82,7 +81,10 @@ class Node(EditMixin, ReprMixin):
         return self._modifiers.copy()
 
     def edit(self, **kwargs):
-        """Edit node. A new node object is created."""
+        """Edit node.
+
+        A new node object is created.
+        """
 
         # if the the function is updated, the inputs are reset
         if "func" in kwargs:

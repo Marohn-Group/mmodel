@@ -2,7 +2,9 @@ from mmodel.utility import (
     modify_func,
     is_node_attr_defined,
     is_edge_attr_defined,
+    is_node_output_unique,
     modelgraph_returns,
+    check_model_returns,
     EditMixin,
     ReprMixin,
 )
@@ -46,7 +48,7 @@ class Model(EditMixin, ReprMixin):
         self.name = self.__name__ = name
         # create a copy of the graph
         self._graph = nx.freeze(graph.deepcopy())
-        self._returns = returns or modelgraph_returns(graph)  # tuples
+        self._returns = self.set_returns(graph, returns)  # tuples
         self._modifiers = modifiers or list()
         self.handler = handler
         self._handler_kwargs = handler_kwargs or {}
@@ -67,6 +69,19 @@ class Model(EditMixin, ReprMixin):
         self.model_func.__signature__ = restructure_signature(
             signature(self.model_func), self._param_defaults
         )
+
+    def set_returns(self, graph, returns):
+        """Set the returns of the model.
+
+        For user-defined returns, check that returns exist in the graph.
+        The returns can be the node output as well as the input.
+        """
+        if returns is None:
+            return modelgraph_returns(graph)
+        elif returns == []:
+            return []  # empty returns, the model returns None
+        elif check_model_returns(graph, returns):
+            return returns
 
     @property
     def order(self):
@@ -127,19 +142,24 @@ class Model(EditMixin, ReprMixin):
     def _is_valid_graph(G):
         """Check if the model graph is valid to build an executable.
 
-        The ``Model`` class does not allow cycle graphs.
+        The ``Model`` class does not allow cyclic graphs.
         The method is bound to the Model class because the features
-        are specific to ``Model`` class.
+        are specific to the ``Model`` class.
         """
+        if G.name:
+            G_str = f"graph ({G.name})"
+        else:
+            G_str = "graph"
 
-        assert nx.is_directed(G), f"invalid graph ({G.name}): undirected graph."
+        assert nx.is_directed(G), f"invalid {G_str}: undirected graph."
         assert not nx.recursive_simple_cycles(
             G
-        ), f"invalid graph ({G.name}): graph contains cycles."
+        ), f"invalid {G_str}: graph contains cycles."
 
         assert is_node_attr_defined(G, "node_object")
         # the following might occur when the node object is incorrectly constructed
         assert is_node_attr_defined(G, "output")
+        assert is_node_output_unique(G)
         assert is_node_attr_defined(G, "signature")
         assert is_edge_attr_defined(G, "output")
         return True
@@ -182,8 +202,8 @@ class Model(EditMixin, ReprMixin):
         """Edit components of the model to create a new model.
 
         Editing the graph component of the model is not recommended.
-        Although it does create a new model, "edit" is for building
-        a new model with the same graph.
+        Although it does create a new model, the "edit" method is intended for
+        building a new model with the same graph.
         """
 
         # reset returns when the graph is changed

@@ -10,8 +10,8 @@ to tackle some frustrations of the scientific
 coding process [1]_, [2]_. Often, public or in-house scientific packages do
 not address the varying programming levels among graduate students in a
 scientific research group. Due to the nature of graduate students wanting to
-focus on the effort of the result, the code written is often lacks quality
-and not well tested (unit test or code review). The code review requires a
+focus on the effort of the result, the code written often lacks quality
+and is not well tested (unit test or code review). The code review requires a
 review of the simulation's scientific model and the code written. Both are
 difficult to do, especially for experiments with complex components. For our
 complex systems, we often have shared parts, yet they follow non-sequential
@@ -29,7 +29,7 @@ How does it work?
 that behaves like a Python function --- **graph and model**.
 
 The **graph** is a directed acyclic graph (DAG) to represent a non-linear
-the procedure, with nodes presenting individual functions and edges representing
+procedure, with nodes representing individual functions and edges representing
 parameter flow. The graph is created with a custom *NetworkX* graph class
 while retaining all of its graph algorithms and methods. The class ``Graph``
 handles the graph construction.
@@ -54,8 +54,8 @@ some of the fundamental philosophies:
 Separation of graph model and model execution
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The graph model and execution steps are separated. This design allows for future
-modification and optimization of model execution, albeit new software implementation
-(parallel) or hardware (GPU, cloud computing) without needing to modify existing
+modification and optimization of model execution, with new software implementation
+(parallel) or hardware (GPU, cloud computing) without needing to modify the existing
 graph.
 
 Lightweight

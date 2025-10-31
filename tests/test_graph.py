@@ -53,9 +53,9 @@ class TestAddEdge:
         """Test edge updates.
 
         The edges are not updated if:
-        1. the parent edge is not defined
-        1. the child edge is not defined
-        2. the parent out does not match the child parameter
+        1. the parent node is not defined
+        2. the child node is not defined
+        3. the parent output does not match the child parameter
         """
 
         base_G.add_edge("func_a", "func_d")
@@ -142,7 +142,7 @@ class TestAddEdge:
 
 
 class TestSetNodeObject:
-    """Test set_node_object and set_node_objects_from."""
+    """Test add_node_object and add_node_objects_from."""
 
     @pytest.fixture
     def node(self, value_modifier):
@@ -167,22 +167,21 @@ class TestSetNodeObject:
         """Basic Graph with pre-defined edges."""
 
         G = Graph()
+        G.add_node_object(node)
         G.add_edge("func_a", "func_b")
         G.add_edge("func_a", "func_c")
 
-        G.set_node_object(node)
-
         return G
 
-    def test_set_node_object(self, base_G, node):
+    def test_add_node_object(self, base_G, node):
         """Test node basic attributes."""
 
         assert base_G.nodes["func_a"]["node_object"].__dict__ == node.__dict__
         assert base_G.nodes["func_a"]["output"] == "o"
         assert base_G.nodes["func_a"]["signature"] == node.signature
 
-    def test_set_node_objects_from(self, base_G):
-        """Test set_node_objects_from method.
+    def test_add_node_objects_from(self, base_G):
+        """Test add_node_objects_from method.
 
         Test if the edge attributes are updated.
         """
@@ -193,7 +192,7 @@ class TestSetNodeObject:
         def func_c(o, s):
             return o + s
 
-        base_G.set_node_objects_from(
+        base_G.add_node_objects_from(
             [Node("func_b", func_b, output=["q"]), Node("func_c", func_c, output=["t"])]
         )
 
@@ -341,13 +340,13 @@ class TestNetworkXGraphOperation:
         assert G.adj != {}
 
     def test_subgraph_deepcopy(self, mmodel_G):
-        """Test the subgraph is copied.
+        """Test that the subgraph is copied.
 
         The subgraph no longer shares the graph attribute dictionary
         with the original graph.
 
         The subgraph view retains the graph attribute, and the copy method is only a
-        shallow copy. Modify a copied subgraph attribute changes the original graph.
+        shallow copy. Modifying a copied subgraph attribute changes the original graph.
         """
 
         H = mmodel_G.subgraph(["subtract", "multiply"]).deepcopy()
@@ -391,7 +390,7 @@ class TestMGraphOperation:
         assert graph_equal(subgraph, mmodel_G)
 
     def test_replace_subgraph(self, mmodel_G, value_modifier):
-        """Test the replace_subgraph method replace the graph.
+        """Test that the replace_subgraph method replaces the graph.
 
         See utils.replace_subgraph for more tests.
         """

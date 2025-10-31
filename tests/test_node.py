@@ -16,7 +16,7 @@ def func():
 
 
 class TestSetNodeObject:
-    """Test set_node_object and set_node_objects_from."""
+    """Test add_node_object and add_node_objects_from."""
 
     @pytest.fixture
     def node(self, func, value_modifier):

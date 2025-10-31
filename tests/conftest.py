@@ -11,9 +11,9 @@ from mmodel.model import Model
 from mmodel.handler import BasicHandler
 
 
-# define the global functions for two graph
-# both graphs reference the same set of functions in nodes
-# in graph testing, they should be equal
+# Define the global functions for two graphs.
+# Both graphs reference the same set of functions in nodes.
+# In graph testing, they should be equal.
 
 
 def addition(a, constant=2):
@@ -109,8 +109,9 @@ def mmodel_G():
     node_objects = [add_node, sub_node, power_node, multi_node, log_node]
 
     G = Graph(name="test_graph")
+    G.add_node_objects_from(node_objects)
     G.add_grouped_edges_from(grouped_edges)
-    G.set_node_objects_from(node_objects)
+
     return G
 
 
@@ -158,9 +159,9 @@ def value_modifier():
 
 def graph_equal(G1, G2):
     """Test if graphs have the same nodes, edges, and attributes.
-    The node_object object is deep copied, so the object ID is different.
 
-    Dictionary comparison does not care about key orders.
+    The node_object is deep copied, so the object ID is different.
+    Dictionary comparison does not care about key order.
     """
 
     for node in G1.nodes:

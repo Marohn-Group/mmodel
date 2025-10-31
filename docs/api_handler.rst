@@ -5,7 +5,7 @@ Handlers in *mmodel* represent different execution methods for the provided
 graph. Currently, all handlers are executed in topological order,
 inherited from ``TopologicalHandler``.
 
-handler class
+Handler class
 --------------
 
 There are three required elements of a handler class/instance:
@@ -18,12 +18,12 @@ There are three required elements of a handler class/instance:
 
 Modify the ``Model`` class if these conditions cannot be satisfied.
 
-handler data class and TopologicalHandler
+Handler data class and TopologicalHandler
 ------------------------------------------
 Handler data stores the input value and all return values of the node execution.
 To define a custom handler, a Data class should be defined, 
-and it should have `__getitem__` and `__setitem__` methods.
-If the Model inherits the TopologicalHandler, the class DataClass should be
-defined as the Handler data class.
+and it should have ``__getitem__`` and ``__setitem__`` methods.
+If the handler inherits from ``TopologicalHandler``, the Data class should be
+defined as the handler's data class.
 
 See :doc:`handler reference </ref_handler>` for the handler reference.

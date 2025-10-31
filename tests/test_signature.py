@@ -86,7 +86,7 @@ class TestNodeSignature:
         ]
 
     def test_check_args_with_var_pos(self, param_set1):
-        """Test the check_args function with var_pos in sigature."""
+        """Test the check_args function with var_pos in signature."""
 
         # regular replacement
         assert check_args(param_set1, ["a", "b"])
@@ -195,7 +195,7 @@ class TestNodeSignature:
     def test_get_node_signature_without_arugment_lists(
         self, param_set1, param_set2, param_set3, param_set4
     ):
-        """Test the get_node_signature function."""
+        """Test the get_node_signature function without argument lists."""
 
         assert get_node_signature(param_set1, []) == Signature(
             [

@@ -353,8 +353,7 @@ class TestFormatedString:
     def test_format_metadata(self, metadata_obj, formatter):
         """Test the complete metadata representation.
 
-        The end string needs to be stripped if the last line is
-        an empty string.
+        The end string needs to be stripped if the last line is an empty string.
         """
 
         expected = """\

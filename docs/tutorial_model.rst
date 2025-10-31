@@ -27,7 +27,7 @@ First, we define the nodes and the graph.
 
         return sum_xy * log_xy + 6
 
-    # define note objects
+    # define node objects
     node_objects = [
         Node("add", np.add, inputs=["x", "y"], output="sum_xy"),
         Node("log", math.log, inputs=["sum_xy", "log_base"], output="log_xy"),
@@ -36,13 +36,13 @@ First, we define the nodes and the graph.
 
     G = Graph(name="example_graph")
     G.add_grouped_edges_from(grouped_edges)
-    G.set_node_objects_from(node_objects)
+    G.add_node_objects_from(node_objects)
 
 Then, we create the model instance.
 
 .. code-block:: python
 
-    from mmodel import MemHandler
+    from mmodel import Model, MemHandler
 
     model = Model(name='model', graph=G, handler=MemHandler, doc="Test model.")
 
@@ -66,10 +66,10 @@ Then, we create the model instance.
 
 The model determines the parameter for the model instance.
 
-edit the model
+Edit the model
 ----------------
 
-The model can be edited by appling one or multiple change of the arguments.
+The model can be edited by applying one or multiple changes to the arguments.
 For example if we want to change the documentation of the model, we can
 use the ``edit`` method. A new model instance is returned.
 
@@ -86,7 +86,7 @@ use the ``edit`` method. A new model instance is returned.
     New documentation.
 
 
-extra return variables
+Extra return variables
 ----------------------------
 
 The default return of the model is the output of the terminal nodes. To
@@ -96,7 +96,7 @@ as keyword arguments.
 
 See :doc:`handler reference </ref_handler>` for all available handlers. 
 
-apply defaults to parameters
+Apply defaults to parameters
 ------------------------------
 
 Any parameter default values should be applied at the model level.

@@ -87,11 +87,10 @@ class TestModel:
     def test_metadata_without_no_return(self):
         """Test metadata that doesn't have a return.
 
-        The function has an output and execution should ignore the output.
+        The function has an output, but execution should ignore the output.
         """
         G = Graph()
-        G.add_node("Test")
-        G.set_node_object(Node("Test", lambda x: x))
+        G.add_node_object(Node("Test", lambda x: x))
         model = Model("test_model", G, BasicHandler, doc="Test model.")
 
         assert model(1) == None  # test if the return is None
@@ -100,8 +99,7 @@ class TestModel:
         """Test model with no inputs."""
 
         G = Graph()
-        G.add_node("Test")
-        G.set_node_object(Node("Test", lambda: 1, output="value"))
+        G.add_node_object(Node("Test", lambda: 1, output="value"))
         model = Model("test_model", G, BasicHandler, doc="Test model.")
 
         assert model() == 1
@@ -126,19 +124,18 @@ class TestModel:
         )
 
     def test_model_visualize(self, model_instance):
-        """Test if the draw method of the model_instance.
+        """Test the visualize method of the model_instance.
 
-        The draw methods are tested in visualizer module. Here we make sure
-        the label is correct.
+        Here we make sure the label is correct.
         """
         dot_graph = model_instance.visualize()
 
         assert str(model_instance).replace("\n", r"\l") in dot_graph.source
 
-    def test_model_draw_export(self, model_instance, tmp_path):
-        """Test the draw method that exports to files.
+    def test_model_visualize_export(self, model_instance, tmp_path):
+        """Test the visualize method that exports to files.
 
-        Check the model description is in the file content.
+        Check that the model description is in the file content.
         """
 
         filename = tmp_path / "test_draw.dot"
@@ -181,6 +178,41 @@ class TestModel:
 
         assert model.returns == ["m", "k", "c"]
         assert model(a=10, d=15, f=1, b=2) == (math.log(12, 2), -36, 12)
+
+    def test_model_returns_incorrect_variable(self, mmodel_G):
+        """Test model with incorrect return variable.
+
+        The function should raise an error.
+        """
+
+        with pytest.raises(
+            ValueError,
+            match=r"user defined return 'x' not in the graph.",
+        ):
+            Model("model_instance", mmodel_G, BasicHandler, returns=["m", "k", "x"])
+
+        model = Model("model_instance", mmodel_G, BasicHandler)
+        with pytest.raises(
+            ValueError,
+            match=r"user defined return 'x' not in the graph.",
+        ):
+
+            model.edit(returns=["m", "k", "x"])
+
+    def test_model_returns_input_parameter(self, mmodel_G):
+        """Test model with return parameter set to input.
+
+        The behavior is allowed.
+        """
+        model = Model("model_instance", mmodel_G, BasicHandler, returns=["m", "k", "a"])
+        assert model.returns == ["m", "k", "a"]
+
+    def test_model_returns_empty_list(self, mmodel_G):
+        """Test model with empty returns list."""
+
+        model = Model("model_instance", mmodel_G, BasicHandler, returns=[])
+
+        assert model.returns == []
 
     def test_model_edit(self, mmodel_G):
         """Test model editing.
@@ -291,7 +323,7 @@ class TestModelValidation:
     """Test is_graph_valid method of Model."""
 
     def test_is_valid_graph_digraph(self):
-        """Test is_graph_valid that correctly identifies non-directed graphs."""
+        """Test is_valid_graph that correctly identifies non-directed graphs."""
 
         G = nx.complete_graph(4)
         G.name = "test_graph"
@@ -301,10 +333,17 @@ class TestModelValidation:
         ):
             Model._is_valid_graph(G)
 
-    def test_is_valid_graph_cycles(self):
-        """Test is_graph_valid that correctly identifies cycles.
+    def test_if_single_node_graph_is_valid(self, mmodel_G):
+        """Test is_valid_graph that correctly identifies single-node graphs."""
+        G = mmodel_G.__class__()
+        G.add_node_object(Node("test", lambda x: x, output="c", inputs=["a"]))
 
-        Check the self-cycle and the nonself cycle.
+        assert Model._is_valid_graph(G)
+
+    def test_is_valid_graph_cycles(self):
+        """Test is_valid_graph that correctly identifies cycles.
+
+        Check both self-cycles and non-self cycles.
         """
 
         G = nx.DiGraph(name="test_graph")
@@ -326,7 +365,7 @@ class TestModelValidation:
             Model._is_valid_graph(G)
 
     def test_is_valid_graph_missing_attr(self, standard_G):
-        """Test is_graph_valid that correctly identifies isolated nodes.
+        """Test is_valid_graph that correctly identifies missing attributes.
 
         Here we add nodes to mmodel_G.
         """
@@ -361,7 +400,7 @@ class TestModelValidation:
         ):
             Model._is_valid_graph(G)
 
-        G.nodes["test"]["output"] = "c"
+        G.nodes["test"]["output"] = "f"
 
         with pytest.raises(
             Exception,
@@ -388,7 +427,23 @@ class TestModelValidation:
         G.edges["log", "test"]["output"] = "t"
         assert Model._is_valid_graph(G)
 
+    def test_is_valid_graph_duplicated_node_outputs(self, mmodel_G):
+        """Test is_valid_graph that correctly identifies duplicated node outputs."""
+
+        G = deepcopy(mmodel_G)
+        node_obj = Node("test2", lambda x, y: (x, y), output="c", inputs=["a", "b"])
+        G.add_node_object(node_obj)
+        G.add_edge("log", "test2", output="c")
+
+        with pytest.raises(
+            Exception,
+            match=(
+                r"invalid graph \(test_graph\): duplicated output 'c' for node 'test2'."
+            ),
+        ):
+            Model._is_valid_graph(G)
+
     def test_is_valid_graph_passing(self, mmodel_G):
-        """Test is_valid_graph that correctly passing."""
+        """Test is_valid_graph passing validation."""
 
         assert Model._is_valid_graph(mmodel_G)

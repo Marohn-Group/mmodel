@@ -47,13 +47,11 @@ class Visualizer:
         dot_graph = graphviz.Digraph(name=G.name, **settings)
 
         for node, ndict in G.nodes(data=True):
-            node_str = self.format_node(node, ndict)
-            nlabel = format_label(node_str)
+            nlabel = self.format_node(node, ndict)
             dot_graph.node(node, label=nlabel)
 
         for u, v, edict in G.edges(data=True):
-            edge_str = self.format_edge(u, v, edict)
-            xlabel = format_label(edge_str)
+            xlabel = self.format_edge(u, v, edict)
             dot_graph.edge(u, v, xlabel=xlabel)
 
         if outfile:
@@ -62,8 +60,10 @@ class Visualizer:
         return dot_graph
 
 
-plain_visualizer = Visualizer(lambda node, ndict: node, lambda u, v, edict: "")
+plain_visualizer = Visualizer(
+    lambda node, ndict: format_label(node), lambda u, v, edict: r"\l"
+)
 visualizer = Visualizer(
-    lambda node, ndict: nodeformatter(ndict["node_object"]),
-    lambda u, v, edict: edict["output"],
+    lambda node, ndict: format_label(nodeformatter(ndict["node_object"])),
+    lambda u, v, edict: format_label(edict["output"]),
 )

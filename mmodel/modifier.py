@@ -31,9 +31,9 @@ def add_modifier_metadata(name, *args, **kwargs):
 
 
 def loop_input(parameter: str):
-    """Modify function to iterate one given parameter.
+    """Modify function to iterate over one given parameter.
 
-    :param list parameter: target parameter to loop
+    :param str parameter: target parameter to loop
         The target parameter name is changed to f"{param}_loop"
     """
 
@@ -62,11 +62,11 @@ def loop_input(parameter: str):
 
 
 def zip_loop_inputs(parameters: list):
-    """Modify function to iterate the parameters pairwise.
+    """Modify function to iterate over the parameters pairwise.
 
-    :param list parameters: list of the parameters to loop
-        only one parameter is allowed. If a string of the parameters is
-        provided, the parameters should be delimited by ", ".
+    :param list parameters: list of the parameters to loop.
+        If a string of the parameters is provided, the parameters should be
+        delimited by ", ".
     """
 
     @add_modifier_metadata("zip_loop_inputs", parameters=parameters)
@@ -101,7 +101,7 @@ def profile_time(number=1, repeat=1, verbose=False, precision=2):
     """Profile the execution time of a function.
 
     The modifier behaves similarly to the *timeit* module. However,
-    the modifier does not suppress garbage collection during the function
+    the modifier does not suppress garbage collection during function
     execution; therefore, the result might be slightly different.
     """
     import timeit
@@ -173,8 +173,8 @@ def parse_fields(format_str):
 def print_inputs(format_str: str, **pargs):
     """Print the node input to the console.
 
-    :param str stdout_format: format string for input and output
-        The format should be keyword only.
+    :param str format_str: format string for input and output.
+        The format should be keyword-only.
     :param pargs: keyword arguments for the print function
 
     The names of the parameters are parsed from the format string.
@@ -199,15 +199,15 @@ def print_inputs(format_str: str, **pargs):
 def print_output(format_str: str, **pargs):
     """Print the node output to the console.
 
-    :param str stdout_format: format string for input and output
-        The format should be keyword only. The behavior is for keeping the
+    :param str format_str: format string for input and output.
+        The format should be keyword-only. The behavior is for keeping
         consistency with other print modifiers.
-    :param str end: end of printout
+    :param pargs: keyword arguments for the print function
 
     The names of the parameters are parsed from the format string. The
-    use of the stdout_format is different from the input method, as
+    use of the format_str is different from the input method, as
     the modifiers do not know the return name of the node. Only one
-    output field is allowed and the field name is used as the return name.
+    output field is allowed, and the field name is used as the return name.
     """
 
     @add_modifier_metadata("print_output", format_str=format_str, **pargs)

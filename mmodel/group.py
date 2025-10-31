@@ -7,11 +7,11 @@ from mmodel.metadata import modelgroupformatter
 class ModelGroup(EditMixin, ReprMixin):
     """Create a group of models.
 
-    The ModelGroup class can create multiple models that shares the same pool
+    The ModelGroup class can create multiple models that share the same pool
     of nodes. The class reduces redundancy in node definitions.
 
-    If different type of models are used, the subclass should change the
-    ``model_type`` class attribute.  The class are effectively immutable.
+    If different types of models are used, the subclass should change the
+    ``model_type`` class attribute. The class is effectively immutable.
     However, we allow the edit method for bulk model default value changes.
     """
 
@@ -32,7 +32,7 @@ class ModelGroup(EditMixin, ReprMixin):
         from models.
 
         :param list node_objects: list of nodes objects
-        :param dict model_recipes: a dictionary of model arguments
+        :param dict model_recipes: a dictionary of model arguments.
             The setting contains the grouped edges and optional experiment kwargs.
             The key of the dictionary is the model name.
         :param dict model_defaults: default model settings. They can
@@ -47,7 +47,6 @@ class ModelGroup(EditMixin, ReprMixin):
 
         node_objects = node_objects or []
         self._node_dict = {n.name: n for n in node_objects}
-        # self.add_node_objects_from(node_objects)
 
         self._experiments = {}
         self._model_defaults = model_defaults or {}
@@ -71,7 +70,7 @@ class ModelGroup(EditMixin, ReprMixin):
                 raise KeyError(f"node {repr(node)} not found")
             node_obj_list.append(self._node_dict[node])
 
-        G.set_node_objects_from(node_obj_list)
+        G.add_node_objects_from(node_obj_list)
 
         base = {"group": self.name, "name": name}
         kwargs = {**base, **self._model_defaults, **model_args}

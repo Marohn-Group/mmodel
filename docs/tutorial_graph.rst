@@ -4,9 +4,10 @@ Build a model graph
 A directed acyclic graph (DAG) is a directed graph without any cycles.
 The model graphs in *mmodel* are based on the DAG, where each node represents
 an execution step, and each edge represents the data flow from one callable
-to another. DAG structure allows us to create model graphs with nonlinear
+to another. The DAG structure allows us to create model graphs with nonlinear
 nodes.
-dDefine a graph
+
+Define a graph
 --------------
 
 The ``Graph`` class is the main graph class to establish a model graph.
@@ -32,7 +33,7 @@ Aside from the *NetworkX* operations,
     # G.add_edge('a', 'b')
     # G.add_edge('a', 'c')
 
-Similarly, with multiple grouped edges
+Similarly, with multiple grouped edges:
 
 .. code-block:: python
 
@@ -52,7 +53,7 @@ Similarly, with multiple grouped edges
 
 
 For linking the node object to the node, two methods are provided:
-``set_node_object`` and ``set_node_objects_from``. 
+``add_node_object`` and ``add_node_objects_from``. 
 The latter accepts a list of node objects. 
 
 .. code-block:: python
@@ -74,7 +75,7 @@ The latter accepts a list of node objects.
 
     G = Graph()
     G.add_grouped_edge(['a', 'b'], 'c')
-    G.set_node_object(Node(name="a", func=add, output="z"))
+    G.add_node_object(Node(name="a", func=add, output="z"))
 
 The node object can be accessed using the ``get_node_object`` method.
 
@@ -92,13 +93,13 @@ The node object can be accessed using the ``get_node_object`` method.
     The sum of x and y.
 
     # or with multiple node objects
-    # both nodes add input values but outputs in different parameter
+    # both nodes add input values but output to different parameters
     node_objects = [
         Node("a", add, output="z"),
         Node("b", subtract, output="m"),
         Node("c", multiply, output="n", inputs=["z", "m"]),
     ]
-    G.set_node_objects_from(node_objects)
+    G.add_node_objects_from(node_objects)
 
     >>> node_b = G.get_node_object("b")
     >>> print(node_b)
@@ -112,14 +113,15 @@ The node object can be accessed using the ``get_node_object`` method.
 
 
 The object is stored as a node attribute, and the function signature
-(`inspect.Signature`) is stored. The parameter values are converted
+(``inspect.Signature``) is stored. The parameter values are converted
 to signature objects.
 
-graph Methods
-----------------
+.. note::
 
-visualization
-~~~~~~~~~~~~~~
+    The node output parameter needs to be unique.
+
+Graph visualization
+--------------------
 
 The graph can be visualized or saved using the ``visualize`` method.
 
@@ -132,11 +134,10 @@ The graph can be visualized or saved using the ``visualize`` method.
     G.visualize(outfile="graph.png")
 
 
-
-name and docstring
+Name and docstring
 ----------------------
 
-The name and graph string behaves as the *networkx* graphs. To add the name to the graph:
+The name and graph string behave as the *networkx* graphs. To add the name to the graph:
 
 
 .. code-block:: python
@@ -153,10 +154,10 @@ The name and graph string behaves as the *networkx* graphs. To add the name to t
     >>> print(G)
     Graph named 'Graph Example' with 0 nodes and 0 edges
 
-mutability
+Mutability
 ------------
 
-The graph object is mutable. A shallow or deepcopy might be needed to create a copy
+A graph object is mutable. A shallow or deepcopy is needed to create a copy
 of the graph.
 
 .. code-block:: python
@@ -164,5 +165,5 @@ of the graph.
     G.copy() # shallow copy
     G.deepcopy() # deep copy
 
-For more ways to interact with ``Graph`` and ``networkx.graph`` see
+For more ways to interact with ``Graph`` and ``networkx.DiGraph``, see
 :doc:`graph reference </ref_graph>`.

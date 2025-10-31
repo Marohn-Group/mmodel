@@ -38,7 +38,7 @@ def test_param_sorter(parameter, result, func):
 def test_param_sorter_order(func):
     """Test param_sorter sorting order.
 
-    The correct order is a, b, *args, c, **kwargs, d=10.s
+    The correct order is a, b, *args, c, **kwargs, d=10.
     """
 
     params = inspect.signature(func).parameters
@@ -103,10 +103,27 @@ def test_modelgraph_returns_None():
     from mmodel.graph import Graph
 
     G = Graph()
-    G.add_node("Test")
-    G.set_node_object(Node("Test", lambda x: None, output=None))
+    G.add_node_object(Node("Test", lambda x: None, output=None))
 
     assert util.modelgraph_returns(G) == []
+
+
+def test_check_model_returns(mmodel_G):
+    """Test check_model_returns."""
+
+    assert util.check_model_returns(mmodel_G, ["k", "m"])
+
+    with pytest.raises(
+        Exception,
+        match="user defined return 'xy' not in the graph.",
+    ):
+        util.check_model_returns(mmodel_G, ["xy"])
+
+
+def test_check_model_returns_inputs(mmodel_G):
+    """Test check_model_returns allows input parameters."""
+
+    assert util.check_model_returns(mmodel_G, ["a", "k", "m"])
 
 
 def test_graph_topological_sort(mmodel_G):
@@ -114,8 +131,8 @@ def test_graph_topological_sort(mmodel_G):
 
     The order is: add, subtract, multiply, log, power.
 
-    each node should be (node, attr), where the node is the name
-    of the node, attr is a dictionary of attributes.
+    Each node should be (node, attr), where the node is the name
+    of the node and attr is a dictionary of attributes.
     """
 
     order = util.graph_topological_sort(mmodel_G)
@@ -166,7 +183,7 @@ def test_replace_subgraph_terminal(mmodel_G):
 def test_replace_subgraph_middle(mmodel_G):
     """Test redirect edges based on subgraph and subgraph node.
 
-    This test specifically the middle node.
+    This tests specifically the middle node.
     """
 
     subgraph = mmodel_G.subgraph(["subtract", "power"])
@@ -249,6 +266,28 @@ def test_is_edge_attr_defined():
         ),
     ):
         util.is_edge_attr_defined(g, "w")
+
+
+def test_is_node_output_duplicated():
+    """Test is_node_output_duplicated."""
+
+    # all nodes defined
+    g = nx.DiGraph()
+    g.add_node(1, output="a")
+    g.add_node(2, output="b")
+
+    assert util.is_node_output_unique(g)
+
+    # missing attribute
+    g = nx.DiGraph()
+    g.add_node(1, output="a")
+    g.add_node(2, output="a")
+
+    with pytest.raises(
+        Exception,
+        match=(r"invalid graph: duplicated output 'a' for node 2."),
+    ):
+        util.is_node_output_unique(g)
 
 
 def test_parse_functype(func):
