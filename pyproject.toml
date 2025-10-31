@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mmodel"
-version = "0.8.0"
+version = "0.9.0"
 description = "Modular modeling framework for scientific modeling and prototyping."
 readme = "README.rst"
 license = "BSD-3-Clause"
