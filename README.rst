@@ -226,9 +226,9 @@ To create the documentation, run under the "/docs" directory::
 
 Citing *mmodel*
 ^^^^^^^^^^^^^^^^^^
-The work was `published <https://pubs.aip.org/aip/jcp/article/159/4/
-044801/2904249/mmodel-A-workflow-framework-to-accelerate-the>`_ in the Journal 
-of Chemical Physics. 
+`The work was published in the Journal 
+of Chemical Physics. <https://pubs.aip.org/aip/jcp/article/159/4/
+044801/2904249/mmodel-A-workflow-framework-to-accelerate-the>`_ 
 
 BibTex::
 
