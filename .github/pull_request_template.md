@@ -10,7 +10,6 @@
 - 
 - 
 
-
 ## Type of Change
 
 <!-- Check the appropriate box by replacing [ ] with [x] -->
@@ -34,14 +33,12 @@
 <!-- If this PR introduces breaking changes, describe them here -->
 <!-- Otherwise, write "None" -->
 
-
 ## Testing
 
 <!-- Describe the tests you ran to verify your changes -->
 
 - [ ] All existing tests pass (`tox`)
 - [ ] New tests added for new features/bug fixes
-
 
 ## Documentation
 
@@ -64,7 +61,6 @@
 - [ ] Changes generate no new warnings or errors
 - [ ] PR focuses on a single feature or bug fix
 
-
 ## Additional Notes
 
 <!-- Any additional information that reviewers should know
@@ -72,4 +68,3 @@ Add screenshots here if relevant -->
 
 ---
 **Target Branch**: This PR should be merged into the `develop` branch.
-
