@@ -28,8 +28,10 @@ assignees: ''
 
 ## Additional Context
 
-<!-- Add any other context, screenshots, code examples, or references about the feature request here -->
+<!-- Add any other context, screenshots, code examples,
+or references about the feature request here -->
 
 ## Potential Implementation
 
-<!-- If you have ideas about how this could be implemented, please share them here -->
+<!-- If you have ideas about how this could be implemented,
+please share them here -->

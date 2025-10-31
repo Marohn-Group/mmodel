@@ -42,15 +42,17 @@ assignees: ''
 
 <!-- If applicable, paste any error messages or stack traces here -->
 
-```
-Paste error message here
+```Python
+# Paste error message here
 ```
 
 ## Additional Context
 
-<!-- Add any other context about the problem here (e.g., error messages, screenshots, logs) -->
+<!-- Add any other context about the problem here
+(e.g., error messages, screenshots, logs) -->
 
 ## Possible Solution
 
-<!-- If you have suggestions on how to fix the bug, please describe them here -->
+<!-- If you have suggestions on how to fix the bug,
+please describe them here -->
 

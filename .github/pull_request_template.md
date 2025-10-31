@@ -17,7 +17,7 @@
 
 - [ ] Bug fix (non-breaking change which fixes an issue)
 - [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to change)
+- [ ] Breaking change
 - [ ] Documentation update
 - [ ] Code refactoring
 - [ ] Performance improvement
@@ -56,7 +56,8 @@
 
 <!-- Check all that apply -->
 
-- [ ] Code follows PEP 8 style guidelines (use ``Black`` formatter's default settings)
+- [ ] Code follows PEP 8 style guidelines
+      (use ``Black`` formatter's default settings)
 - [ ] Used meaningful variable and function names
 - [ ] Code is modular and readable
 - [ ] Commented code, particularly in hard-to-understand areas

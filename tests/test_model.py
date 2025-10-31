@@ -332,7 +332,7 @@ class TestModelValidation:
             AssertionError, match=r"invalid graph \(test_graph\): undirected graph"
         ):
             Model._is_valid_graph(G)
-    
+
     def test_if_single_node_graph_is_valid(self, mmodel_G):
         """Test is_valid_graph that correctly identifies single-node graphs."""
         G = mmodel_G.__class__()

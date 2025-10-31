@@ -111,7 +111,7 @@ def mmodel_G():
     G = Graph(name="test_graph")
     G.add_node_objects_from(node_objects)
     G.add_grouped_edges_from(grouped_edges)
-    
+
     return G
 
 
